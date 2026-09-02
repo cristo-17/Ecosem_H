@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/*
+ * Tokens del sistema de diseño Ecosem H v2 (.claude/skills/ecosem-design-system/SKILL.md).
+ * Cada variable definida en @theme queda disponible dos veces: como variable CSS real
+ * (var(--color-primary)) y como clase de utilidad de Tailwind (bg-primary, text-primary...).
+ * No usar hex sueltos en componentes: siempre estos tokens.
+ */
+@theme {
+  /* Color — valores exactos del skill v2 */
+  --color-primary: #c8102e;
+  --color-secondary: #0b62a4;
+  --color-navy: #10233f;
+  --color-surface-base: #f7f8fa;
+  --color-text-primary: #16202c;
+  --color-text-secondary: #5a6672;
+  --color-border-default: #dce0e6;
+  --color-skeleton: #dce0e6;
+
+  /*
+   * Estados semánticos v2: cada uno trae su par fill/text ya definido por el
+   * skill (fondo pastel + texto de la misma familia con contraste AA), así
+   * que ya no hace falta un -foreground separado para warning como en v1.
+   */
+  --color-success-fill: #e8f5ee;
+  --color-success-text: #0f7a4a;
+  --color-warning-fill: #fdf3e4;
+  --color-warning-text: #a65a00;
+  --color-error-fill: #fdecee;
+  --color-error-text: #c0203a;
+  --color-info-fill: #e7f1f9;
+  --color-info-text: #0b62a4;
+
+  /*
+   * Espaciado en múltiplos de 4: la escala por defecto de Tailwind v4 (--spacing: 0.25rem)
+   * ya es múltiplo de 4px (1 unidad = 4px). Se declara explícito para dejar la regla
+   * del skill como decisión consciente, no un valor heredado sin revisar.
+   */
+  --spacing: 0.25rem;
+
+  /* Radios v2: sm 6px (badges/elementos internos), md 12px (campos, cards,
+     modales), pill 9999px (todos los botones). */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-pill: 9999px;
+
+  /*
+   * Alias temporales hacia radius-md para componentes que aún no se migran
+   * a los tokens explícitos del skill v2 en esta pasada (Modal, Textarea,
+   * Skeleton, Toast, Badge...). Evita que pierdan su radio mientras se
+   * refactorizan uno por uno; usar --radius-md/--radius-sm/--radius-pill
+   * directamente en cualquier componente nuevo o recién migrado.
+   */
+  --radius-field: var(--radius-md);
+  --radius-modal: var(--radius-md);
+
+  /*
+   * Sombras: el skill pide "tres niveles" pero no da valores. Se usa el navy
+   * #10233F en vez de negro puro — negro sobre esta paleta se ve gris sucio.
+   * Opacidad más alta que un shadow-scale típico basado en negro: el navy es
+   * más claro que el negro puro y a la misma opacidad el tinte azul no se
+   * percibía (se leía como gris neutro).
+   */
+  --shadow-low: 0 1px 2px 0 rgb(16 35 63 / 0.12);
+  --shadow-medium: 0 4px 6px -1px rgb(16 35 63 / 0.2), 0 2px 4px -2px rgb(16 35 63 / 0.16);
+  --shadow-high: 0 10px 15px -3px rgb(16 35 63 / 0.28), 0 4px 6px -4px rgb(16 35 63 / 0.2);
+
+  /* Tipografía: IBM Plex Sans cargada en app/layout.tsx vía next/font/google */
+  --font-sans: var(--font-ibm-plex-sans);
+}
+
+body {
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
