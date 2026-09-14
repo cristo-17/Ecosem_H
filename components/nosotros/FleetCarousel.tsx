@@ -69,8 +69,8 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
 
   // ── Auto-avance ──────────────────────────────────────────────────────────
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const hoverRef    = useRef(false);
-  const focusRef    = useRef(false);
+  const hoverRef = useRef(false);
+  const focusRef = useRef(false);
   const reducedMotionRef = useRef(false);
 
   const stopAuto = useCallback(() => {
@@ -106,14 +106,14 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
     };
   }, [startAuto, stopAuto]);
 
-  function handlePointerEnter() { hoverRef.current = true;  stopAuto(); }
+  function handlePointerEnter() { hoverRef.current = true; stopAuto(); }
   function handlePointerLeave() { hoverRef.current = false; if (!focusRef.current) startAuto(); }
-  function handleFocus()        { focusRef.current = true;  stopAuto(); }
-  function handleBlur()         { focusRef.current = false; if (!hoverRef.current) startAuto(); }
+  function handleFocus() { focusRef.current = true; stopAuto(); }
+  function handleBlur() { focusRef.current = false; if (!hoverRef.current) startAuto(); }
 
   return (
     <div
-      className="w-full"
+      className="relative z-0 w-full overflow-hidden py-4"
       onMouseEnter={handlePointerEnter}
       onMouseLeave={handlePointerLeave}
       onFocus={handleFocus}
@@ -139,8 +139,8 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
           // hacia adelante. La activa y las ocultas no tienen handler.
           const clickHandler =
             offset === -1 ? () => ir(index - 1) :
-            offset ===  1 ? () => ir(index + 1) :
-            undefined;
+              offset === 1 ? () => ir(index + 1) :
+                undefined;
 
           return (
             <div

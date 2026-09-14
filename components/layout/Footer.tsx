@@ -41,7 +41,7 @@ export function Footer() {
     <footer className="bg-navy text-white">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
         <div>
-          <p className="text-lg font-semibold">Ecosem H</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white mb-4">Ecosem H</h2>
           <p className="mt-2 text-sm text-white/70">
             Transporte interprovincial entre Lima, Cerro de Pasco y Huancayo.
             Venta de pasajes y envío de encomiendas con seguimiento en línea.
@@ -64,13 +64,13 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-white/90">Enlaces Útiles</p>
-          <ul className="mt-3 flex flex-col gap-2">
+          <p className="text-sm font-semibold uppercase tracking-wider text-white mb-4 pb-2 border-b border-white/20 inline-block">Enlaces</p>
+          <ul className="flex flex-col space-y-3">
             {ENLACES_UTILES.map((enlace) => (
               <li key={enlace.href}>
                 <Link
                   href={enlace.href}
-                  className="text-sm text-white/70 underline-offset-2 transition hover:text-white hover:underline"
+                  className="text-sm text-white/70 hover:text-white transition-colors duration-200"
                 >
                   {enlace.label}
                 </Link>
@@ -100,10 +100,10 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-white/90">
+          <p className="text-sm font-semibold uppercase tracking-wider text-white mb-4 pb-2 border-b border-white/20 inline-block">
             Contacto y Terminales
           </p>
-          <ul className="mt-3 flex flex-col gap-2 text-sm text-white/70">
+          <ul className="flex flex-col space-y-3 text-sm text-white/70">
             {/*
               Celular peruano (9 dígitos): sin prefijo de fijo. "(01)" es el
               código de área de Lima para teléfonos fijos (7 dígitos) y no
@@ -112,7 +112,7 @@ export function Footer() {
             <li>
               <a
                 href="tel:+51987654321"
-                className="transition hover:text-white hover:underline"
+                className="text-sm text-white/70 hover:text-white transition-colors duration-200"
               >
                 987 654 321
               </a>
@@ -120,13 +120,13 @@ export function Footer() {
             <li>
               <a
                 href="mailto:contacto@ecosemh.pe"
-                className="transition hover:text-white hover:underline"
+                className="text-sm text-white/70 hover:text-white transition-colors duration-200"
               >
                 contacto@ecosemh.pe
               </a>
             </li>
           </ul>
-          <ul className="mt-4 flex flex-col gap-2 text-sm text-white/70">
+          <ul className="mt-4 flex flex-col space-y-3 text-sm text-white/70">
             {TERMINALES.map((terminal) => (
               <li key={terminal.ciudad}>
                 <span className="font-medium text-white/90">

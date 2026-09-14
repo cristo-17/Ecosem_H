@@ -100,7 +100,7 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 md:h-[72px] items-center gap-1 md:gap-0 border-b border-border-default bg-white px-2 md:px-12">
+    <header className="sticky top-0 z-50 flex h-14 md:h-[72px] items-center gap-1 md:gap-0 border-b border-border-default bg-white px-2 md:px-12">
       {/* 1. BOTÓN HAMBURGUESA (MÓVIL) - Oculto en escritorio con 'md:hidden' */}
       <button
         ref={openRef}
