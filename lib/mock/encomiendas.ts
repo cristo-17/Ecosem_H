@@ -4,6 +4,10 @@
  * quedan como constantes fáciles de editar acá cuando se definan.
  */
 import type { BadgeStatus } from "@/components/ui/Badge";
+import type {
+  EstadoEncomienda,
+  EventoEncomienda,
+} from "@/components/ui/EncomiendaTimeline";
 import type { Ciudad } from "@/lib/mock/viajes";
 
 export interface RangoTarifa {
@@ -39,16 +43,11 @@ export function calcularTarifa(pesoFacturableKg: number): number {
 }
 
 // --- Rastreo ---
-// Los mismos cinco estados de Badge (skill: "se usan tanto en pasajes como
-// en encomiendas"), reutilizados también para cada evento de la línea de
-// tiempo en vez de inventar un vocabulario de estados aparte.
-
-export interface EventoRastreo {
-  estado: BadgeStatus;
-  fecha: Date;
-  ubicacion: string;
-  descripcion: string;
-}
+// `estadoActual` usa el mismo vocabulario de Badge que pasajes (incluye
+// "cancelado", que no tiene lugar fijo en el ciclo de vida). `etapaActual` +
+// `eventos` son aparte: los 4 estados fijos de encomienda (CLAUDE.md) que
+// dibuja EncomiendaTimeline, con terminal y fecha/hora por cada etapa ya
+// alcanzada.
 
 export interface Encomienda {
   guia: string;
@@ -58,8 +57,9 @@ export interface Encomienda {
   destinatario: string;
   pesoFacturableKg: number;
   estadoActual: BadgeStatus;
-  /** De más antiguo a más reciente. */
-  eventos: EventoRastreo[];
+  etapaActual: EstadoEncomienda;
+  /** Una por cada etapa ya alcanzada, en cualquier orden. */
+  eventos: EventoEncomienda[];
 }
 
 export const ENCOMIENDAS_MOCK: Encomienda[] = [
@@ -70,19 +70,45 @@ export const ENCOMIENDAS_MOCK: Encomienda[] = [
     remitente: "Comercial Andina SAC",
     destinatario: "Rosa Fernández",
     pesoFacturableKg: 8.5,
-    estadoActual: "en-ruta",
+    estadoActual: "pendiente",
+    etapaActual: "alistando",
     eventos: [
       {
-        estado: "pendiente",
+        estado: "registrada",
         fecha: new Date(2026, 7, 29, 9, 0),
-        ubicacion: "Terminal Lima Norte",
-        descripcion: "Encomienda registrada",
+        terminal: "Terminal Lima Norte",
       },
       {
-        estado: "en-ruta",
-        fecha: new Date(2026, 7, 30, 6, 0),
-        ubicacion: "Terminal Lima Norte",
-        descripcion: "Despachada hacia Huancayo",
+        estado: "alistando",
+        fecha: new Date(2026, 7, 29, 11, 30),
+        terminal: "Terminal Lima Norte",
+      },
+    ],
+  },
+  {
+    guia: "ECH-000321",
+    origen: "Cerro de Pasco",
+    destino: "Lima",
+    remitente: "Ferretería Andahuaylas",
+    destinatario: "Constructora Vilcabamba",
+    pesoFacturableKg: 22,
+    estadoActual: "en-ruta",
+    etapaActual: "en-camino",
+    eventos: [
+      {
+        estado: "registrada",
+        fecha: new Date(2026, 7, 30, 7, 0),
+        terminal: "Terminal Cerro de Pasco",
+      },
+      {
+        estado: "alistando",
+        fecha: new Date(2026, 7, 30, 7, 40),
+        terminal: "Terminal Cerro de Pasco",
+      },
+      {
+        estado: "en-camino",
+        fecha: new Date(2026, 7, 30, 8, 15),
+        terminal: "Terminal Cerro de Pasco",
       },
     ],
   },
@@ -94,24 +120,27 @@ export const ENCOMIENDAS_MOCK: Encomienda[] = [
     destinatario: "Jorge Salazar",
     pesoFacturableKg: 3,
     estadoActual: "completado",
+    etapaActual: "despachada",
     eventos: [
       {
-        estado: "pendiente",
+        estado: "registrada",
         fecha: new Date(2026, 7, 25, 8, 30),
-        ubicacion: "Terminal Huancayo Centro",
-        descripcion: "Encomienda registrada",
+        terminal: "Terminal Huancayo Centro",
       },
       {
-        estado: "en-ruta",
+        estado: "alistando",
+        fecha: new Date(2026, 7, 25, 9, 15),
+        terminal: "Terminal Huancayo Centro",
+      },
+      {
+        estado: "en-camino",
         fecha: new Date(2026, 7, 25, 16, 0),
-        ubicacion: "Terminal Huancayo Centro",
-        descripcion: "Despachada hacia Lima",
+        terminal: "Terminal Huancayo Centro",
       },
       {
-        estado: "completado",
+        estado: "despachada",
         fecha: new Date(2026, 7, 25, 22, 45),
-        ubicacion: "Terminal Lima Norte",
-        descripcion: "Entregada al destinatario",
+        terminal: "Terminal Lima Norte",
       },
     ],
   },
@@ -123,18 +152,12 @@ export const ENCOMIENDAS_MOCK: Encomienda[] = [
     destinatario: "Municipalidad de Cerro de Pasco",
     pesoFacturableKg: 15,
     estadoActual: "cancelado",
+    etapaActual: "registrada",
     eventos: [
       {
-        estado: "pendiente",
+        estado: "registrada",
         fecha: new Date(2026, 7, 27, 11, 0),
-        ubicacion: "Terminal Lima Norte",
-        descripcion: "Encomienda registrada",
-      },
-      {
-        estado: "cancelado",
-        fecha: new Date(2026, 7, 27, 15, 20),
-        ubicacion: "Terminal Lima Norte",
-        descripcion: "Envío cancelado a pedido del remitente",
+        terminal: "Terminal Lima Norte",
       },
     ],
   },

@@ -165,12 +165,6 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
         >
           Nosotros
         </Link>
-        <Link
-          href="/libro-de-reclamaciones"
-          className="text-sm font-semibold text-text-primary hover:text-primary transition"
-        >
-          Libro de Reclamaciones
-        </Link>
       </div>
 
       {/* Espaciador flexible para empujar las acciones a la derecha en escritorio */}

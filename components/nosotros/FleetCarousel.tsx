@@ -121,6 +121,7 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
                     // viewport). Un "100vw" genérico serviría una imagen
                     // más chica de lo necesario en desktop.
                     sizes="(min-width: 768px) 736px, calc(100vw - 32px)"
+                    quality={90}
                     className="object-cover"
                   />
                 ) : (

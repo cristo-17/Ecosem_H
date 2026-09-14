@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { ModalShowcase } from "./ModalShowcase";
 import { ToastShowcase } from "./ToastShowcase";
 import { Stepper } from "@/components/ui/Stepper";
+import { EncomiendaTimeline } from "@/components/ui/EncomiendaTimeline";
 import { EmptyStateShowcase } from "./EmptyStateShowcase";
 
 const BADGE_STATUSES: BadgeStatus[] = [
@@ -303,6 +304,40 @@ export default function Styleguide() {
         <div className="mt-6 flex flex-col gap-6">
           <Stepper currentStep={1} />
           <Stepper currentStep={3} />
+        </div>
+      </section>
+
+      <section className="w-full max-w-4xl text-left">
+        <h2 className="text-xl font-semibold text-navy">EncomiendaTimeline</h2>
+        <p className="mt-1 text-sm text-navy/70">
+          Cuatro etapas fijas del ciclo de vida de una encomienda. Cumplido:
+          punto relleno. Actual: punto más grande con relleno + anillo (mismo
+          recurso que el anillo/relleno de DatePicker), etiqueta en negrita y
+          el Badge de estado junto al punto. Pendiente: punto vacío con
+          borde.
+        </p>
+        <div className="mt-4 max-w-sm">
+          <EncomiendaTimeline
+            etapaActual="en-camino"
+            estadoBadge="en-ruta"
+            eventos={[
+              {
+                estado: "registrada",
+                terminal: "Terminal Lima Norte",
+                fecha: new Date(2026, 7, 29, 9, 0),
+              },
+              {
+                estado: "alistando",
+                terminal: "Terminal Lima Norte",
+                fecha: new Date(2026, 7, 29, 11, 30),
+              },
+              {
+                estado: "en-camino",
+                terminal: "Terminal Lima Norte",
+                fecha: new Date(2026, 7, 30, 6, 0),
+              },
+            ]}
+          />
         </div>
       </section>
 

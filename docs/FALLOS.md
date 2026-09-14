@@ -8,14 +8,42 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 ---
 
 ## F-003 · Imágenes del carrusel de `/nosotros` sin nitidez
-**Estado:** abierto
+**Estado:** parcialmente resuelto (13/09/2026) — queda pendiente de reemplazo de archivos
 **Síntoma:** las fotos del carrusel se ven borrosas o con pérdida de calidad.
-**Causa probable:** `sizes` de `next/image` no coincide con el ancho real del
-contenedor por breakpoint, lo que hace que Next sirva una variante de menor
-resolución de la necesaria. También puede haber upscaling si el archivo fuente
-es más pequeño que el contenedor.
+**Causa descartada:** el prop `sizes` — ya estaba bien calculado
+(`(min-width: 768px) 736px, calc(100vw - 32px)`, coincide con el ancho real
+del contenedor). El request a `/_next/image` pedía `w=750`, correcto para un
+contenedor de 736px.
+**Causa real (verificada con `naturalWidth`/`clientWidth` en el navegador):**
+upscaling genuino. Tres de los cuatro archivos fuente miden solo 337×427px,
+muy por debajo de los ~736×552px que ocupa el carrusel en escritorio (la
+resolución mínima recomendada, documentada en
+`public/images/nosotros/README.md`, es 1472×1104px = 2×). El navegador recibe
+la imagen a ~330×419px y la estira por CSS hasta 736×552px vía `fill` +
+`object-cover`. Ningún ajuste de `sizes` o `quality` corrige esto — hay que
+reemplazar el archivo.
+- `flota-01.jpg` (808×1024): resolución suficiente, se sirve completa, sin upscaling.
+- `flota-02.jpg` (337×427): **necesita reemplazo**, mínimo 1472×1104px. Además
+  el archivo es en realidad un PNG (firma de bytes `89 50 4E 47...`) guardado
+  con extensión `.jpg` — funciona porque Next detecta el formato real por
+  contenido, no por extensión, pero conviene renombrarlo a `.png` al
+  reemplazarlo para evitar confusión futura.
+- `flota-03.png` (337×427): **necesita reemplazo**, mínimo 1472×1104px.
+- `personal-01.png` (337×427): **necesita reemplazo**, mínimo 1472×1104px.
+- `header-bg.jpg`: no es causa de este fallo — el archivo no existe en el
+  repo y el encabezado cae a su alternativa sólida navy por diseño (ver
+  `public/images/nosotros/README.md`). Cuando se entregue el archivo real,
+  mínimo 1600×500px.
+**Solución aplicada:** `quality` de 75 a 90 en el `Image` del carrusel
+(`components/nosotros/FleetCarousel.tsx`) y del encabezado
+(`app/nosotros/page.tsx`), y `images.qualities: [75, 90]` en
+`next.config.ts` (Next 16 exige declarar cada `quality` distinto del default
+75, si no la sirve igual a 75 pese al prop). Esto mejora la compresión pero
+no corrige el upscaling de los tres archivos por debajo de resolución.
 **Verificación:** en DevTools → Network, mirar el parámetro `w=` de la URL
-`/_next/image` y compararlo con el ancho real renderizado.
+`/_next/image` y compararlo con el ancho real renderizado; comparar
+`img.naturalWidth`/`naturalHeight` contra `img.clientWidth`/`clientHeight`
+en consola para confirmar si hay upscaling real.
 
 ---
 

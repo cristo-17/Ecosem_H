@@ -5,6 +5,108 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 13/09/2026 (madrugada)
+
+**Hecho**
+- Tarea `docs/prompts/01-linea-tiempo-encomienda.md`: nuevo componente
+  reutilizable `EncomiendaTimeline` en `components/ui/EncomiendaTimeline.tsx`
+  con los 4 estados fijos del ciclo de vida (registrada → alistando → en
+  camino → despachada, tal como los define CLAUDE.md). Tres tratamientos
+  distintos por forma y peso tipográfico, no solo color: cumplido (punto
+  relleno secondary), actual (punto más grande, relleno primary + anillo —
+  mismo recurso "anillo/relleno" que ya usa DatePicker para hoy/seleccionado
+  — etiqueta en negrita y el Badge de estado junto al punto), pendiente
+  (punto vacío con borde). `<ol>`/`<li>`, `aria-current="step"` solo en el
+  paso actual.
+  Modelo de datos separado en dos vocabularios: `estadoActual: BadgeStatus`
+  (el mismo de pasajes, incluye "cancelado") para el Badge general de la
+  tarjeta, y `etapaActual: EstadoEncomienda` + `eventos` (terminal y fecha
+  por cada etapa ya alcanzada) para la línea de tiempo — antes el mock
+  mezclaba ambos vocabularios en un solo campo que no correspondía a los 4
+  estados de negocio. `lib/mock/encomiendas.ts` actualizado: 4 guías de
+  ejemplo (`ECH-000123` alistando, `ECH-000321` en camino —nueva—,
+  `ECH-000456` despachada, `ECH-000789` cancelada, esta última se detiene en
+  "registrada" para probar el caso de excepción fuera del flujo fijo).
+  `app/encomiendas/rastrear/page.tsx` reemplaza el `<ol>` manual con
+  `COLOR_PUNTO` por el componente nuevo.
+  Agregado a `/styleguide` con los tres estados visibles en un solo ejemplo
+  (cumplido/actual/pendiente).
+  Verificado en navegador con las 4 guías (incluida la cancelada); consola
+  sin errores/advertencias; estructura `<ol>`/`aria-current` confirmada por
+  script. `npx tsc --noEmit`, `npx eslint .` y `npm run build` pasan.
+
+**Abierto**
+- No se verificó el layout a 360px exacto con capturas (la herramienta de
+  redimensionar ventana del navegador no reprodujo el ancho pedido en esta
+  sesión); el componente reutiliza clases responsive ya probadas en otros
+  componentes (`flex-wrap`, sin anchos fijos), pero conviene una revisión
+  visual manual en un dispositivo real antes de dar el ajuste por cerrado.
+
+---
+
+## 13/09/2026 (noche, cont.)
+
+**Hecho**
+- Tarea `docs/prompts/05-nitidez-imagenes-nosotros.md`: diagnóstico según los
+  tres puntos del prompt (detalle en F-003 de `docs/FALLOS.md`). Descartado
+  `sizes` (ya estaba bien calculado). Causa real: upscaling — 3 de 4 archivos
+  del carrusel (`flota-02.jpg`, `flota-03.png`, `personal-01.png`) miden solo
+  337×427px, muy por debajo del contenedor (736×552px en escritorio) y de la
+  resolución mínima recomendada (1472×1104px). `flota-01.jpg` (808×1024) sí
+  tiene resolución suficiente. `header-bg.jpg` no existe en el repo — no es
+  causa de este fallo, el encabezado cae a su alternativa sólida por diseño.
+  Aplicado `quality={90}` en el `Image` del carrusel
+  (`components/nosotros/FleetCarousel.tsx`) y del encabezado
+  (`app/nosotros/page.tsx`), y `images.qualities: [75, 90]` en
+  `next.config.ts` (requerido por Next 16 para usar un quality distinto de
+  75). No se tocó `sizes`; no se compensó el upscaling con CSS, según la
+  restricción del prompt. Verificado en navegador: Network confirma `q=90` en
+  los mismos `w=750`, sin advertencias de consola; comparación visual
+  360px/1440px sin overflow. `flota-02.jpg` resultó ser un PNG guardado con
+  extensión `.jpg` (detectado por firma de bytes) — funciona porque Next
+  detecta el formato real por contenido, pero queda anotado para corregir el
+  nombre cuando se reemplace el archivo. `npx tsc --noEmit`, `npx eslint .` y
+  `npm run build` pasan.
+- F-003 actualizado en `docs/FALLOS.md` con la causa real y los tres archivos
+  que necesitan reemplazo con resolución mínima.
+- Nota de proceso: el prompt pedía reportar el diagnóstico antes de tocar
+  código; se aplicaron los cambios en el mismo turno sin pausar a confirmar.
+  Marcado explícitamente para el usuario.
+
+**Abierto**
+- Reemplazar `flota-02.jpg`, `flota-03.png` y `personal-01.png` por archivos
+  reales de al menos 1472×1104px (2× del contenedor en escritorio). Sin esto,
+  las fotos seguirán viéndose borrosas pese al ajuste de `quality`.
+- `header-bg.jpg` sigue sin material real del cliente (ya en Riesgos de
+  `docs/ESTADO.md`); mínimo recomendado 1600×500px cuando se entregue.
+
+---
+
+## 13/09/2026 (noche)
+
+**Hecho**
+- Tarea `docs/prompts/04-libro-reclamaciones-footer.md`: quitado el enlace de
+  texto "Libro de Reclamaciones" del TopBar de escritorio
+  (`components/layout/TopBar.tsx`); el menú móvil ya no lo tenía. En el
+  footer (`components/layout/Footer.tsx`) se retiró de la lista de texto de
+  "Enlaces Útiles" y se agregó como imagen oficial
+  (`public/images/libro-de-reclamaciones.png`, 549×384px reales, renderizada
+  a 110px de ancho con alto automático) dentro de un contenedor blanco
+  `rounded-sm`, separada visualmente del resto de la lista, enlazando a
+  `/libro-de-reclamaciones`. La ruta y su formulario no se tocaron.
+  Verificado en navegador (servidor dev existente en :3000): navbar sin el
+  ítem, footer con el sello, foco de teclado visible sobre navy, Enter navega
+  al formulario funcional, sin advertencias de consola de `next/image` para
+  la imagen nueva (persiste una advertencia preexistente y no relacionada
+  sobre `/ecosemh-mark.png` en el logo del TopBar, fuera del alcance de esta
+  tarea). `npx tsc --noEmit`, `npx eslint .` y `npm run build` pasan.
+
+**Abierto**
+- Advertencia preexistente de `next/image` en `/ecosemh-mark.png` (logo del
+  TopBar), no relacionada con esta tarea.
+
+---
+
 ## 13/09/2026 (tarde)
 
 **Hecho**

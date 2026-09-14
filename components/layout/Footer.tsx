@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { RUTAS } from "@/lib/routes";
 import { FacebookIcon, InstagramIcon } from "@/components/ui/icons";
@@ -21,9 +22,6 @@ const ENLACES_UTILES = [
   { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
   { href: RUTAS.nosotros, label: "Nosotros" },
   { href: RUTAS.ayuda, label: "Ayuda" },
-  // Obligatorio por ley peruana: debe apuntar a un formulario funcional,
-  // nunca a "#" (ver /libro-de-reclamaciones).
-  { href: RUTAS.libroReclamaciones, label: "Libro de Reclamaciones" },
 ];
 
 const TERMINALES = [
@@ -79,6 +77,26 @@ export function Footer() {
               </li>
             ))}
           </ul>
+
+          {/*
+            Obligatorio por Ley 29571: debe apuntar a un formulario funcional,
+            nunca a "#" (ver /libro-de-reclamaciones). Convención peruana: se
+            accede con la imagen oficial del libro, no como ítem de texto del
+            menú — por eso va separado del resto de la lista, como un sello.
+          */}
+          <Link
+            href={RUTAS.libroReclamaciones}
+            aria-label="Libro de Reclamaciones"
+            className="mt-4 inline-flex w-fit items-center justify-center rounded-sm bg-white p-2 transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <Image
+              src="/images/libro-de-reclamaciones.png"
+              alt="Libro de Reclamaciones"
+              width={110}
+              height={77}
+              className="h-auto w-[110px]"
+            />
+          </Link>
         </div>
 
         <div>

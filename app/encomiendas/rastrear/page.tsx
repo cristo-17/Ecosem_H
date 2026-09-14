@@ -2,29 +2,17 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Badge, type BadgeStatus } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonShape } from "@/components/ui/Skeleton";
+import { EncomiendaTimeline } from "@/components/ui/EncomiendaTimeline";
 import { SearchOffIcon, TrackIcon } from "@/components/ui/icons";
 import { buscarEncomiendaPorGuia, type Encomienda } from "@/lib/mock/encomiendas";
-import { formatFechaLarga, formatHora12 } from "@/lib/format";
 
 type Estado = "inicial" | "cargando" | "no-encontrado" | "listo";
-
-// Mismos colores de relleno que Badge (Badge.tsx no los expone como
-// export aparte): un punto de línea de tiempo es una versión mínima de la
-// misma placa de estado, así que reutiliza el mismo mapeo semántico.
-const COLOR_PUNTO: Record<BadgeStatus, string> = {
-  confirmado: "bg-success-fill",
-  pendiente: "bg-warning-fill",
-  cancelado: "bg-error-fill",
-  "en-ruta": "bg-info-fill",
-  completado: "bg-navy",
-};
 
 export default function RastrearEncomiendaPage() {
   const [guia, setGuia] = useState("");
@@ -120,25 +108,13 @@ export default function RastrearEncomiendaPage() {
               </div>
             </div>
 
-            <ol className="flex flex-col border-t border-navy/10 pt-4">
-              {resultado.eventos.map((evento, indice) => {
-                const esUltimo = indice === resultado.eventos.length - 1;
-                return (
-                  <li key={indice} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <span aria-hidden="true" className={cn("mt-1 size-3 shrink-0 rounded-full", COLOR_PUNTO[evento.estado])} />
-                      {!esUltimo && <span aria-hidden="true" className="w-px flex-1 bg-navy/15" />}
-                    </div>
-                    <div className={cn("min-w-0", !esUltimo && "pb-4")}>
-                      <p className="text-sm font-medium text-navy">{evento.descripcion}</p>
-                      <p className="text-xs text-navy/60">
-                        {evento.ubicacion} · {formatFechaLarga(evento.fecha)}, {formatHora12(evento.fecha)}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
+            <div className="border-t border-navy/10 pt-4">
+              <EncomiendaTimeline
+                etapaActual={resultado.etapaActual}
+                eventos={resultado.eventos}
+                estadoBadge={resultado.estadoActual}
+              />
+            </div>
           </Card>
         )}
       </div>
