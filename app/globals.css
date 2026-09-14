@@ -74,3 +74,13 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans);
 }
+
+/* Oculta la scrollbar manteniendo el scroll funcional.
+   Equivalente al plugin tailwind-scrollbar-hide, sin dependencia extra. */
+.scrollbar-hide {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE / Edge legado */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;                /* Chrome / Safari / Edge moderno */
+}

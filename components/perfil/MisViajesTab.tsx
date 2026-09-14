@@ -150,7 +150,9 @@ export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisVi
                     : "Descargar PDF"
                 }
               >
-                <DownloadIcon className="!text-white" />
+                {/* Tarea 2 — el icono hereda text-secondary del botón vía currentColor;
+                    quitamos !text-white que lo hacía invisible (blanco sobre fondo blanco). */}
+                <DownloadIcon className="h-4 w-4 shrink-0" />
                 {descargando.has(compra.id) ? "Generando..." : "Descargar PDF"}
               </Button>
             </div>
