@@ -48,6 +48,9 @@ export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisVi
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>("cargando");
   const [intento, setIntento] = useState(0);
+  // Tarea 3 — Feedback de descarga: Set de IDs de compras cuya descarga
+  // está en curso; así cada botón es independiente y no bloquea los demás.
+  const [descargando, setDescargando] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -59,6 +62,21 @@ export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisVi
   function reintentar() {
     setEstado("cargando");
     setIntento((valor) => valor + 1);
+  }
+
+  // Tarea 3 — Inicia la descarga del PDF marcando el botón como ocupado y
+  // lo libera cuando la promesa resuelve (con éxito o con error).
+  async function handleDescargar(compra: CompraPasaje) {
+    setDescargando((prev) => new Set(prev).add(compra.id));
+    try {
+      await descargarCompra(compra);
+    } finally {
+      setDescargando((prev) => {
+        const siguiente = new Set(prev);
+        siguiente.delete(compra.id);
+        return siguiente;
+      });
+    }
   }
 
   const compras = forzarVacio ? [] : MIS_COMPRAS;
@@ -122,9 +140,18 @@ export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisVi
 
             <div className="flex items-center justify-between border-t border-navy/10 pt-3">
               <p className="text-lg font-bold text-navy">{formatPrecio(compra.total)}</p>
-              <Button variant="secundario" onClick={() => descargarCompra(compra)}>
+              <Button
+                variant="secundario"
+                disabled={descargando.has(compra.id)}
+                onClick={() => handleDescargar(compra)}
+                aria-label={
+                  descargando.has(compra.id)
+                    ? "Generando boleto..."
+                    : "Descargar PDF"
+                }
+              >
                 <DownloadIcon className="!text-white" />
-                Descargar PDF
+                {descargando.has(compra.id) ? "Generando..." : "Descargar PDF"}
               </Button>
             </div>
           </Card>

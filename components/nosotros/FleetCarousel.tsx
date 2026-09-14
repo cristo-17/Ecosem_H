@@ -116,6 +116,14 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
       onFocus={handleFocus}
       onBlur={handleBlur}
     >
+      {/* Tarea 1 — Accesibilidad: anuncia el cambio de imagen a lectores de
+          pantalla de forma no intrusiva (aria-live="polite" solo habla cuando
+          el usuario no está haciendo otra cosa; sr-only lo mantiene invisible
+          al resto de usuarios). */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Imagen {index + 1} de {total} visible
+      </div>
+
       <div className="relative overflow-hidden rounded-md">
         <div
           className="flex transition-transform duration-300 ease-out"
@@ -123,28 +131,51 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
         >
           {slides.map((slide) => (
             <div key={slide.filename} className="w-full shrink-0">
+              {/*
+                Tarea 2 — Fondo desenfocado cinemático: si existe la imagen,
+                se pone una copia suya en absolute inset-0 con object-cover,
+                blur-2xl, opacity-40 y scale-110 (el scale evita franjas
+                blancas por el blur en los bordes). La imagen principal va
+                encima (relative z-10) con object-contain y quality={100}
+                para máxima nitidez — sin upscaling (F-003, D-013).
+
+                Si no existe la imagen, se sigue mostrando el placeholder
+                sin fondo desenfocado.
+              */}
               <div
                 className={cn(
-                  "flex items-center justify-center overflow-hidden rounded-md bg-navy/5",
+                  "relative flex items-center justify-center overflow-hidden rounded-md",
                   ALTO_CONTENEDOR,
+                  slide.dimensiones ? "bg-black/5" : "bg-skeleton",
                 )}
               >
                 {slide.dimensiones ? (
-                  <Image
-                    src={`/images/nosotros/${slide.filename}`}
-                    alt={slide.alt}
-                    width={slide.dimensiones.width}
-                    height={slide.dimensiones.height}
-                    quality={90}
-                    // Sin fill/object-cover: width/height son el tamaño real
-                    // del archivo, y w-auto/h-auto + max-w/h-full hacen que
-                    // el navegador solo la reduzca para caber (nunca la
-                    // agranda más allá de su resolución nativa). Foto
-                    // pequeña pero nítida, no grande y borrosa (F-003).
-                    className="h-auto max-h-full w-auto max-w-full object-contain"
-                  />
+                  <>
+                    {/* Capa de fondo desenfocado */}
+                    <Image
+                      src={`/images/nosotros/${slide.filename}`}
+                      alt=""
+                      aria-hidden="true"
+                      width={slide.dimensiones.width}
+                      height={slide.dimensiones.height}
+                      quality={60}
+                      className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+                    />
+                    {/* Imagen principal al frente, nítida y sin recorte */}
+                    <Image
+                      src={`/images/nosotros/${slide.filename}`}
+                      alt={slide.alt}
+                      width={slide.dimensiones.width}
+                      height={slide.dimensiones.height}
+                      quality={100}
+                      // relative z-10 para quedar sobre el fondo.
+                      // h-auto + max-h-full garantizan que nunca se expanda
+                      // más allá de su resolución nativa (F-003).
+                      className="relative z-10 h-auto max-h-full w-auto max-w-full object-contain"
+                    />
+                  </>
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-skeleton px-4 text-center">
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center">
                     <ImagePlaceholderIcon />
                     <span className="text-xs font-medium text-text-secondary">
                       Reemplazar: {slide.filename}

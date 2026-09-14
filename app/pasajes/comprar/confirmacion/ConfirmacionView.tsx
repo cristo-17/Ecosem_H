@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +35,9 @@ export function ConfirmacionView() {
   const router = useRouter();
   const purchase = usePurchase();
   const boleto = purchase.boleto;
+  // Tarea 3 — Feedback de descarga: deshabilita el botón y muestra
+  // "Generando..." mientras la promesa del PDF se resuelve.
+  const [generandoPdf, setGenerandoPdf] = useState(false);
 
   if (!boleto) {
     return (
@@ -74,7 +79,12 @@ export function ConfirmacionView() {
           ? { tipo: "factura", ruc: boleto.comprobante.ruc, razonSocial: boleto.comprobante.razonSocial }
           : { tipo: "boleta" },
     };
-    await descargarBoletoPdf(datos);
+    setGenerandoPdf(true);
+    try {
+      await descargarBoletoPdf(datos);
+    } finally {
+      setGenerandoPdf(false);
+    }
   }
 
   return (
@@ -137,9 +147,14 @@ export function ConfirmacionView() {
       </Card>
 
       <div className="mt-2 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
-        <Button onClick={descargarBoleto} className="w-full sm:w-auto">
+        <Button
+          onClick={descargarBoleto}
+          disabled={generandoPdf}
+          aria-label={generandoPdf ? "Generando boleto..." : "Descargar PDF"}
+          className="w-full sm:w-auto"
+        >
           <DownloadIcon className="!text-white" />
-          Descargar PDF
+          {generandoPdf ? "Generando..." : "Descargar PDF"}
         </Button>
         <Button
           variant="terciario"
