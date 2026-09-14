@@ -452,6 +452,71 @@ export function BusIcon({ className }: { className?: string }) {
   );
 }
 
+// Encabezan las Card de Misión/Visión en /nosotros: mismo tratamiento que
+// los íconos de acento de EncomiendaPromo (secondary, dentro de un círculo
+// bg-secondary/10), no la familia grande de pantallas vacías.
+export function FlagIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("pointer-events-none size-6 text-secondary", className)}
+    >
+      <path d="M6 3v18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M6 4.5 18 8l-4 4.5 4 4.5-12 3.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("pointer-events-none size-6 text-secondary", className)}
+    >
+      <path
+        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+// Placeholder de imagen en /nosotros (galería de flota): mismo molde que la
+// familia grande de pantallas vacías (viewBox 48, text-navy/30) para que un
+// slot sin archivo se lea como "intencional", no como un ícono roto.
+export function ImagePlaceholderIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 48 48"
+      fill="none"
+      className={cn("pointer-events-none size-10 text-navy/30", className)}
+    >
+      <rect x="5" y="9" width="38" height="30" rx="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="16" cy="19" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="m8 33 9.5-9.5 6.5 6.5 6-6L38 32"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 // Íconos sociales del footer: trazo simple a 1.5px, mismo tratamiento que
 // el resto (currentColor), pensados para verse sobre fondo navy.
 export function FacebookIcon({ className }: { className?: string }) {

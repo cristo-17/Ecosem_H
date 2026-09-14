@@ -24,6 +24,7 @@ const ENTRADAS_MENU = [
   { href: RUTAS.misViajes, label: "Mis Viajes" },
   { href: RUTAS.enviarEncomienda, label: "Enviar Encomienda" },
   { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
+  { href: RUTAS.nosotros, label: "Nosotros" },
   { href: RUTAS.ayuda, label: "Ayuda" },
 ];
 
@@ -157,6 +158,12 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
           className="text-sm font-semibold text-text-primary hover:text-primary transition"
         >
           Mis compras
+        </Link>
+        <Link
+          href={RUTAS.nosotros}
+          className="text-sm font-semibold text-text-primary hover:text-primary transition"
+        >
+          Nosotros
         </Link>
         <Link
           href="/libro-de-reclamaciones"

@@ -19,6 +19,7 @@ const ENLACES_UTILES = [
   { href: RUTAS.inicio, label: "Comprar Pasajes" },
   { href: RUTAS.enviarEncomienda, label: "Enviar Encomienda" },
   { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
+  { href: RUTAS.nosotros, label: "Nosotros" },
   { href: RUTAS.ayuda, label: "Ayuda" },
   // Obligatorio por ley peruana: debe apuntar a un formulario funcional,
   // nunca a "#" (ver /libro-de-reclamaciones).

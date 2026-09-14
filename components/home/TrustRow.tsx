@@ -1,7 +1,7 @@
 import { GpsIcon, SeatIcon, YearsBadgeIcon } from "@/components/ui/icons";
 
 const ITEMS = [
-  { Icon: YearsBadgeIcon, label: "15+ años de experiencia" },
+  { Icon: YearsBadgeIcon, label: "10+ años de experiencia" },
   { Icon: GpsIcon, label: "GPS en tiempo real" },
   { Icon: SeatIcon, label: "Asientos cómodos" },
 ];
