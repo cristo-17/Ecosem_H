@@ -5,13 +5,28 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeftIcon, ChevronRightIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
+import type { DimensionesImagen } from "@/lib/imagenNatural";
 
 export interface FleetSlide {
   filename: string;
   alt: string;
-  /** true si el archivo ya existe en public/images/nosotros (chequeo del server). */
-  exists: boolean;
+  /**
+   * Ancho/alto reales leídos en el servidor (lib/imagenNatural.ts), o null
+   * si el archivo no existe o no se pudo leer — en ambos casos se muestra
+   * el placeholder, nunca una imagen escalada a ciegas.
+   */
+  dimensiones: DimensionesImagen | null;
 }
+
+// Altura fija del carrusel, igual para las 4 fotos: sin ella, cada slide
+// tendría una altura distinta (ya no hay object-cover que las fuerce a
+// llenar el contenedor) y el carrusel "saltaría" al cambiar de imagen. El
+// espacio sobrante alrededor de cada foto (pillarbox/letterbox según su
+// proporción) se rellena con un fondo, no queda vacío. Es una altura
+// elegida, no calculada desde ninguna foto: con el criterio de "nunca
+// escalar hacia arriba", fotos angostas (como las actuales, todas
+// verticales de 337 a 808px de ancho) se ven pequeñas dentro, a propósito.
+const ALTO_CONTENEDOR = "h-64 sm:h-[420px]";
 
 export interface FleetCarouselProps {
   slides: FleetSlide[];
@@ -23,8 +38,8 @@ const AUTO_ADVANCE_MS = 5000;
 
 // Slide por transform (no next/image onError): con imágenes locales en
 // public/ el evento onError del lado del cliente no es confiable para
-// decidir si el archivo existe, así que la existencia ya llega resuelta
-// desde el Server Component padre (fs.existsSync) vía la prop `exists`.
+// decidir si el archivo existe, así que la existencia y el tamaño real ya
+// llegan resueltos desde el Server Component padre vía `slide.dimensiones`.
 export function FleetCarousel({ slides }: FleetCarouselProps) {
   const [index, setIndex] = useState(0);
   const total = slides.length;
@@ -108,21 +123,25 @@ export function FleetCarousel({ slides }: FleetCarouselProps) {
         >
           {slides.map((slide) => (
             <div key={slide.filename} className="w-full shrink-0">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md">
-                {slide.exists ? (
+              <div
+                className={cn(
+                  "flex items-center justify-center overflow-hidden rounded-md bg-navy/5",
+                  ALTO_CONTENEDOR,
+                )}
+              >
+                {slide.dimensiones ? (
                   <Image
                     src={`/images/nosotros/${slide.filename}`}
                     alt={slide.alt}
-                    fill
-                    // Ancho real del contenedor: full-bleed hasta el
-                    // breakpoint sm (max-w-3xl = 768px con px-4 de la
-                    // sección => 32px de margen), y fijo en 736px desde ahí
-                    // en adelante (el contenedor deja de crecer con el
-                    // viewport). Un "100vw" genérico serviría una imagen
-                    // más chica de lo necesario en desktop.
-                    sizes="(min-width: 768px) 736px, calc(100vw - 32px)"
+                    width={slide.dimensiones.width}
+                    height={slide.dimensiones.height}
                     quality={90}
-                    className="object-cover"
+                    // Sin fill/object-cover: width/height son el tamaño real
+                    // del archivo, y w-auto/h-auto + max-w/h-full hacen que
+                    // el navegador solo la reduzca para caber (nunca la
+                    // agranda más allá de su resolución nativa). Foto
+                    // pequeña pero nítida, no grande y borrosa (F-003).
+                    className="h-auto max-h-full w-auto max-w-full object-contain"
                   />
                 ) : (
                   <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-skeleton px-4 text-center">

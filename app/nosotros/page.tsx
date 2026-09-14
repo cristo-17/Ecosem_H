@@ -18,6 +18,7 @@ import {
   ScaleIcon,
 } from "@/components/ui/icons";
 import { RUTAS } from "@/lib/routes";
+import { leerDimensionesImagen } from "@/lib/imagenNatural";
 
 export const metadata: Metadata = {
   title: "Nosotros — Ecosem H",
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     "Misión, visión, historia y flota de Ecosem H: transporte interprovincial de pasajeros entre Lima, Cerro de Pasco y Huancayo.",
 };
 
-const GALERIA: Omit<FleetSlide, "exists">[] = [
+const GALERIA: Omit<FleetSlide, "dimensiones">[] = [
   { filename: "flota-01.jpg", alt: "Bus de la flota de Ecosem H" },
   { filename: "flota-02.jpg", alt: "Interior de un bus de Ecosem H" },
   { filename: "flota-03.png", alt: "Bus de Ecosem H en terminal" },
@@ -46,10 +47,17 @@ function archivoExiste(filename: string): boolean {
   return fs.existsSync(ruta);
 }
 
+function rutaGaleria(filename: string): string {
+  return path.join(process.cwd(), "public", "images", "nosotros", filename);
+}
+
 export default function NosotrosPage() {
+  // dimensiones === null: no hay archivo, o el archivo no se pudo leer como
+  // PNG/JPEG. En ambos casos el carrusel cae al mismo placeholder — sin
+  // saber el tamaño real no hay forma de mostrarla sin escalarla a ciegas.
   const galeria: FleetSlide[] = GALERIA.map((slide) => ({
     ...slide,
-    exists: archivoExiste(slide.filename),
+    dimensiones: leerDimensionesImagen(rutaGaleria(slide.filename)),
   }));
   const encabezadoTieneImagen = archivoExiste("header-bg.jpg");
 
