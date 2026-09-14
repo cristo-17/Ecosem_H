@@ -9,9 +9,9 @@ import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DownloadIcon, ExclamationIcon, TicketIcon } from "@/components/ui/icons";
 import { MIS_COMPRAS, type CompraPasaje } from "@/lib/mock/compras";
-import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { labelTipoAsiento, terminalDe } from "@/lib/mock/viajes";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
-import { descargarPdf, type LineaPdf } from "@/lib/pdf";
+import { descargarBoletoPdf, type BoletoPdfData } from "@/lib/pdf/boleto";
 import { RUTAS } from "@/lib/routes";
 
 type Estado = "cargando" | "error" | "listo";
@@ -26,18 +26,22 @@ function etiquetaAsiento(id: string): string {
   return id.replace(/^P\d-/, "");
 }
 
-function descargarCompra(compra: CompraPasaje) {
-  const lineas: LineaPdf[] = [
-    { texto: "Ecosem H", tamano: 20, negrita: true },
-    { texto: "Boleto de viaje", tamano: 13, negrita: true, espacioAntes: 4 },
-    { texto: `Código: ${compra.codigo}`, espacioAntes: 12 },
-    { texto: `Ruta: ${compra.origen} -> ${compra.destino}`, espacioAntes: 10 },
-    { texto: `Salida: ${formatFechaLarga(compra.fechaSalida)}, ${formatHora12(compra.fechaSalida)}` },
-    { texto: `Asientos: ${compra.asientos.map(etiquetaAsiento).join(", ")}` },
-    { texto: `Pasajero: ${compra.pasajeroPrincipal}`, espacioAntes: 10 },
-    { texto: `Total pagado: ${formatPrecio(compra.total)}`, tamano: 13, negrita: true, espacioAntes: 8 },
-  ];
-  descargarPdf(`boleto-${compra.codigo}.pdf`, lineas);
+async function descargarCompra(compra: CompraPasaje) {
+  const datos: BoletoPdfData = {
+    codigo: compra.codigo,
+    emitidoEn: compra.fechaSalida,
+    origen: compra.origen,
+    destino: compra.destino,
+    terminalOrigen: terminalDe(compra.origen),
+    terminalDestino: terminalDe(compra.destino),
+    horaSalida: compra.fechaSalida,
+    tipoServicio: labelTipoAsiento(compra.tipoAsiento),
+    asientos: compra.asientos.map(etiquetaAsiento),
+    pasajeros: compra.pasajeros,
+    totalSoles: compra.total,
+    comprobante: compra.comprobante,
+  };
+  await descargarBoletoPdf(datos);
 }
 
 export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisViajesTabProps) {
@@ -112,7 +116,7 @@ export function MisViajesTab({ forzarError = false, forzarVacio = false }: MisVi
               <span>Asientos {compra.asientos.map(etiquetaAsiento).join(", ")}</span>
               <span>{labelTipoAsiento(compra.tipoAsiento)}</span>
               <span>
-                {compra.pasajerosCount === 1 ? "1 pasajero" : `${compra.pasajerosCount} pasajeros`}
+                {compra.pasajeros.length === 1 ? "1 pasajero" : `${compra.pasajeros.length} pasajeros`}
               </span>
             </div>
 

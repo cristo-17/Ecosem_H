@@ -74,6 +74,10 @@ const TERMINALES: Record<Ciudad, string> = {
   Huancayo: "Terminal Huancayo Centro",
 };
 
+export function terminalDe(ciudad: Ciudad): string {
+  return TERMINALES[ciudad];
+}
+
 // Fecha de referencia fija (no "hoy"): estos viajes solo se usan para
 // mostrar hora/duración, y una referencia fija evita desajustes de
 // hidratación entre servidor y cliente.

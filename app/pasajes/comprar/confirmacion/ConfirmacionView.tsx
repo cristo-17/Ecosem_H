@@ -14,8 +14,9 @@ import {
   InfoIcon,
   SearchOffIcon,
 } from "@/components/ui/icons";
-import { formatPrecio } from "@/lib/format";
-import { descargarPdf, type LineaPdf } from "@/lib/pdf";
+import { maskDocumento } from "@/lib/format";
+import { terminalDe, labelTipoAsiento } from "@/lib/mock/viajes";
+import { descargarBoletoPdf, type BoletoPdfData } from "@/lib/pdf/boleto";
 import { RUTAS } from "@/lib/routes";
 
 const LABEL_METODO: Record<MetodoPago, string> = {
@@ -47,45 +48,33 @@ export function ConfirmacionView() {
     );
   }
 
-  function descargarBoleto() {
+  async function descargarBoleto() {
     if (!boleto) return;
-    const lineas: LineaPdf[] = [
-      { texto: "Ecosem H", tamano: 20, negrita: true },
-      { texto: "Boleto de viaje", tamano: 13, negrita: true, espacioAntes: 4 },
-      { texto: `Código: ${boleto.codigo}`, espacioAntes: 12 },
-      {
-        texto: `Emitido: ${boleto.emitidoEn.toLocaleDateString("es-PE", { day: "numeric", month: "long", year: "numeric" })}`,
-      },
-      {
-        texto: `Ruta: ${boleto.viaje.origen} -> ${boleto.viaje.destino}`,
-        espacioAntes: 10,
-      },
-      { texto: `Terminal de salida: ${boleto.viaje.terminalOrigen}` },
-      { texto: `Asientos: ${boleto.asientos.map(etiquetaAsiento).join(", ")}` },
-      { texto: "Pasajeros:", espacioAntes: 10, negrita: true },
-      ...boleto.pasajeros.map((pasajero) => ({
-        texto: `- ${pasajero.nombres} (${pasajero.tipoDocumento.toUpperCase()} ${pasajero.numeroDocumento})`,
+    const datos: BoletoPdfData = {
+      codigo: boleto.codigo,
+      emitidoEn: boleto.emitidoEn,
+      origen: boleto.viaje.origen,
+      destino: boleto.viaje.destino,
+      terminalOrigen: boleto.viaje.terminalOrigen,
+      terminalDestino: terminalDe(boleto.viaje.destino),
+      horaSalida: boleto.viaje.horaSalida,
+      tipoServicio: labelTipoAsiento(boleto.viaje.tipoAsiento),
+      asientos: boleto.asientos.map(etiquetaAsiento),
+      // El documento completo solo vive en PurchaseProvider durante la
+      // compra (nunca en logs ni URL); acá se enmascara antes de que
+      // llegue a un PDF que se reenvía por WhatsApp fuera de nuestro
+      // control (CLAUDE.md, regla de datos personales).
+      pasajeros: boleto.pasajeros.map((pasajero) => ({
+        nombre: pasajero.nombres,
+        documentoEnmascarado: maskDocumento(pasajero.numeroDocumento),
       })),
-      {
-        texto: `Comprobante: ${boleto.comprobante.tipo === "factura" ? "Factura" : "Boleta"}`,
-        espacioAntes: 10,
-      },
-      ...(boleto.comprobante.tipo === "factura"
-        ? [
-            {
-              texto: `RUC ${boleto.comprobante.ruc} - ${boleto.comprobante.razonSocial}`,
-            },
-          ]
-        : []),
-      { texto: `Método de pago: ${LABEL_METODO[boleto.metodoPago]}` },
-      {
-        texto: `Total pagado: ${formatPrecio(boleto.total)}`,
-        tamano: 13,
-        negrita: true,
-        espacioAntes: 8,
-      },
-    ];
-    descargarPdf(`boleto-${boleto.codigo}.pdf`, lineas);
+      totalSoles: boleto.total,
+      comprobante:
+        boleto.comprobante.tipo === "factura"
+          ? { tipo: "factura", ruc: boleto.comprobante.ruc, razonSocial: boleto.comprobante.razonSocial }
+          : { tipo: "boleta" },
+    };
+    await descargarBoletoPdf(datos);
   }
 
   return (

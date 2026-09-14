@@ -7,6 +7,11 @@
  */
 import type { BadgeStatus } from "@/components/ui/Badge";
 import type { Ciudad, TipoAsiento } from "@/lib/mock/viajes";
+import type { PasajeroBoletoPdf } from "@/lib/pdf/boleto";
+
+export type ComprobanteCompra =
+  | { tipo: "boleta" }
+  | { tipo: "factura"; ruc: string; razonSocial: string };
 
 export interface CompraPasaje {
   id: string;
@@ -18,9 +23,11 @@ export interface CompraPasaje {
   fechaSalida: Date;
   tipoAsiento: TipoAsiento;
   asientos: string[];
-  pasajeroPrincipal: string;
-  pasajerosCount: number;
+  // Ya enmascarados acá mismo: el historial de compras no guarda el DNI
+  // completo de nadie (Ley 29733), igual que lib/mock/sesion.ts.
+  pasajeros: PasajeroBoletoPdf[];
   total: number;
+  comprobante: ComprobanteCompra;
 }
 
 export const MIS_COMPRAS: CompraPasaje[] = [
@@ -34,9 +41,9 @@ export const MIS_COMPRAS: CompraPasaje[] = [
     fechaSalida: new Date(2026, 7, 31, 5, 30),
     tipoAsiento: "economico",
     asientos: ["P1-3A"],
-    pasajeroPrincipal: "Carlos Mendoza Ruiz",
-    pasajerosCount: 1,
+    pasajeros: [{ nombre: "Carlos Mendoza Ruiz", documentoEnmascarado: "******13" }],
     total: 35,
+    comprobante: { tipo: "boleta" },
   },
   {
     id: "c2",
@@ -48,9 +55,12 @@ export const MIS_COMPRAS: CompraPasaje[] = [
     fechaSalida: new Date(2026, 8, 6, 14, 0),
     tipoAsiento: "ejecutivo",
     asientos: ["P1-2A", "P1-2B"],
-    pasajeroPrincipal: "Carlos Mendoza Ruiz",
-    pasajerosCount: 2,
+    pasajeros: [
+      { nombre: "Carlos Mendoza Ruiz", documentoEnmascarado: "******13" },
+      { nombre: "María Mendoza Ruiz", documentoEnmascarado: "******47" },
+    ],
     total: 84,
+    comprobante: { tipo: "factura", ruc: "20601234567", razonSocial: "Comercial Andina SAC" },
   },
   {
     id: "c3",
@@ -62,9 +72,9 @@ export const MIS_COMPRAS: CompraPasaje[] = [
     fechaSalida: new Date(2026, 8, 12, 16, 0),
     tipoAsiento: "vip",
     asientos: ["P2-1A"],
-    pasajeroPrincipal: "Carlos Mendoza Ruiz",
-    pasajerosCount: 1,
+    pasajeros: [{ nombre: "Carlos Mendoza Ruiz", documentoEnmascarado: "******13" }],
     total: 75,
+    comprobante: { tipo: "boleta" },
   },
   {
     id: "c4",
@@ -76,9 +86,9 @@ export const MIS_COMPRAS: CompraPasaje[] = [
     fechaSalida: new Date(2026, 6, 18, 7, 0),
     tipoAsiento: "ejecutivo",
     asientos: ["P1-4C"],
-    pasajeroPrincipal: "Carlos Mendoza Ruiz",
-    pasajerosCount: 1,
+    pasajeros: [{ nombre: "Carlos Mendoza Ruiz", documentoEnmascarado: "******13" }],
     total: 55,
+    comprobante: { tipo: "boleta" },
   },
   {
     id: "c5",
@@ -90,8 +100,8 @@ export const MIS_COMPRAS: CompraPasaje[] = [
     fechaSalida: new Date(2026, 6, 2, 18, 30),
     tipoAsiento: "ejecutivo",
     asientos: ["P1-1D"],
-    pasajeroPrincipal: "Carlos Mendoza Ruiz",
-    pasajerosCount: 1,
+    pasajeros: [{ nombre: "Carlos Mendoza Ruiz", documentoEnmascarado: "******13" }],
     total: 42,
+    comprobante: { tipo: "boleta" },
   },
 ];
