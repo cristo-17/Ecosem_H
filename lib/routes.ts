@@ -7,6 +7,7 @@ export const RUTAS = {
   inicio: "/",
   nosotros: "/nosotros",
   misViajes: "/mis-viajes",
+  miPerfil: "/mi-perfil",
   enviarEncomienda: "/encomiendas/enviar",
   rastrearEncomienda: "/encomiendas/rastrear",
   ayuda: "/ayuda",

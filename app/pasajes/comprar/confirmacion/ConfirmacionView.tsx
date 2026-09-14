@@ -39,9 +39,9 @@ export function ConfirmacionView() {
         <EmptyState
           icon={<SearchOffIcon />}
           title="No hay una compra confirmada"
-          description="No encontramos un boleto para mostrar. Si ya pagaste, revisa Mis Viajes."
-          actionLabel="Ir a Mis Viajes"
-          onAction={() => router.push(RUTAS.misViajes)}
+          description="No encontramos un boleto para mostrar. Si ya pagaste, revisa Mi Perfil."
+          actionLabel="Ir a Mi Perfil"
+          onAction={() => router.push(RUTAS.miPerfil)}
         />
       </main>
     );

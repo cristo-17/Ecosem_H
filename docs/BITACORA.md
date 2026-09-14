@@ -5,6 +5,58 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 14/09/2026
+
+**Hecho**
+- Tarea `docs/prompts/02-perfil-usuario.md`: "Mis compras" salió del navbar
+  principal; ahora vive en `/mi-perfil` con pestañas "Mis viajes"/"Mis
+  encomiendas".
+  Sesión simulada con un solo valor (`HAY_SESION_MOCK` en
+  `lib/mock/sesion.ts`), sin `localStorage` ni Context/Provider — se
+  reutilizó el patrón `?error=1` que ya existía en `/mis-viajes` para forzar
+  escenarios de prueba, ahora como `/mi-perfil?vacio=viajes` /
+  `?vacio=encomiendas`, leído server-side en `app/mi-perfil/page.tsx`.
+  `TopBar.tsx`: sin sesión mantiene "Ingresar" (desktop y, nuevo, un botón
+  compacto en móvil que antes no existía); con sesión lo reemplaza por "Mi
+  perfil" (desktop, ícono móvil, entrada del menú full-screen); "Cerrar
+  Sesión" del menú móvil ahora solo aparece con sesión.
+  Extraje el patrón de pills del home (`ServiceTabs`) a un primitivo
+  genérico `components/ui/PillTabs.tsx` — reuso real, no una copia nueva del
+  mismo patrón — y `ServiceTabs` se refactorizó para usarlo sin cambiar su
+  comportamiento.
+  `MisComprasView` se movió a `components/perfil/MisViajesTab.tsx` (contenido
+  reusado, sin el `<main>`/`h1` de página); nuevo
+  `components/perfil/MisEncomiendasTab.tsx` lista `buscarMisEncomiendas()`
+  (2 guías nuevas de "Carlos Mendoza Ruiz" agregadas a
+  `lib/mock/encomiendas.ts`) con botón "Ver seguimiento" que navega a
+  `/encomiendas/rastrear?guia=...`.
+  `/encomiendas/rastrear` ahora lee ese `?guia=` (número de guía, no es dato
+  personal) y busca automáticamente al montar — se dividió en
+  `page.tsx` (Suspense) + `RastrearEncomiendaView.tsx` porque
+  `useSearchParams()` lo exige.
+  `/mis-viajes` es ahora un `redirect()` a `/mi-perfil` (no se encontró
+  ningún enlace del footer a la ruta antigua, así que no hubo que tocar
+  `Footer.tsx`); `ConfirmacionView.tsx` actualizado para apuntar directo a
+  `/mi-perfil`.
+  Encabezado del perfil con nombre + documento enmascarado
+  (`maskDocumento()` nuevo en `lib/format.ts`, ej. `******13`): el DNI
+  completo (mock) nunca sale de `lib/mock/sesion.ts`.
+  Verificados en navegador los 4 escenarios pedidos (sin sesión; con sesión
+  y datos; viajes vacíos; encomiendas vacías) alternando `HAY_SESION_MOCK` y
+  los `?vacio=`; confirmado por DOM que el menú móvil no muestra "Mi
+  Perfil"/"Cerrar Sesión" sin sesión. Sin errores/advertencias nuevas en
+  consola. `npx tsc --noEmit`, `npx eslint .` y `npm run build` pasan.
+  `HAY_SESION_MOCK` quedó en `true` al terminar (mismo criterio que otras
+  tareas: mostrar la funcionalidad terminada en el preview).
+
+**Abierto**
+- Igual que en la tarea de la línea de tiempo, no se confirmó el layout a
+  360px con una captura real (limitación de la herramienta de
+  redimensionar ventana en esta sesión); el perfil reutiliza las mismas
+  clases responsive ya probadas en `/mis-viajes` y el home.
+
+---
+
 ## 13/09/2026 (madrugada)
 
 **Hecho**

@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
+import { HAY_SESION_MOCK } from "@/lib/mock/sesion";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 
 const FOCUSABLE_SELECTOR =
@@ -19,9 +20,13 @@ function getFocusableElements(container: HTMLElement) {
   );
 }
 
+// "Mi perfil" reemplaza a "Mis Viajes"/"Mis compras" como entrada de
+// navegación: el historial de viajes y de encomiendas ahora vive junto,
+// dentro del perfil (docs/prompts/02-perfil-usuario.md). Solo aparece con
+// sesión iniciada.
 const ENTRADAS_MENU = [
   { href: RUTAS.inicio, label: "Comprar Pasajes" },
-  { href: RUTAS.misViajes, label: "Mis Viajes" },
+  ...(HAY_SESION_MOCK ? [{ href: RUTAS.miPerfil, label: "Mi Perfil" }] : []),
   { href: RUTAS.enviarEncomienda, label: "Enviar Encomienda" },
   { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
   { href: RUTAS.nosotros, label: "Nosotros" },
@@ -154,12 +159,6 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
           Rastreo
         </Link>
         <Link
-          href={RUTAS.misViajes}
-          className="text-sm font-semibold text-text-primary hover:text-primary transition"
-        >
-          Mis compras
-        </Link>
-        <Link
           href={RUTAS.nosotros}
           className="text-sm font-semibold text-text-primary hover:text-primary transition"
         >
@@ -172,19 +171,35 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
 
       {/* 4. ACCIONES DE ESCRITORIO A LA DERECHA */}
       <div className="hidden md:flex items-center gap-6 ml-auto">
-        <Button variant="principal" className="h-10 px-6 min-h-0 text-sm">
-          Ingresar
-        </Button>
+        {HAY_SESION_MOCK ? (
+          <Link
+            href={RUTAS.miPerfil}
+            className="flex h-10 items-center gap-2 rounded-pill px-4 text-sm font-semibold text-text-primary transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+          >
+            <UserIcon />
+            Mi perfil
+          </Link>
+        ) : (
+          <Button variant="principal" className="h-10 px-6 min-h-0 text-sm">
+            Ingresar
+          </Button>
+        )}
       </div>
 
       {/* 5. ÍCONO USUARIO (MÓVIL) - Oculto en escritorio con 'md:hidden' */}
-      <Link
-        href={RUTAS.misViajes}
-        aria-label="Mi cuenta"
-        className="flex size-11 items-center justify-center rounded-md transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary md:hidden ml-auto"
-      >
-        <UserIcon />
-      </Link>
+      {HAY_SESION_MOCK ? (
+        <Link
+          href={RUTAS.miPerfil}
+          aria-label="Mi perfil"
+          className="flex size-11 items-center justify-center rounded-md transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary md:hidden ml-auto"
+        >
+          <UserIcon />
+        </Link>
+      ) : (
+        <Button variant="principal" className="h-9 px-4 min-h-0 text-xs md:hidden ml-auto">
+          Ingresar
+        </Button>
+      )}
 
       {/* === MENÚ MÓVIL A PANTALLA COMPLETA (PORTAL) === */}
       {open &&
@@ -237,25 +252,29 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
                 quedaba pegado al borde inferior de la pantalla y la barra
                 de gestos/navegador de Android lo tapaba. safe-area-inset
                 cubre además los equipos con home indicator.
+
+                Solo con sesión iniciada: sin sesión no hay nada que cerrar.
               */}
-              <div
-                className="mt-auto border-t border-white/10 pt-4 pb-8"
-                style={{
-                  paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleCerrarSesion}
-                  className={cn(
-                    "flex min-h-11 w-full items-center rounded-field px-3 text-left text-lg font-medium transition",
-                    "text-warning-fill hover:bg-white/10",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                  )}
+              {HAY_SESION_MOCK && (
+                <div
+                  className="mt-auto border-t border-white/10 pt-4 pb-8"
+                  style={{
+                    paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+                  }}
                 >
-                  Cerrar Sesión
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={handleCerrarSesion}
+                    className={cn(
+                      "flex min-h-11 w-full items-center rounded-field px-3 text-left text-lg font-medium transition",
+                      "text-warning-fill hover:bg-white/10",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                    )}
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
             </nav>
           </div>,
           document.body,

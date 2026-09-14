@@ -39,3 +39,13 @@ export function formatFechaLarga(date: Date): string {
 export function formatFechaCorta(date: Date): string {
   return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
+
+/**
+ * Enmascara un documento de identidad dejando visibles solo los últimos 2
+ * dígitos (ej. "74812213" -> "******13"). Ley 29733: el DNI no se muestra
+ * completo en pantalla.
+ */
+export function maskDocumento(numero: string): string {
+  const visibles = 2;
+  return "*".repeat(Math.max(numero.length - visibles, 0)) + numero.slice(-visibles);
+}

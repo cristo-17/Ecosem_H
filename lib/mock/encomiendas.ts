@@ -161,9 +161,65 @@ export const ENCOMIENDAS_MOCK: Encomienda[] = [
       },
     ],
   },
+  // Envíos del usuario de la sesión simulada (lib/mock/sesion.ts), para la
+  // pestaña "Mis encomiendas" de /mi-perfil.
+  {
+    guia: "ECH-000654",
+    origen: "Lima",
+    destino: "Huancayo",
+    remitente: "Carlos Mendoza Ruiz",
+    destinatario: "María Mendoza Ruiz",
+    pesoFacturableKg: 4.2,
+    estadoActual: "pendiente",
+    etapaActual: "registrada",
+    eventos: [
+      {
+        estado: "registrada",
+        fecha: new Date(2026, 8, 1, 10, 15),
+        terminal: "Terminal Lima Norte",
+      },
+    ],
+  },
+  {
+    guia: "ECH-000987",
+    origen: "Lima",
+    destino: "Cerro de Pasco",
+    remitente: "Carlos Mendoza Ruiz",
+    destinatario: "Óscar Mendoza Ruiz",
+    pesoFacturableKg: 12,
+    estadoActual: "completado",
+    etapaActual: "despachada",
+    eventos: [
+      {
+        estado: "registrada",
+        fecha: new Date(2026, 7, 20, 9, 0),
+        terminal: "Terminal Lima Norte",
+      },
+      {
+        estado: "alistando",
+        fecha: new Date(2026, 7, 20, 9, 40),
+        terminal: "Terminal Lima Norte",
+      },
+      {
+        estado: "en-camino",
+        fecha: new Date(2026, 7, 20, 13, 0),
+        terminal: "Terminal Lima Norte",
+      },
+      {
+        estado: "despachada",
+        fecha: new Date(2026, 7, 20, 19, 30),
+        terminal: "Terminal Cerro de Pasco",
+      },
+    ],
+  },
 ];
 
 export function buscarEncomiendaPorGuia(guia: string): Encomienda | null {
   const normalizada = guia.trim().toUpperCase();
   return ENCOMIENDAS_MOCK.find((encomienda) => encomienda.guia === normalizada) ?? null;
+}
+
+/** Envíos hechos por el usuario de la sesión simulada, para "Mis encomiendas". */
+export function buscarMisEncomiendas(remitente: string): Encomienda[] {
+  return ENCOMIENDAS_MOCK.filter((encomienda) => encomienda.remitente === remitente);
 }
