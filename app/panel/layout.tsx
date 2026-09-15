@@ -67,6 +67,31 @@ export default async function PanelLayout({ children }: { children: ReactNode })
                 Precios
               </Link>
             )}
+            {/* Flota, Conductores y Alertas: mismo filtro solo-supervisor que Precios (docs/prompts/12-alertas-flota.md). */}
+            {esSupervisor(ROL_MOCK) && (
+              <Link
+                href={RUTAS.panelFlota}
+                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Flota
+              </Link>
+            )}
+            {esSupervisor(ROL_MOCK) && (
+              <Link
+                href={RUTAS.panelConductores}
+                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Conductores
+              </Link>
+            )}
+            {esSupervisor(ROL_MOCK) && (
+              <Link
+                href={RUTAS.panelAlertas}
+                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Alertas
+              </Link>
+            )}
           </nav>
         </div>
       </header>
