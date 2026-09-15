@@ -17,4 +17,7 @@ export const RUTAS = {
   compraDatos: "/pasajes/comprar/datos",
   compraPago: "/pasajes/comprar/pago",
   compraConfirmacion: "/pasajes/comprar/confirmacion",
+  panel: "/panel",
+  panelVenta: "/panel/venta",
+  panelCaja: "/panel/caja",
 } as const;
