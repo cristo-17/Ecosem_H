@@ -22,8 +22,9 @@ export const USUARIO_MOCK: UsuarioSesion = {
 };
 
 /**
- * Rol simulado (docs/prompts/08-panel-counter.md): el panel de counter es
- * para personal, no para pasajeros. Como la autenticación real todavía no
+ * Rol simulado (docs/prompts/08-panel-counter.md, reutilizado por
+ * 09-manifiesto-sutran.md): el panel de counter y el manifiesto son para
+ * personal, no para pasajeros. Como la autenticación real todavía no
  * existe, el rol es otra constante que se cambia acá a mano — igual que
  * HAY_SESION_MOCK — para poder probar /panel con cada rol. La verificación
  * real de acceso va a vivir server-side con RLS cuando exista backend; esto
