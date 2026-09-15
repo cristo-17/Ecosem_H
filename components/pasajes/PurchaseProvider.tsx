@@ -14,6 +14,14 @@ export interface DatosPasajero {
   nombres: string;
   correo: string;
   celular: string;
+  /**
+   * Opcional (docs/prompts/13-tarifario-encomiendas.md: "si el flujo de
+   * compra lo permite, agregar la declaración de equipaje"). Solo informa
+   * qué escalón de exceso aplicaría (lib/mock/tarifario.ts); no se suma al
+   * total del pasaje porque el monto de cada escalón todavía no está
+   * definido por comercial.
+   */
+  equipajeKg: string;
 }
 
 export interface DatosComprobante {

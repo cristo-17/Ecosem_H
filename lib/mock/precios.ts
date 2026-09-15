@@ -9,9 +9,13 @@
  * Los valores semilla (tarifa base, topes, factores) son placeholder: según
  * `docs/INFORME-AVANCE.md`, "factores del motor de precios" está listado
  * explícitamente como una definición pendiente del cliente — mismo
- * criterio que `RANGOS_TARIFA_ENCOMIENDA` en lib/mock/encomiendas.ts. Todo
- * lo de acá es editable desde /panel/precios; nada queda hardcodeado en un
- * componente (restricción explícita del prompt).
+ * hallazgo que "tarifario de equipaje y encomiendas". Ese otro módulo
+ * (`lib/mock/tarifario.ts`, docs/prompts/13-tarifario-encomiendas.md) deja
+ * los montos vacíos en vez de un número placeholder como el de acá: ese
+ * prompt fue explícito en "no rellenar con cifras inventadas", una
+ * restricción más estricta que la de este. Todo lo de acá es editable
+ * desde /panel/precios; nada queda hardcodeado en un componente
+ * (restricción explícita del prompt).
  */
 import type { Ciudad } from "@/lib/mock/viajes";
 

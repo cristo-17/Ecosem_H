@@ -2,6 +2,8 @@ import { Select, type SelectOption } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import type { DatosPasajero, TipoDocumento } from "@/components/pasajes/PurchaseProvider";
+import { calcularEscalonEquipaje } from "@/lib/mock/tarifario";
+import { formatPrecio } from "@/lib/format";
 
 export const OPCIONES_TIPO_DOCUMENTO: SelectOption[] = [
   { value: "dni", label: "DNI" },
@@ -26,10 +28,32 @@ export interface PassengerFormProps {
   onChange: (valor: DatosPasajero) => void;
 }
 
+function mensajeEquipaje(kilos: number): { texto: string; esAdvertencia: boolean } {
+  const resultado = calcularEscalonEquipaje(kilos);
+  if (resultado.tipo === "incluido") {
+    return { texto: "Dentro de la franquicia de 20 kg, sin recargo.", esAdvertencia: false };
+  }
+  if (resultado.tipo === "encomienda") {
+    return { texto: "Más de 50 kg: se tarifica como encomienda, no como exceso de equipaje.", esAdvertencia: true };
+  }
+  const { escalon } = resultado;
+  return {
+    texto:
+      escalon.recargo !== null
+        ? `Escalón ${escalon.etiqueta}: recargo de ${formatPrecio(escalon.recargo)}.`
+        : `Escalón ${escalon.etiqueta}: recargo pendiente de aprobación comercial.`,
+    esAdvertencia: true,
+  };
+}
+
 export function PassengerForm({ indice, asientoId, valor, errores, onChange }: PassengerFormProps) {
   function actualizar<K extends keyof DatosPasajero>(campo: K, siguiente: DatosPasajero[K]) {
     onChange({ ...valor, [campo]: siguiente });
   }
+
+  const kilosEquipaje = Number(valor.equipajeKg);
+  const equipajeValido = valor.equipajeKg.trim() !== "" && Number.isFinite(kilosEquipaje) && kilosEquipaje > 0;
+  const infoEquipaje = equipajeValido ? mensajeEquipaje(kilosEquipaje) : null;
 
   return (
     <Card className="flex flex-col gap-4">
@@ -81,6 +105,21 @@ export function PassengerForm({ indice, asientoId, valor, errores, onChange }: P
           helperText="Debe contener exactamente 9 dígitos"
           errorText={errores?.celular}
         />
+      </div>
+
+      <div>
+        <Input
+          label="Equipaje declarado (kg)"
+          inputMode="decimal"
+          value={valor.equipajeKg}
+          onChange={(evento) => actualizar("equipajeKg", evento.target.value)}
+          helperText="Opcional. Franquicia de 20 kg incluida; más de eso paga un recargo por escalón."
+        />
+        {infoEquipaje && (
+          <p className={`mt-1 text-sm ${infoEquipaje.esAdvertencia ? "text-warning-text" : "text-navy/60"}`}>
+            {infoEquipaje.texto}
+          </p>
+        )}
       </div>
     </Card>
   );

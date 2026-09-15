@@ -40,6 +40,7 @@ const PASAJERO_VACIO: DatosPasajero = {
   nombres: "",
   correo: "",
   celular: "",
+  equipajeKg: "",
 };
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -1,7 +1,10 @@
 /**
- * Datos y reglas falsas del servicio de encomiendas. Los montos por rango
- * son un placeholder: comercial todavía no define la tarifa real, así que
- * quedan como constantes fáciles de editar acá cuando se definan.
+ * Datos y reglas falsas de rastreo del servicio de encomiendas. El
+ * tarifario (rangos de peso, montos, recargos) se movió a
+ * `lib/mock/tarifario.ts` (docs/prompts/13-tarifario-encomiendas.md): ese
+ * módulo es explícitamente sobre precios pendientes de definición
+ * comercial, y este archivo es sobre el seguimiento de un envío ya
+ * registrado — dos dominios que no tenían por qué compartir archivo.
  */
 import type { BadgeStatus } from "@/components/ui/Badge";
 import type {
@@ -9,38 +12,6 @@ import type {
   EventoEncomienda,
 } from "@/components/ui/EncomiendaTimeline";
 import type { Ciudad } from "@/lib/mock/viajes";
-
-export interface RangoTarifa {
-  /** Límite superior del rango en kg (inclusive). */
-  hastaKg: number;
-  precio: number;
-}
-
-export const RANGOS_TARIFA_ENCOMIENDA: RangoTarifa[] = [
-  { hastaKg: 5, precio: 15 },
-  { hastaKg: 10, precio: 25 },
-  { hastaKg: 20, precio: 40 },
-  { hastaKg: 30, precio: 55 },
-  { hastaKg: 50, precio: 80 },
-  { hastaKg: Infinity, precio: 120 },
-];
-
-const DIVISOR_PESO_VOLUMETRICO = 5000;
-
-/** (largo × ancho × alto en cm) ÷ 5000: fórmula estándar de peso volumétrico. */
-export function calcularPesoVolumetrico(largoCm: number, anchoCm: number, altoCm: number): number {
-  return (largoCm * anchoCm * altoCm) / DIVISOR_PESO_VOLUMETRICO;
-}
-
-/** Se cobra el mayor entre peso real y peso volumétrico. */
-export function calcularPesoFacturable(pesoRealKg: number, pesoVolumetricoKg: number): number {
-  return Math.max(pesoRealKg, pesoVolumetricoKg);
-}
-
-export function calcularTarifa(pesoFacturableKg: number): number {
-  const rango = RANGOS_TARIFA_ENCOMIENDA.find((r) => pesoFacturableKg <= r.hastaKg);
-  return (rango ?? RANGOS_TARIFA_ENCOMIENDA[RANGOS_TARIFA_ENCOMIENDA.length - 1]).precio;
-}
 
 // --- Rastreo ---
 // `estadoActual` usa el mismo vocabulario de Badge que pasajes (incluye
