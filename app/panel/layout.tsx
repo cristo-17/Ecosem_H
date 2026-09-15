@@ -5,13 +5,17 @@ import { HAY_SESION_MOCK, ROL_MOCK, esPersonal } from "@/lib/mock/sesion";
 import { RUTAS } from "@/lib/routes";
 
 /**
- * Panel interno (docs/prompts/08-panel-counter.md): es para personal
- * (counter/supervisor), no para pasajeros. Esta comprobación es de
- * interfaz nomás — usa las mismas constantes mock que el resto del sitio
- * (HAY_SESION_MOCK, ROL_MOCK), sin backend detrás todavía. Cuando exista
- * Supabase Auth, la barrera real va a ser Row Level Security del lado del
- * servidor; este `if` solo evita mostrarle el panel a quien no es personal,
- * no reemplaza esa verificación.
+ * Panel interno: por ahora solo `/panel/viajes` (manifiesto —
+ * docs/prompts/09-manifiesto-sutran.md). Esta rama viene de `main` y no
+ * incluye todavía `feature/08-panel-counter` (ya en `origin`, sin
+ * mergear), así que el layout del panel se rehace acá con el mismo mock
+ * de rol de esa rama en vez de asumir que existe: cuando se mergeen ambas,
+ * este archivo va a chocar con el de esa rama y hay que quedarse con uno
+ * solo (mismo contenido, ver docs/DECISIONES.md).
+ *
+ * La comprobación de acceso es de interfaz nomás — corre en un Server
+ * Component antes de renderizar nada, pero sin backend real detrás. La
+ * verificación real de acceso al panel va a vivir server-side con RLS.
  */
 export default function PanelLayout({ children }: { children: ReactNode }) {
   if (!HAY_SESION_MOCK || !esPersonal(ROL_MOCK)) {
@@ -32,6 +36,12 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
               className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Inicio
+            </Link>
+             <Link
+              href={RUTAS.panelViajes}
+              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Viajes
             </Link>
             <Link
               href={RUTAS.panelVenta}

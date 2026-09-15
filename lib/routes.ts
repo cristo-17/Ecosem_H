@@ -21,6 +21,12 @@ export const RUTAS = {
   compraPago: "/pasajes/comprar/pago",
   compraConfirmacion: "/pasajes/comprar/confirmacion",
   panel: "/panel",
+  panelViajes: "/panel/viajes",
   panelVenta: "/panel/venta",
   panelCaja: "/panel/caja",
 } as const;
+
+/** Detalle de un viaje del día en el panel — ruta dinámica, no una entrada fija de RUTAS. */
+export function rutaPanelViaje(id: string): string {
+  return `${RUTAS.panelViajes}/${id}`;
+}
