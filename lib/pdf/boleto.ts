@@ -1,17 +1,23 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import type { PDFFont, PDFPage, RGB } from "pdf-lib";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import QRCode from "qrcode";
 import { descargarArchivo } from "@/lib/descargarArchivo";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
-
-/**
- * pdf-lib no trae IBM Plex Sans: sus 14 fuentes estándar son Helvetica,
- * Times, Courier (+ negrita/cursiva). Incrustar una fuente TTF propia pide
- * @pdf-lib/fontkit más el archivo de la fuente — de más para un boleto de
- * texto, así que se usa Helvetica (alternativa sans legible) tal como
- * autoriza el prompt 03. Anotado también en docs/DECISIONES.md.
- */
-const NOTA_FUENTE = "Helvetica (IBM Plex Sans no disponible en el generador de PDF)";
+import {
+  ANCHO_A4,
+  ALTO_A4,
+  COLOR_BORDER,
+  COLOR_PRIMARY,
+  COLOR_TEXT_SECONDARY,
+  COLOR_WHITE,
+  NOTA_FUENTE,
+  cargarImagen,
+  dibujarEncabezadoSeccion,
+  dibujarLineaDivisoria,
+  dibujarTexto,
+  dibujarTextoCentrado,
+  dibujarTextoDerecha,
+  type Contexto,
+} from "@/lib/pdf/comun";
 
 export interface PasajeroBoletoPdf {
   nombre: string;
@@ -43,107 +49,8 @@ export function generarContenidoQr(codigo: string): string {
   return `ECOSEMH:BOLETO:${codigo}`;
 }
 
-const COLOR_NAVY: RGB = rgb(16 / 255, 35 / 255, 63 / 255);
-const COLOR_PRIMARY: RGB = rgb(200 / 255, 16 / 255, 46 / 255);
-const COLOR_TEXT_SECONDARY: RGB = rgb(90 / 255, 102 / 255, 114 / 255);
-const COLOR_BORDER: RGB = rgb(220 / 255, 224 / 255, 230 / 255);
-const COLOR_WHITE: RGB = rgb(1, 1, 1);
-
-const ANCHO_A4 = 595.28;
-const ALTO_A4 = 841.89;
 const MARGEN = 50;
 const ANCHO_CONTENIDO = ANCHO_A4 - MARGEN * 2;
-
-interface Contexto {
-  page: PDFPage;
-  regular: PDFFont;
-  bold: PDFFont;
-  /** Posición vertical actual (desde abajo). Baja a medida que se dibuja. */
-  y: number;
-}
-
-function dibujarTexto(
-  ctx: Contexto,
-  texto: string,
-  opciones: { x?: number; tamano?: number; negrita?: boolean; color?: RGB } = {},
-): void {
-  const { x = MARGEN, tamano = 10, negrita = false, color = COLOR_NAVY } = opciones;
-  ctx.page.drawText(texto, {
-    x,
-    y: ctx.y,
-    size: tamano,
-    font: negrita ? ctx.bold : ctx.regular,
-    color,
-  });
-}
-
-function anchoTexto(font: PDFFont, texto: string, tamano: number): number {
-  return font.widthOfTextAtSize(texto, tamano);
-}
-
-function dibujarTextoCentrado(
-  ctx: Contexto,
-  texto: string,
-  opciones: { tamano?: number; negrita?: boolean; color?: RGB; espaciado?: number } = {},
-): void {
-  const { tamano = 10, negrita = false, color = COLOR_NAVY, espaciado = 0 } = opciones;
-  const font = negrita ? ctx.bold : ctx.regular;
-
-  if (espaciado === 0) {
-    const x = MARGEN + (ANCHO_CONTENIDO - anchoTexto(font, texto, tamano)) / 2;
-    ctx.page.drawText(texto, { x, y: ctx.y, size: tamano, font, color });
-    return;
-  }
-
-  // pdf-lib no expone letter-spacing en drawText ni aplica kerning entre
-  // pares (cada carácter se coloca por su ancho de avance nomás): en
-  // "ECH-4B7C12" a 26pt eso hace que el dígito después del guion se vea
-  // pegado. Se dibuja carácter por carácter con un espaciado uniforme —no
-  // solo alrededor del guion— para que no se rompa con otro código que no
-  // tenga un dígito justo ahí.
-  const caracteres = [...texto];
-  const anchoTotal =
-    caracteres.reduce((suma, caracter) => suma + anchoTexto(font, caracter, tamano), 0) +
-    espaciado * (caracteres.length - 1);
-  let x = MARGEN + (ANCHO_CONTENIDO - anchoTotal) / 2;
-  for (const caracter of caracteres) {
-    ctx.page.drawText(caracter, { x, y: ctx.y, size: tamano, font, color });
-    x += anchoTexto(font, caracter, tamano) + espaciado;
-  }
-}
-
-function dibujarTextoDerecha(
-  ctx: Contexto,
-  texto: string,
-  opciones: { tamano?: number; negrita?: boolean; color?: RGB } = {},
-): void {
-  const { tamano = 10, negrita = false, color = COLOR_NAVY } = opciones;
-  const font = negrita ? ctx.bold : ctx.regular;
-  const x = MARGEN + ANCHO_CONTENIDO - anchoTexto(font, texto, tamano);
-  ctx.page.drawText(texto, { x, y: ctx.y, size: tamano, font, color });
-}
-
-function dibujarLineaDivisoria(ctx: Contexto): void {
-  ctx.page.drawLine({
-    start: { x: MARGEN, y: ctx.y },
-    end: { x: MARGEN + ANCHO_CONTENIDO, y: ctx.y },
-    thickness: 0.75,
-    color: COLOR_BORDER,
-  });
-}
-
-function dibujarEncabezadoSeccion(ctx: Contexto, titulo: string): void {
-  dibujarTexto(ctx, titulo.toUpperCase(), { tamano: 9, negrita: true, color: COLOR_TEXT_SECONDARY });
-  ctx.y -= 14;
-  dibujarLineaDivisoria(ctx);
-  ctx.y -= 16;
-}
-
-async function cargarImagen(pdfDoc: PDFDocument, ruta: string) {
-  const respuesta = await fetch(ruta);
-  const bytes = await respuesta.arrayBuffer();
-  return pdfDoc.embedPng(bytes);
-}
 
 /** Construye el PDF de una página del boleto. No dispara la descarga. */
 export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array> {
@@ -160,7 +67,14 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
     cargarImagen(pdfDoc, "/ecosemh-wordmark.png"),
   ]);
 
-  const ctx: Contexto = { page, regular, bold, y: ALTO_A4 - MARGEN - 20 };
+  const ctx: Contexto = {
+    page,
+    regular,
+    bold,
+    y: ALTO_A4 - MARGEN - 20,
+    margen: MARGEN,
+    anchoContenido: ANCHO_CONTENIDO,
+  };
 
   // --- Cabecera: logotipo + razón social/RUC ---
   const altoMarca = 26;
