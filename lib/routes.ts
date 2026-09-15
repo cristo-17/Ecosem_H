@@ -14,6 +14,8 @@ export const RUTAS = {
   enviarEncomienda: "/encomiendas/enviar",
   rastrearEncomienda: "/encomiendas/rastrear",
   ayuda: "/ayuda",
+  terminos: "/terminos",
+  privacidad: "/privacidad",
   libroReclamaciones: "/libro-de-reclamaciones",
   resultadosPasajes: "/pasajes/resultados",
   compraAsientos: "/pasajes/comprar/asientos",
