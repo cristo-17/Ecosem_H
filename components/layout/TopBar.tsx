@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
-import { HAY_SESION_MOCK } from "@/lib/mock/sesion";
+import { cerrarSesion } from "@/lib/auth/acciones";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 
 const FOCUSABLE_SELECTOR =
@@ -24,34 +25,30 @@ function getFocusableElements(container: HTMLElement) {
 // navegación: el historial de viajes y de encomiendas ahora vive junto,
 // dentro del perfil (docs/prompts/02-perfil-usuario.md). Solo aparece con
 // sesión iniciada.
-const ENTRADAS_MENU = [
-  { href: RUTAS.inicio, label: "Comprar Pasajes" },
-  ...(HAY_SESION_MOCK ? [{ href: RUTAS.miPerfil, label: "Mi Perfil" }] : []),
-  { href: RUTAS.enviarEncomienda, label: "Enviar Encomienda" },
-  { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
-  { href: RUTAS.nosotros, label: "Nosotros" },
-  { href: RUTAS.ayuda, label: "Ayuda" },
-];
-
-export interface TopBarProps {
-  /**
-   * Se llama al confirmar "Cerrar Sesión". Sin backend de auth todavía, el
-   * caller decide qué hacer (redirigir, limpiar sesión, etc.).
-   */
-  onCerrarSesion?: () => void;
+function entradasMenu(haySesion: boolean) {
+  return [
+    { href: RUTAS.inicio, label: "Comprar Pasajes" },
+    ...(haySesion ? [{ href: RUTAS.miPerfil, label: "Mi Perfil" }] : []),
+    { href: RUTAS.enviarEncomienda, label: "Enviar Encomienda" },
+    { href: RUTAS.rastrearEncomienda, label: "Rastrear Encomienda" },
+    { href: RUTAS.nosotros, label: "Nosotros" },
+    { href: RUTAS.ayuda, label: "Ayuda" },
+  ];
 }
 
-export function TopBar({ onCerrarSesion }: TopBarProps) {
+export interface TopBarProps {
+  /** Viene de la cookie de sesión (lib/auth/sesion.ts), leída en app/layout.tsx. */
+  haySesion: boolean;
+}
+
+export function TopBar({ haySesion }: TopBarProps) {
+  const router = useRouter();
   const openRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const mounted = useIsMounted();
 
   const [open, setOpenState] = useState(false);
-
-  const onCerrarSesionRef = useRef(onCerrarSesion);
-  useEffect(() => {
-    onCerrarSesionRef.current = onCerrarSesion;
-  });
+  const entradas = entradasMenu(haySesion);
 
   useEffect(() => {
     if (!open) return;
@@ -94,9 +91,10 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
     setOpenState(false);
   }
 
-  function handleCerrarSesion() {
+  async function handleCerrarSesion() {
     closeMenu();
-    onCerrarSesionRef.current?.();
+    await cerrarSesion();
+    router.push(RUTAS.inicio);
   }
 
   return (
@@ -171,7 +169,7 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
 
       {/* 4. ACCIONES DE ESCRITORIO A LA DERECHA */}
       <div className="hidden md:flex items-center gap-6 ml-auto">
-        {HAY_SESION_MOCK ? (
+        {haySesion ? (
           <Link
             href={RUTAS.miPerfil}
             className="flex h-10 items-center gap-2 rounded-pill px-4 text-sm font-semibold text-text-primary transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -180,14 +178,18 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
             Mi perfil
           </Link>
         ) : (
-          <Button variant="principal" className="h-10 px-6 min-h-0 text-sm">
+          <Button
+            variant="principal"
+            className="h-10 px-6 min-h-0 text-sm"
+            onClick={() => router.push(RUTAS.ingresar)}
+          >
             Ingresar
           </Button>
         )}
       </div>
 
       {/* 5. ÍCONO USUARIO (MÓVIL) - Oculto en escritorio con 'md:hidden' */}
-      {HAY_SESION_MOCK ? (
+      {haySesion ? (
         <Link
           href={RUTAS.miPerfil}
           aria-label="Mi perfil"
@@ -196,7 +198,11 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
           <UserIcon />
         </Link>
       ) : (
-        <Button variant="principal" className="h-9 px-4 min-h-0 text-xs md:hidden ml-auto">
+        <Button
+          variant="principal"
+          className="h-9 px-4 min-h-0 text-xs md:hidden ml-auto"
+          onClick={() => router.push(RUTAS.ingresar)}
+        >
           Ingresar
         </Button>
       )}
@@ -228,7 +234,7 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
               className="mt-4 flex flex-1 flex-col"
             >
               <ul className="flex flex-col gap-1">
-                {ENTRADAS_MENU.map((entrada) => (
+                {entradas.map((entrada) => (
                   <li key={entrada.href}>
                     <Link
                       href={entrada.href}
@@ -255,7 +261,7 @@ export function TopBar({ onCerrarSesion }: TopBarProps) {
 
                 Solo con sesión iniciada: sin sesión no hay nada que cerrar.
               */}
-              {HAY_SESION_MOCK && (
+              {haySesion && (
                 <div
                   className="mt-auto border-t border-white/10 pt-4 pb-8"
                   style={{

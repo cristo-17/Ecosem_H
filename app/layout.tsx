@@ -4,6 +4,7 @@ import Script from "next/script";
 import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { ToastProvider } from "@/components/ui/Toast";
+import { haySesionActiva } from "@/lib/auth/sesion";
 import "./globals.css";
 
 // latin-ext asegura tildes y ñ. IBM Plex Sans no es variable font en Google
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
   description: "Pasajes y encomiendas — Lima, Cerro de Pasco, Huancayo",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const conSesion = await haySesionActiva();
+
   return (
     <html lang="es" className={`${ibmPlexSans.variable} antialiased`}>
       <head>
@@ -60,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ToastProvider>
-          <TopBar />
+          <TopBar haySesion={conSesion} />
           <div className="flex-1">{children}</div>
           <Footer />
         </ToastProvider>

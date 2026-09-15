@@ -28,14 +28,32 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-white/60">Panel interno · Personal</p>
-            <h1 className="text-lg font-semibold text-white">Ecosem H · Personal</h1>
+            <h1 className="text-lg font-semibold text-white">Ecosem H · Counter</h1>
           </div>
           <nav aria-label="Secciones del panel" className="flex flex-wrap gap-1">
             <Link
+              href={RUTAS.panel}
+              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Inicio
+            </Link>
+             <Link
               href={RUTAS.panelViajes}
               className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Viajes
+            </Link>
+            <Link
+              href={RUTAS.panelVenta}
+              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Venta
+            </Link>
+            <Link
+              href={RUTAS.panelCaja}
+              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Caja
             </Link>
           </nav>
         </div>

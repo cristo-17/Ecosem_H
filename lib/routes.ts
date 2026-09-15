@@ -8,6 +8,9 @@ export const RUTAS = {
   nosotros: "/nosotros",
   misViajes: "/mis-viajes",
   miPerfil: "/mi-perfil",
+  ingresar: "/ingresar",
+  registro: "/registro",
+  recuperarClave: "/recuperar-clave",
   enviarEncomienda: "/encomiendas/enviar",
   rastrearEncomienda: "/encomiendas/rastrear",
   ayuda: "/ayuda",
@@ -19,6 +22,8 @@ export const RUTAS = {
   compraConfirmacion: "/pasajes/comprar/confirmacion",
   panel: "/panel",
   panelViajes: "/panel/viajes",
+  panelVenta: "/panel/venta",
+  panelCaja: "/panel/caja",
 } as const;
 
 /** Detalle de un viaje del día en el panel — ruta dinámica, no una entrada fija de RUTAS. */
