@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { TicketIcon, ClockIcon } from "@/components/ui/icons";
+import { TicketIcon, ClockIcon, CreditCardIcon } from "@/components/ui/icons";
+import { ROL_MOCK, esSupervisor } from "@/lib/mock/sesion";
 import { RUTAS } from "@/lib/routes";
 
 export default function PanelIndexPage() {
@@ -59,6 +60,27 @@ export default function PanelIndexPage() {
           <span className="mt-auto text-sm font-semibold text-secondary">Ir a Caja →</span>
         </Card>
       </Link>
+
+      {esSupervisor(ROL_MOCK) && (
+        <Link
+          href={RUTAS.panelPrecios}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <CreditCardIcon />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Motor de precios</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Tarifas por ruta, factores de ocupación/anticipación/temporada y simulador. Solo
+                supervisor.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-secondary">Ir a Precios →</span>
+          </Card>
+        </Link>
+      )}
     </div>
   );
 }

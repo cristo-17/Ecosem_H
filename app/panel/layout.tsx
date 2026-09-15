@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ROL_MOCK, esPersonal } from "@/lib/mock/sesion";
+import { ROL_MOCK, esPersonal, esSupervisor } from "@/lib/mock/sesion";
 import { haySesionActiva } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
@@ -56,6 +56,17 @@ export default async function PanelLayout({ children }: { children: ReactNode })
             >
               Caja
             </Link>
+            {/* Solo supervisor: el layout de /panel/precios repite este
+                mismo chequeo por si alguien llega por URL directa, pero acá
+                además evita mostrarle el enlace a quien no puede entrar. */}
+            {esSupervisor(ROL_MOCK) && (
+              <Link
+                href={RUTAS.panelPrecios}
+                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Precios
+              </Link>
+            )}
           </nav>
         </div>
       </header>
