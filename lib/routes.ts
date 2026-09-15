@@ -28,6 +28,7 @@ export const RUTAS = {
   panelFlota: "/panel/flota",
   panelConductores: "/panel/conductores",
   panelAlertas: "/panel/alertas",
+  panelTarifario: "/panel/tarifario",
   embarque: "/embarque",
 } as const;
 
