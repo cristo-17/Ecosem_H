@@ -688,3 +688,44 @@ export function WhatsappIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function WifiIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("pointer-events-none size-5", className)}
+    >
+      <path
+        d="M4 8.5a13 13 0 0 1 16 0M7 12.2a8.5 8.5 0 0 1 10 0M10.2 15.8a4 4 0 0 1 3.6 0"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function WifiOffIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("pointer-events-none size-5", className)}
+    >
+      <path
+        d="M4 8.5a13 13 0 0 1 6.2-3.3M20 8.5a12.9 12.9 0 0 0-4.2-2.6M7 12.2a8.5 8.5 0 0 1 3.4-1.9M17 12.2a8.5 8.5 0 0 0-2-1.5M10.2 15.8a4 4 0 0 1 3.6 0"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
-import { TopBar } from "@/components/layout/TopBar";
-import { Footer } from "@/components/layout/Footer";
+import { ShellPublico } from "@/components/layout/ShellPublico";
 import { ToastProvider } from "@/components/ui/Toast";
 import { haySesionActiva } from "@/lib/auth/sesion";
 import "./globals.css";
@@ -63,9 +62,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ToastProvider>
-          <TopBar haySesion={conSesion} />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <ShellPublico haySesion={conSesion}>{children}</ShellPublico>
         </ToastProvider>
       </body>
     </html>
