@@ -1,0 +1,20 @@
+{
+  "name": "Ecosem H — Embarque",
+  "short_name": "Embarque",
+  "description": "Validación de embarque con lectura de QR, sin conexión.",
+  "start_url": "/embarque",
+  "scope": "/embarque",
+  "id": "/embarque",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F8FA",
+  "theme_color": "#10233F",
+  "lang": "es-PE",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "793x695",
+      "type": "image/png"
+    }
+  ]
+}

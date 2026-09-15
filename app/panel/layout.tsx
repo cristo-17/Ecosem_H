@@ -1,24 +1,25 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { HAY_SESION_MOCK, ROL_MOCK, esPersonal } from "@/lib/mock/sesion";
+import { ROL_MOCK, esPersonal } from "@/lib/mock/sesion";
+import { haySesionActiva } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 /**
- * Panel interno: por ahora solo `/panel/viajes` (manifiesto —
- * docs/prompts/09-manifiesto-sutran.md). Esta rama viene de `main` y no
- * incluye todavía `feature/08-panel-counter` (ya en `origin`, sin
- * mergear), así que el layout del panel se rehace acá con el mismo mock
- * de rol de esa rama en vez de asumir que existe: cuando se mergeen ambas,
- * este archivo va a chocar con el de esa rama y hay que quedarse con uno
- * solo (mismo contenido, ver docs/DECISIONES.md).
+ * Panel interno: venta en counter, arqueo de caja y manifiesto SUTRAN
+ * (docs/prompts/08, 09). El merge de `feature/autenticacion` (sesión real
+ * vía cookie, `lib/auth/sesion.ts`) con `feature/panel-counter` y
+ * `feature/manifiesto-sutran` (que todavía chequeaban `HAY_SESION_MOCK`,
+ * eliminada por la primera) dejó este archivo sin compilar — corregido acá
+ * usando la sesión real + el rol, que sigue siendo mock (`ROL_MOCK` en
+ * lib/mock/sesion.ts) hasta que exista un rol real por usuario.
  *
  * La comprobación de acceso es de interfaz nomás — corre en un Server
- * Component antes de renderizar nada, pero sin backend real detrás. La
+ * Component antes de renderizar nada, pero sin RLS real detrás todavía. La
  * verificación real de acceso al panel va a vivir server-side con RLS.
  */
-export default function PanelLayout({ children }: { children: ReactNode }) {
-  if (!HAY_SESION_MOCK || !esPersonal(ROL_MOCK)) {
+export default async function PanelLayout({ children }: { children: ReactNode }) {
+  if (!(await haySesionActiva()) || !esPersonal(ROL_MOCK)) {
     redirect(RUTAS.inicio);
   }
 
