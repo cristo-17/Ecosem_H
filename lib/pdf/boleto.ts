@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import QRCode from "qrcode";
 import { descargarArchivo } from "@/lib/descargarArchivo";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
+import { firmarCodigo } from "@/lib/firma";
 import {
   ANCHO_A4,
   ALTO_A4,
@@ -41,12 +42,14 @@ export interface BoletoPdfData {
     | { tipo: "factura"; ruc: string; razonSocial: string };
 }
 
-// Aislado en su propia función (pedido explícito del prompt): así, cuando
-// exista backend y el QR deba llevar un identificador firmado (HMAC)
-// validable sin conexión por la app de embarque, el cambio queda contenido
-// acá — el layout del PDF no se toca.
-export function generarContenidoQr(codigo: string): string {
-  return `ECOSEMH:BOLETO:${codigo}`;
+// Aislado en su propia función (pedido explícito del prompt 03). El
+// contenido ahora sí lleva el identificador firmado que pide CLAUDE.md
+// (regla 4): "codigo|firma", firma = HMAC del código (lib/firma.ts, clave
+// mock — ver el pendiente crítico documentado ahí). La app de embarque
+// (docs/prompts/10-pwa-embarque.md) verifica esa firma localmente, sin red.
+export async function generarContenidoQr(codigo: string): Promise<string> {
+  const firma = await firmarCodigo(codigo);
+  return `${codigo}|${firma}`;
 }
 
 const MARGEN = 50;
@@ -166,7 +169,8 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
 
   // --- Código QR: mismo dato del código, en formato escaneable ---
   const tamanoQr = 130;
-  const dataUrlQr = await QRCode.toDataURL(generarContenidoQr(datos.codigo), {
+  const contenidoQr = await generarContenidoQr(datos.codigo);
+  const dataUrlQr = await QRCode.toDataURL(contenidoQr, {
     margin: 1,
     width: tamanoQr,
     color: { dark: "#10233F", light: "#FFFFFF" },
