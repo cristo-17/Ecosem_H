@@ -37,3 +37,13 @@ export const ROL_MOCK: RolUsuario = "counter";
 export function esPersonal(rol: RolUsuario): boolean {
   return rol !== "pasajero";
 }
+
+/**
+ * El motor de precios (docs/prompts/11-motor-precios.md) es solo para
+ * supervisor — un counter no debería poder cambiar tarifas. Es la primera
+ * pantalla del panel con un requisito de rol más estricto que "es
+ * personal"; hasta ahora alcanzaba con esPersonal().
+ */
+export function esSupervisor(rol: RolUsuario): boolean {
+  return rol === "supervisor";
+}
