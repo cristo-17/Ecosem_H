@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon } from "@/components/ui/icons";
+import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
 import { ROL_MOCK, esSupervisor } from "@/lib/mock/sesion";
 import { RUTAS } from "@/lib/routes";
 
@@ -138,6 +138,26 @@ export default function PanelIndexPage() {
               </p>
             </div>
             <span className="mt-auto text-sm font-semibold text-primary">Ir a Alertas →</span>
+          </Card>
+        </Link>
+      )}
+
+      {esSupervisor(ROL_MOCK) && (
+        <Link
+          href={RUTAS.panelTarifario}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <ScaleIcon />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Tarifario</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Rangos de encomiendas por ruta, exceso de equipaje y recargo por valor declarado.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-secondary">Ir a Tarifario →</span>
           </Card>
         </Link>
       )}

@@ -92,6 +92,15 @@ export default async function PanelLayout({ children }: { children: ReactNode })
                 Alertas
               </Link>
             )}
+            {/* Tarifario: mismo filtro solo-supervisor (docs/prompts/13-tarifario-encomiendas.md). */}
+            {esSupervisor(ROL_MOCK) && (
+              <Link
+                href={RUTAS.panelTarifario}
+                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Tarifario
+              </Link>
+            )}
           </nav>
         </div>
       </header>
