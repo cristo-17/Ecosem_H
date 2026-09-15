@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { TicketIcon, ClockIcon } from "@/components/ui/icons";
-import { redirect } from "next/navigation";
 import { RUTAS } from "@/lib/routes";
 
 export default function PanelIndexPage() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <Link href={RUTAS.panelViajes} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary rounded-md">
+      <Link
+        href={RUTAS.panelViajes}
+        className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      >
         <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
           <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <TicketIcon /> 
+            <TicketIcon />
           </span>
           <div>
             <h2 className="text-base font-semibold text-navy">Manifiestos y Viajes</h2>
@@ -21,9 +23,11 @@ export default function PanelIndexPage() {
           <span className="mt-auto text-sm font-semibold text-primary">Ir a Viajes →</span>
         </Card>
       </Link>
-      
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Link href={RUTAS.panelVenta} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary rounded-md">
+
+      <Link
+        href={RUTAS.panelVenta}
+        className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      >
         <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
           <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
             <TicketIcon />
@@ -38,7 +42,10 @@ export default function PanelIndexPage() {
         </Card>
       </Link>
 
-      <Link href={RUTAS.panelCaja} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary rounded-md">
+      <Link
+        href={RUTAS.panelCaja}
+        className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      >
         <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
           <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
             <ClockIcon />

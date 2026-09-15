@@ -26,6 +26,14 @@ export interface PasajeroManifiesto {
   origen: Ciudad;
   destino: Ciudad;
   estadoEmbarque: EstadoEmbarquePasajero;
+  /**
+   * Mismo código que llevaría su boleto ("ECH-XXXXXX", ver
+   * lib/pdf/boleto.ts / VentaView). Lo usa la PWA de embarque
+   * (docs/prompts/10-pwa-embarque.md) para encontrar al pasajero dentro del
+   * manifiesto ya descargado cuando escanea su QR — es el mismo identificador
+   * que ese QR trae firmado.
+   */
+  codigoBoleto: string;
 }
 
 export interface ViajeDelDia {
@@ -91,6 +99,17 @@ function generarDni(random: () => number): string {
   return String(10000000 + Math.floor(random() * 90000000));
 }
 
+const ALFABETO_CODIGO = "0123456789ABCDEF";
+
+/** Mismo formato "ECH-XXXXXX" que genera VentaView, pero determinístico (semilla propia). */
+function generarCodigoBoleto(random: () => number): string {
+  let sufijo = "";
+  for (let i = 0; i < 6; i++) {
+    sufijo += ALFABETO_CODIGO[Math.floor(random() * ALFABETO_CODIGO.length)];
+  }
+  return `ECH-${sufijo}`;
+}
+
 function generarPasajero(
   random: () => number,
   origen: Ciudad,
@@ -113,9 +132,12 @@ function generarPasajero(
     origen,
     destino,
     // Determinístico (no aleatorio): 1 de cada 3, en orden de asiento, para
-    // mostrar la mezcla pendiente/embarcado sin depender de una PWA real
-    // todavía (docs/prompts/10-pwa-embarque.md).
+    // mostrar la mezcla pendiente/embarcado ya al descargar el manifiesto en
+    // la PWA de embarque (docs/prompts/10-pwa-embarque.md) — esos pasajeros
+    // se siembran ahí como ya escaneados, antes de que el personal escanee
+    // ninguno de verdad.
     estadoEmbarque: indice % 3 === 0 ? "embarcado" : "pendiente",
+    codigoBoleto: generarCodigoBoleto(random),
   };
 }
 
