@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { TicketIcon, ClockIcon, CreditCardIcon } from "@/components/ui/icons";
+import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon } from "@/components/ui/icons";
 import { ROL_MOCK, esSupervisor } from "@/lib/mock/sesion";
 import { RUTAS } from "@/lib/routes";
 
@@ -78,6 +78,66 @@ export default function PanelIndexPage() {
               </p>
             </div>
             <span className="mt-auto text-sm font-semibold text-secondary">Ir a Precios →</span>
+          </Card>
+        </Link>
+      )}
+
+      {esSupervisor(ROL_MOCK) && (
+        <Link
+          href={RUTAS.panelFlota}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <BusIcon />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Flota</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Unidades, documentos con vencimiento y umbral de kilometraje para mantenimiento.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-secondary">Ir a Flota →</span>
+          </Card>
+        </Link>
+      )}
+
+      {esSupervisor(ROL_MOCK) && (
+        <Link
+          href={RUTAS.panelConductores}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <SteeringWheelIcon className="!text-secondary" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Conductores</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Licencias, vencimientos y horas de conducción acumuladas por conductor.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-secondary">Ir a Conductores →</span>
+          </Card>
+        </Link>
+      )}
+
+      {esSupervisor(ROL_MOCK) && (
+        <Link
+          href={RUTAS.panelAlertas}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <ExclamationIcon className="!size-6" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Alertas</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Bandeja de alertas activas de flota y conductores, ordenadas por urgencia.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-primary">Ir a Alertas →</span>
           </Card>
         </Link>
       )}
