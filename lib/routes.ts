@@ -25,12 +25,20 @@ export const RUTAS = {
   panelVenta: "/panel/venta",
   panelCaja: "/panel/caja",
   panelPrecios: "/panel/precios",
+  panelFlota: "/panel/flota",
+  panelConductores: "/panel/conductores",
+  panelAlertas: "/panel/alertas",
   embarque: "/embarque",
 } as const;
 
 /** Detalle de un viaje del día en el panel — ruta dinámica, no una entrada fija de RUTAS. */
 export function rutaPanelViaje(id: string): string {
   return `${RUTAS.panelViajes}/${id}`;
+}
+
+/** Detalle de una unidad de flota en el panel — ruta dinámica, no una entrada fija de RUTAS. */
+export function rutaPanelUnidad(placa: string): string {
+  return `${RUTAS.panelFlota}/${placa}`;
 }
 
 /** Pantalla de escaneo de un viaje en la PWA de embarque — ruta dinámica. */
