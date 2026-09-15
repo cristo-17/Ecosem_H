@@ -1,13 +1,11 @@
 import { maskDocumento } from "@/lib/format";
 
 /**
- * Sesión simulada: todavía no hay backend de autenticación (ver
- * docs/prompts/02-perfil-usuario.md). HAY_SESION_MOCK es el único
- * interruptor — no hay login/logout reales, así que es una constante que se
- * cambia acá a mano, nunca un valor en localStorage (regla de CLAUDE.md).
+ * Datos de perfil simulados: todavía no hay backend de autenticación (ver
+ * docs/prompts/07-autenticacion.md). Si hay sesión o no ya lo decide una
+ * cookie de servidor (lib/auth/sesion.ts) en vez de una constante fija —
+ * esto solo cubre qué mostrar en pantalla mientras no exista Supabase Auth.
  */
-export const HAY_SESION_MOCK = true;
-
 export interface UsuarioSesion {
   nombre: string;
   documentoEnmascarado: string;
