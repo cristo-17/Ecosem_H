@@ -139,8 +139,16 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/50 sm:px-6">
-        © 2026 Ecosem H. Todos los derechos reservados.
+      <div className="flex flex-col items-center gap-2 border-t border-white/10 px-4 py-4 text-center text-xs text-white/50 sm:flex-row sm:justify-between sm:px-6">
+        <p>© 2026 Ecosem H. Todos los derechos reservados.</p>
+        <div className="flex gap-4">
+          <Link href={RUTAS.terminos} className="hover:text-white/80">
+            Términos y Condiciones
+          </Link>
+          <Link href={RUTAS.privacidad} className="hover:text-white/80">
+            Política de Privacidad
+          </Link>
+        </div>
       </div>
     </footer>
   );

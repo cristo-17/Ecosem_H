@@ -194,9 +194,26 @@ export function RegistroView() {
           <Checkbox
             label={
               <>
-                Acepto los Términos y Condiciones y la Política de Privacidad. Entiendo que mis
-                datos personales (DNI, nombre, correo y celular) serán tratados conforme a la Ley
-                N.° 29733, Ley de Protección de Datos Personales.
+                Acepto los{" "}
+                <Link
+                  href={RUTAS.terminos}
+                  target="_blank"
+                  onClick={(evento) => evento.stopPropagation()}
+                  className="text-secondary underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link
+                  href={RUTAS.privacidad}
+                  target="_blank"
+                  onClick={(evento) => evento.stopPropagation()}
+                  className="text-secondary underline"
+                >
+                  Política de Privacidad
+                </Link>
+                . Entiendo que mis datos personales (DNI, nombre, correo y celular) serán tratados
+                conforme a la Ley N.° 29733, Ley de Protección de Datos Personales.
               </>
             }
             checked={form.aceptaTerminos}
