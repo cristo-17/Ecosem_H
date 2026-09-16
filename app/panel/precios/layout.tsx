@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { ROL_MOCK, esSupervisor } from "@/lib/mock/sesion";
+import { esSupervisor } from "@/lib/mock/sesion";
+import { obtenerRolDemo } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 /**
@@ -11,8 +12,8 @@ import { RUTAS } from "@/lib/routes";
  * pantalla pública — sigue siendo personal, solo que no puede tocar
  * tarifas.
  */
-export default function PanelPreciosLayout({ children }: { children: ReactNode }) {
-  if (!esSupervisor(ROL_MOCK)) {
+export default async function PanelPreciosLayout({ children }: { children: ReactNode }) {
+  if (!esSupervisor(await obtenerRolDemo())) {
     redirect(RUTAS.panel);
   }
 

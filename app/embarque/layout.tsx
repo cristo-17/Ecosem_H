@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { redirect } from "next/navigation";
-import { esPersonal, ROL_MOCK } from "@/lib/mock/sesion";
-import { haySesionActiva } from "@/lib/auth/sesion";
+import { esPersonal } from "@/lib/mock/sesion";
+import { haySesionActiva, obtenerRolDemo } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 import { RegistrarServiceWorker } from "./RegistrarServiceWorker";
 import { EmbarqueHeader } from "./EmbarqueHeader";
@@ -32,7 +32,7 @@ export const viewport: Viewport = {
  * distintos.
  */
 export default async function EmbarqueLayout({ children }: { children: ReactNode }) {
-  if (!(await haySesionActiva()) || !esPersonal(ROL_MOCK)) {
+  if (!(await haySesionActiva()) || !esPersonal(await obtenerRolDemo())) {
     redirect(RUTAS.inicio);
   }
 

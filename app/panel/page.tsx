@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
-import { ROL_MOCK, esSupervisor } from "@/lib/mock/sesion";
+import { esSupervisor } from "@/lib/mock/sesion";
+import { obtenerRolDemo } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
-export default function PanelIndexPage() {
+export default async function PanelIndexPage() {
+  const rol = await obtenerRolDemo();
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Link
@@ -61,7 +64,7 @@ export default function PanelIndexPage() {
         </Card>
       </Link>
 
-      {esSupervisor(ROL_MOCK) && (
+      {esSupervisor(rol) && (
         <Link
           href={RUTAS.panelPrecios}
           className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -82,7 +85,7 @@ export default function PanelIndexPage() {
         </Link>
       )}
 
-      {esSupervisor(ROL_MOCK) && (
+      {esSupervisor(rol) && (
         <Link
           href={RUTAS.panelFlota}
           className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -102,7 +105,7 @@ export default function PanelIndexPage() {
         </Link>
       )}
 
-      {esSupervisor(ROL_MOCK) && (
+      {esSupervisor(rol) && (
         <Link
           href={RUTAS.panelConductores}
           className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -122,7 +125,7 @@ export default function PanelIndexPage() {
         </Link>
       )}
 
-      {esSupervisor(ROL_MOCK) && (
+      {esSupervisor(rol) && (
         <Link
           href={RUTAS.panelAlertas}
           className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -142,7 +145,7 @@ export default function PanelIndexPage() {
         </Link>
       )}
 
-      {esSupervisor(ROL_MOCK) && (
+      {esSupervisor(rol) && (
         <Link
           href={RUTAS.panelTarifario}
           className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
