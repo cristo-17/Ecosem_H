@@ -11,6 +11,8 @@ import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
 import { cerrarSesion } from "@/lib/auth/acciones";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
+import { esPersonal, type RolUsuario } from "@/lib/mock/sesion";
+import { PanelMenu, enlacesPanel } from "@/components/layout/PanelMenu";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -39,9 +41,11 @@ function entradasMenu(haySesion: boolean) {
 export interface TopBarProps {
   /** Viene de la cookie de sesión (lib/auth/sesion.ts), leída en app/layout.tsx. */
   haySesion: boolean;
+  /** Viene de la cookie de rol demo (lib/auth/sesion.ts, D-040/D-041). Sin sesión, el valor no importa: nadie ve el grupo interno igual. */
+  rol: RolUsuario;
 }
 
-export function TopBar({ haySesion }: TopBarProps) {
+export function TopBar({ haySesion, rol }: TopBarProps) {
   const router = useRouter();
   const openRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -49,6 +53,10 @@ export function TopBar({ haySesion }: TopBarProps) {
 
   const [open, setOpenState] = useState(false);
   const entradas = entradasMenu(haySesion);
+  // "pasajero — nunca ve enlaces al panel ni a embarque" (docs/prompts/16-navbar-por-rol.md):
+  // sin sesión tampoco, aunque quedara una cookie de rol demo vieja.
+  const esInterno = haySesion && esPersonal(rol);
+  const enlacesInternos = esInterno ? enlacesPanel(rol) : [];
 
   useEffect(() => {
     if (!open) return;
@@ -164,6 +172,19 @@ export function TopBar({ haySesion }: TopBarProps) {
         </Link>
       </div>
 
+      {/*
+        Grupo "herramientas internas", separado visualmente del sitio
+        público con una línea vertical — el prompt pide que el personal
+        distinga de un vistazo cuál es cuál, no mezclarlos en la misma fila
+        (docs/prompts/16-navbar-por-rol.md, D-041).
+      */}
+      {esInterno && (
+        <div className="hidden md:flex items-center gap-4">
+          <div aria-hidden="true" className="h-6 w-px bg-border-default" />
+          <PanelMenu rol={rol} />
+        </div>
+      )}
+
       {/* Espaciador flexible para empujar las acciones a la derecha en escritorio */}
       <div className="hidden md:flex flex-1" />
 
@@ -231,7 +252,7 @@ export function TopBar({ haySesion }: TopBarProps) {
 
             <nav
               aria-label="Menú principal"
-              className="mt-4 flex flex-1 flex-col"
+              className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto"
             >
               <ul className="flex flex-col gap-1">
                 {entradas.map((entrada) => (
@@ -246,6 +267,35 @@ export function TopBar({ haySesion }: TopBarProps) {
                   </li>
                 ))}
               </ul>
+
+              {/*
+                Mismo grupo que el menú "Panel" de escritorio, reflejado acá
+                para que el móvil no pierda el agrupamiento visual
+                (docs/prompts/16-navbar-por-rol.md): encabezado en
+                mayúsculas + separador, mismo lenguaje que "ENLACES" en el
+                footer, para que se lea como una sección aparte del sitio
+                público de arriba.
+              */}
+              {esInterno && (
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <p className="mb-2 px-3 text-xs font-semibold tracking-wider text-white/50 uppercase">
+                    Panel interno
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {enlacesInternos.map((enlace) => (
+                      <li key={enlace.href}>
+                        <Link
+                          href={enlace.href}
+                          onClick={closeMenu}
+                          className="flex min-h-11 items-center rounded-field px-3 text-lg font-medium text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                        >
+                          {enlace.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/*
                 Separado abajo en color de advertencia (skill). Se usa

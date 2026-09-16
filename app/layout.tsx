@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
 import { ShellPublico } from "@/components/layout/ShellPublico";
+import { SelectorRolDemo } from "@/components/layout/SelectorRolDemo";
 import { ToastProvider } from "@/components/ui/Toast";
-import { haySesionActiva } from "@/lib/auth/sesion";
+import { haySesionActiva, obtenerRolDemo } from "@/lib/auth/sesion";
 import "./globals.css";
 
 // latin-ext asegura tildes y ñ. IBM Plex Sans no es variable font en Google
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const conSesion = await haySesionActiva();
+  const rol = await obtenerRolDemo();
 
   return (
     <html lang="es" className={`${ibmPlexSans.variable} antialiased`}>
@@ -62,8 +64,20 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ToastProvider>
-          <ShellPublico haySesion={conSesion}>{children}</ShellPublico>
+          <ShellPublico haySesion={conSesion} rol={rol}>
+            {children}
+          </ShellPublico>
         </ToastProvider>
+        {/*
+          Solo development (docs/prompts/16-navbar-por-rol.md): este `if`
+          corre en un Server Component, así que en `next build` de
+          producción nunca es verdadero y el componente (y su Server
+          Action) quedan fuera del árbol — no es un `hidden` de CSS.
+          Verificado con `npm run build` + grep sobre `.next/`.
+        */}
+        {process.env.NODE_ENV === "development" && (
+          <SelectorRolDemo estadoActual={conSesion ? rol : "sin-sesion"} />
+        )}
       </body>
     </html>
   );

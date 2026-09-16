@@ -4,9 +4,11 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
+import type { RolUsuario } from "@/lib/mock/sesion";
 
 export interface ShellPublicoProps {
   haySesion: boolean;
+  rol: RolUsuario;
   children: ReactNode;
 }
 
@@ -24,13 +26,13 @@ export interface ShellPublicoProps {
  * público a propósito (D-017): es una app de escritorio para counter, no
  * una PWA instalable de pantalla completa.
  */
-export function ShellPublico({ haySesion, children }: ShellPublicoProps) {
+export function ShellPublico({ haySesion, rol, children }: ShellPublicoProps) {
   const pathname = usePathname();
   const esEmbarque = pathname?.startsWith("/embarque") ?? false;
 
   return (
     <>
-      {!esEmbarque && <TopBar haySesion={haySesion} />}
+      {!esEmbarque && <TopBar haySesion={haySesion} rol={rol} />}
       <div className="flex-1">{children}</div>
       {!esEmbarque && <Footer />}
     </>
