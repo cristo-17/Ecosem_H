@@ -1,15 +1,20 @@
 /**
- * Contenido de /ayuda (docs/prompts/14-ayuda-faq.md). Las respuestas
- * describen únicamente reglas que existen de verdad en el sistema (20 kg de
- * franquicia, peso volumétrico ÷ 5000, confirmación de pago por webhook,
- * reserva temporal de 10 minutos). Donde el prompt lista un tema sin que
- * exista una política definida (qué pasa si pierdes el bus, cambios,
- * cancelaciones, reembolsos, qué se puede enviar, qué no se puede llevar),
- * la respuesta remite a counter en vez de inventar una regla.
+ * Contenido de /ayuda (docs/prompts/14-ayuda-faq.md, actualizado por
+ * docs/prompts/15-condiciones-contratacion.md). Las respuestas describen
+ * únicamente reglas que existen de verdad en el sistema o en las
+ * Condiciones Generales del Contrato de Viaje ya publicadas por la empresa
+ * (ver /terminos): franquicia de 20 kg, peso volumétrico ÷ 5000,
+ * confirmación de pago por webhook, reserva temporal de 10 minutos,
+ * postergación, duplicado de boleto, mascotas, menores de edad, equipaje no
+ * declarado. Donde ni el sistema ni esas condiciones definen una política
+ * (perder el bus, cancelaciones, reembolsos, qué se puede enviar como
+ * encomienda, qué documento pide el destinatario), la respuesta remite a
+ * counter en vez de inventar una regla.
  */
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { RUTAS } from "@/lib/routes";
+import { formatPrecio } from "@/lib/format";
 
 export interface PreguntaFrecuente {
   id: string;
@@ -56,14 +61,38 @@ export const CATEGORIAS_FAQ: CategoriaFaq[] = [
           "El código QR de tu boleto (o el código de reserva impreso como respaldo si no tienes cobertura) y tu documento de identidad.",
       },
       {
+        id: "perder-boleto",
+        pregunta: "¿Qué pasa si pierdo mi boleto?",
+        respuesta: (
+          <>Puedes solicitar un duplicado en counter, pagando {formatPrecio(5)} por el trámite.</>
+        ),
+      },
+      {
         id: "perder-bus",
         pregunta: "¿Qué pasa si pierdo el bus?",
         respuesta: "Todavía no tenemos una política publicada para este caso: consulta directamente en counter.",
       },
       {
-        id: "cambiar-cancelar",
-        pregunta: "¿Cómo cambio o cancelo mi pasaje?",
-        respuesta: "Todavía no tenemos una política publicada de cambios ni cancelaciones: consulta en counter.",
+        id: "cambiar-fecha",
+        pregunta: "¿Puedo cambiar la fecha de mi pasaje?",
+        respuesta:
+          "Sí, mediante una postergación: se solicita presencialmente hasta 4 horas antes de la hora programada del viaje, por única vez, con la nueva fecha dentro de los 15 días hábiles siguientes al viaje original. Puede aplicarse un gasto administrativo. Si el nuevo pasaje cuesta más, pagas la diferencia; si cuesta menos, no hay devolución.",
+      },
+      {
+        id: "cancelar",
+        pregunta: "¿Puedo cancelar mi pasaje?",
+        respuesta: "Todavía no tenemos una política publicada de cancelaciones ni reembolsos: consulta en counter.",
+      },
+      {
+        id: "mascotas",
+        pregunta: "¿Puedo viajar con mi mascota?",
+        respuesta: "No, está prohibido el traslado de animales dentro del bus.",
+      },
+      {
+        id: "ninos",
+        pregunta: "¿Los niños pagan pasaje?",
+        respuesta:
+          "Sí, desde los 5 años. Si el menor de edad viaja acompañado de un familiar, necesita permiso notarial de sus padres.",
       },
     ],
   },
@@ -119,18 +148,19 @@ export const CATEGORIAS_FAQ: CategoriaFaq[] = [
       {
         id: "franquicia",
         pregunta: "¿Cuánto equipaje puedo llevar sin costo?",
-        respuesta: "20 kg por pasajero, incluidos en el precio del pasaje.",
+        respuesta: "20 kg por pasajero (maletas o maletines), incluidos en el precio del pasaje.",
       },
       {
         id: "exceso",
         pregunta: "¿Cómo se cobra el exceso de equipaje?",
         respuesta:
-          "Por escalones de peso, no por kilo exacto: de 21 a 30 kg y de 31 a 50 kg. Más de 50 kg se cobra como una encomienda, no como exceso de equipaje. Los montos de cada escalón todavía no están definidos: consulta en counter.",
+          "Por escalones de peso, no por kilo exacto: de 21 a 30 kg y de 31 a 50 kg. El exceso se admite solo si la capacidad del bus lo permite, previo pago de la tarifa vigente — los montos de cada escalón todavía no están definidos: consulta en counter. Más de 50 kg se cobra como una encomienda, no como exceso de equipaje.",
       },
       {
         id: "no-llevar",
-        pregunta: "¿Qué no puedo llevar?",
-        respuesta: "Todavía no tenemos publicada una lista de artículos restringidos: consulta en counter.",
+        pregunta: "¿Qué no puedo llevar en el equipaje?",
+        respuesta:
+          "Joyas, artefactos electrónicos y dinero en efectivo deben declararse para transportarse como especies valoradas. El equipaje de cabina que no se declara y verifica antes de embarcar no está cubierto por la empresa si se pierde.",
       },
     ],
   },

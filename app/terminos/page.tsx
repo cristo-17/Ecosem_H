@@ -1,5 +1,6 @@
 import { ExclamationIcon } from "@/components/ui/icons";
 import { SeccionPendiente } from "@/components/legal/SeccionPendiente";
+import { CONDICIONES_CONTRATO_VIAJE } from "./condicionesContratoViaje";
 
 const SECCIONES = [
   {
@@ -19,12 +20,14 @@ const SECCIONES = [
     descripcion: "Cómo se fijan los precios, medios de pago aceptados y el momento en que se confirma una compra.",
   },
   {
-    titulo: "Cambios, cancelaciones y reembolsos",
-    descripcion: "Condiciones bajo las que un pasaje o un envío puede cambiarse, cancelarse o reembolsarse.",
+    titulo: "Cancelaciones y reembolsos",
+    descripcion:
+      "El cambio de fecha de un pasaje (postergación) ya está cubierto arriba, en las Condiciones Generales del Contrato de Viaje. Lo que falta: bajo qué condiciones un pasaje o un envío puede cancelarse o reembolsarse.",
   },
   {
-    titulo: "Equipaje y encomiendas",
-    descripcion: "Franquicia de equipaje, exceso de equipaje, y condiciones de transporte de encomiendas.",
+    titulo: "Condiciones de transporte de encomiendas",
+    descripcion:
+      "La franquicia y el exceso de equipaje de pasajero ya están cubiertos arriba, en las Condiciones Generales del Contrato de Viaje. Lo que falta: las condiciones de transporte de encomiendas (qué se puede enviar, responsabilidad de la empresa sobre el envío).",
   },
   {
     titulo: "Responsabilidad de la empresa y del usuario",
@@ -45,12 +48,30 @@ export default function TerminosPage() {
     <main className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">Términos y Condiciones</h1>
 
-      <div className="mt-4 flex items-start gap-2 rounded-md bg-warning-fill p-3 text-sm text-warning-text">
+      <section className="mt-6">
+        <h2 className="text-lg font-semibold text-navy">Condiciones Generales del Contrato de Viaje</h2>
+        <ol className="mt-3 list-decimal space-y-3 pl-5 text-sm text-navy/80">
+          {CONDICIONES_CONTRATO_VIAJE.map((condicion, indice) => (
+            <li key={indice}>
+              {condicion.texto}
+              {condicion.subpuntos && (
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {condicion.subpuntos.map((subpunto, subindice) => (
+                    <li key={subindice}>{subpunto}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div className="mt-8 flex items-start gap-2 rounded-md bg-warning-fill p-3 text-sm text-warning-text">
         <ExclamationIcon className="mt-0.5 !size-5 shrink-0" />
         <p>
-          Esta página todavía no tiene el texto legal definitivo: muestra la estructura de
-          secciones a cubrir, pendiente de redacción y aprobación por el área legal antes de
-          publicarse.
+          El resto de esta página todavía no tiene el texto legal definitivo: muestra la
+          estructura de secciones que las condiciones de arriba no cubren, pendientes de
+          redacción y aprobación por el área legal antes de publicarse.
         </p>
       </div>
 
