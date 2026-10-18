@@ -1,0 +1,2193 @@
+[
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/",
+    "label": "home-invitado",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "pasajero",
+    "path": "/",
+    "label": "home-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/nosotros",
+    "label": "nosotros",
+    "httpStatus": 200,
+    "title": "Nosotros — Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/nosotros/flota-01.jpg\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/pasajes/resultados",
+    "label": "resultados",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/pasajes/resultados?error=1",
+    "label": "resultados-error",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/encomiendas/enviar",
+    "label": "encomiendas-enviar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/encomiendas/rastrear",
+    "label": "encomiendas-rastrear",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/ingresar",
+    "label": "ingresar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/registro",
+    "label": "registro",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/recuperar-clave",
+    "label": "recuperar-clave",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/libro-de-reclamaciones",
+    "label": "libro-reclamaciones",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/ayuda",
+    "label": "ayuda",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/terminos",
+    "label": "terminos",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/privacidad",
+    "label": "privacidad",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "pasajero",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "pasajero",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/panel",
+    "label": "panel-sin-acceso",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "pasajero",
+    "path": "/panel",
+    "label": "panel-rol-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel",
+    "label": "panel-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel",
+    "label": "panel-supervisor",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/venta",
+    "label": "panel-venta",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/caja",
+    "label": "panel-caja",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/viajes",
+    "label": "panel-viajes",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/viajes/v1",
+    "label": "panel-viajes-v1-lleno",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/viajes/v4",
+    "label": "panel-viajes-v4-vip",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/panel/precios",
+    "label": "panel-precios-como-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/precios",
+    "label": "panel-precios",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/tarifario",
+    "label": "panel-tarifario",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/flota",
+    "label": "panel-flota",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/flota/AGX-921",
+    "label": "panel-flota-placa",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/conductores",
+    "label": "panel-conductores",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "supervisor",
+    "path": "/panel/alertas",
+    "label": "panel-alertas",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "counter",
+    "path": "/embarque",
+    "label": "embarque-elegir-viaje",
+    "httpStatus": 200,
+    "title": "Embarque · Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    ],
+    "pageErrors": [
+      "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>\n      <LoadingBoundary name=\"/\" loading={null}>\n        <HTTPAccessFallbackBoundary notFound={<SegmentViewNode>} forbidden={undefined} unauthorized={undefined}>\n          <HTTPAccessFallbackErrorBoundary pathname=\"/embarque\" notFound={<SegmentViewNode>} forbidden={undefined} ...>\n            <RedirectBoundary>\n              <RedirectErrorBoundary router={{...}}>\n                <InnerLayoutRouter url=\"/embarque\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n                  <SegmentViewNode type=\"layout\" pagePath=\"embarque/l...\">\n                    <SegmentTrieNode>\n                    <script>\n                    <EmbarqueLayout>\n                      <div className=\"flex min-h...\">\n                        <RegistrarServiceWorker>\n                        <EmbarqueHeader>\n                          <header className=\"flex items...\">\n                            <LinkComponent>\n                            <div className=\"flex items...\">\n                              <span\n+                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-s...\"\n-                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-w...\"\n                              >\n                                <WifiIcon className=\"!size-4\">\n                                  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" className=\"pointer-ev...\">\n                                    <path\n+                                     d=\"M4 8.5a13 13 0 0 1 16 0M7 12.2a8.5 8.5 0 0 1 10 0M10.2 15.8a4 4 0 0 1 3.6 0\"\n-                                     d=\"M4 8.5a13 13 0 0 1 6.2-3.3M20 8.5a12.9 12.9 0 0 0-4.2-2.6M7 12.2a8.5 8.5 0 0 ...\"\n                                      stroke=\"currentColor\"\n                                      strokeWidth=\"1.5\"\n                                      strokeLinecap=\"round\"\n                                      strokeLinejoin=\"round\"\n                                    >\n                                    ...\n-                                   <path d=\"M3 3l18 18\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\">\n                                ...\n                        ...\n                ...\n"
+    ],
+    "errorMsg": null
+  },
+  {
+    "viewport": "360x640",
+    "role": "invitado",
+    "path": "/ruta-que-no-existe-123",
+    "label": "ruta-404",
+    "httpStatus": 404,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 360,
+      "docClientW": 360,
+      "bodyScrollW": 360,
+      "bodyClientW": 360
+    },
+    "consoleMsgs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/",
+    "label": "home-invitado",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "pasajero",
+    "path": "/",
+    "label": "home-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/nosotros",
+    "label": "nosotros",
+    "httpStatus": 200,
+    "title": "Nosotros — Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/pasajes/resultados",
+    "label": "resultados",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/pasajes/resultados?error=1",
+    "label": "resultados-error",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/encomiendas/enviar",
+    "label": "encomiendas-enviar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/encomiendas/rastrear",
+    "label": "encomiendas-rastrear",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/ingresar",
+    "label": "ingresar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/registro",
+    "label": "registro",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/recuperar-clave",
+    "label": "recuperar-clave",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/libro-de-reclamaciones",
+    "label": "libro-reclamaciones",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/ayuda",
+    "label": "ayuda",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/terminos",
+    "label": "terminos",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/privacidad",
+    "label": "privacidad",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "pasajero",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "pasajero",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/panel",
+    "label": "panel-sin-acceso",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "pasajero",
+    "path": "/panel",
+    "label": "panel-rol-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel",
+    "label": "panel-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel",
+    "label": "panel-supervisor",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/venta",
+    "label": "panel-venta",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/caja",
+    "label": "panel-caja",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/viajes",
+    "label": "panel-viajes",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/viajes/v1",
+    "label": "panel-viajes-v1-lleno",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/viajes/v4",
+    "label": "panel-viajes-v4-vip",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/panel/precios",
+    "label": "panel-precios-como-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/precios",
+    "label": "panel-precios",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/tarifario",
+    "label": "panel-tarifario",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/flota",
+    "label": "panel-flota",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/flota/AGX-921",
+    "label": "panel-flota-placa",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/conductores",
+    "label": "panel-conductores",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "supervisor",
+    "path": "/panel/alertas",
+    "label": "panel-alertas",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "counter",
+    "path": "/embarque",
+    "label": "embarque-elegir-viaje",
+    "httpStatus": 200,
+    "title": "Embarque · Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    ],
+    "pageErrors": [
+      "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>\n      <LoadingBoundary name=\"/\" loading={null}>\n        <HTTPAccessFallbackBoundary notFound={<SegmentViewNode>} forbidden={undefined} unauthorized={undefined}>\n          <HTTPAccessFallbackErrorBoundary pathname=\"/embarque\" notFound={<SegmentViewNode>} forbidden={undefined} ...>\n            <RedirectBoundary>\n              <RedirectErrorBoundary router={{...}}>\n                <InnerLayoutRouter url=\"/embarque\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n                  <SegmentViewNode type=\"layout\" pagePath=\"embarque/l...\">\n                    <SegmentTrieNode>\n                    <script>\n                    <EmbarqueLayout>\n                      <div className=\"flex min-h...\">\n                        <RegistrarServiceWorker>\n                        <EmbarqueHeader>\n                          <header className=\"flex items...\">\n                            <LinkComponent>\n                            <div className=\"flex items...\">\n                              <span\n+                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-s...\"\n-                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-w...\"\n                              >\n                                <WifiIcon className=\"!size-4\">\n                                  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" className=\"pointer-ev...\">\n                                    <path\n+                                     d=\"M4 8.5a13 13 0 0 1 16 0M7 12.2a8.5 8.5 0 0 1 10 0M10.2 15.8a4 4 0 0 1 3.6 0\"\n-                                     d=\"M4 8.5a13 13 0 0 1 6.2-3.3M20 8.5a12.9 12.9 0 0 0-4.2-2.6M7 12.2a8.5 8.5 0 0 ...\"\n                                      stroke=\"currentColor\"\n                                      strokeWidth=\"1.5\"\n                                      strokeLinecap=\"round\"\n                                      strokeLinejoin=\"round\"\n                                    >\n                                    ...\n-                                   <path d=\"M3 3l18 18\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\">\n                                ...\n                        ...\n                ...\n"
+    ],
+    "errorMsg": null
+  },
+  {
+    "viewport": "768x1024",
+    "role": "invitado",
+    "path": "/ruta-que-no-existe-123",
+    "label": "ruta-404",
+    "httpStatus": 404,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 768,
+      "docClientW": 768,
+      "bodyScrollW": 768,
+      "bodyClientW": 768
+    },
+    "consoleMsgs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/",
+    "label": "home-invitado",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "pasajero",
+    "path": "/",
+    "label": "home-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/nosotros",
+    "label": "nosotros",
+    "httpStatus": 200,
+    "title": "Nosotros — Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/pasajes/resultados",
+    "label": "resultados",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/pasajes/resultados?error=1",
+    "label": "resultados-error",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/encomiendas/enviar",
+    "label": "encomiendas-enviar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/encomiendas/rastrear",
+    "label": "encomiendas-rastrear",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/ingresar",
+    "label": "ingresar",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/registro",
+    "label": "registro",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/recuperar-clave",
+    "label": "recuperar-clave",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/libro-de-reclamaciones",
+    "label": "libro-reclamaciones",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/ayuda",
+    "label": "ayuda",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/terminos",
+    "label": "terminos",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/privacidad",
+    "label": "privacidad",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "pasajero",
+    "path": "/mi-perfil",
+    "label": "mi-perfil-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-sin-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "pasajero",
+    "path": "/mis-viajes",
+    "label": "mis-viajes-con-sesion",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/panel",
+    "label": "panel-sin-acceso",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "pasajero",
+    "path": "/panel",
+    "label": "panel-rol-pasajero",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/servicebanner.png\" is using quality \"100\" which is not configured in images.qualities [75, 90]. Please update your config to [100, 75, 90].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel",
+    "label": "panel-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel",
+    "label": "panel-supervisor",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/venta",
+    "label": "panel-venta",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/caja",
+    "label": "panel-caja",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/viajes",
+    "label": "panel-viajes",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/viajes/v1",
+    "label": "panel-viajes-v1-lleno",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/viajes/v4",
+    "label": "panel-viajes-v4-vip",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/panel/precios",
+    "label": "panel-precios-como-counter",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/precios",
+    "label": "panel-precios",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/tarifario",
+    "label": "panel-tarifario",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/flota",
+    "label": "panel-flota",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/flota/AGX-921",
+    "label": "panel-flota-placa",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/conductores",
+    "label": "panel-conductores",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "supervisor",
+    "path": "/panel/alertas",
+    "label": "panel-alertas",
+    "httpStatus": 200,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "counter",
+    "path": "/embarque",
+    "label": "embarque-elegir-viaje",
+    "httpStatus": 200,
+    "title": "Embarque · Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    ],
+    "pageErrors": [
+      "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>\n      <LoadingBoundary name=\"/\" loading={null}>\n        <HTTPAccessFallbackBoundary notFound={<SegmentViewNode>} forbidden={undefined} unauthorized={undefined}>\n          <HTTPAccessFallbackErrorBoundary pathname=\"/embarque\" notFound={<SegmentViewNode>} forbidden={undefined} ...>\n            <RedirectBoundary>\n              <RedirectErrorBoundary router={{...}}>\n                <InnerLayoutRouter url=\"/embarque\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>\n                  <SegmentViewNode type=\"layout\" pagePath=\"embarque/l...\">\n                    <SegmentTrieNode>\n                    <script>\n                    <EmbarqueLayout>\n                      <div className=\"flex min-h...\">\n                        <RegistrarServiceWorker>\n                        <EmbarqueHeader>\n                          <header className=\"flex items...\">\n                            <LinkComponent>\n                            <div className=\"flex items...\">\n                              <span\n+                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-s...\"\n-                               className=\"flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium bg-w...\"\n                              >\n                                <WifiIcon className=\"!size-4\">\n                                  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" className=\"pointer-ev...\">\n                                    <path\n+                                     d=\"M4 8.5a13 13 0 0 1 16 0M7 12.2a8.5 8.5 0 0 1 10 0M10.2 15.8a4 4 0 0 1 3.6 0\"\n-                                     d=\"M4 8.5a13 13 0 0 1 6.2-3.3M20 8.5a12.9 12.9 0 0 0-4.2-2.6M7 12.2a8.5 8.5 0 0 ...\"\n                                      stroke=\"currentColor\"\n                                      strokeWidth=\"1.5\"\n                                      strokeLinecap=\"round\"\n                                      strokeLinejoin=\"round\"\n                                    >\n                                    ...\n-                                   <path d=\"M3 3l18 18\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\">\n                                ...\n                        ...\n                ...\n"
+    ],
+    "errorMsg": null
+  },
+  {
+    "viewport": "1440x900",
+    "role": "invitado",
+    "path": "/ruta-que-no-existe-123",
+    "label": "ruta-404",
+    "httpStatus": 404,
+    "title": "Ecosem H",
+    "overflowX": false,
+    "overflow": {
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "bodyScrollW": 1440,
+      "bodyClientW": 1440
+    },
+    "consoleMsgs": [
+      "[error] Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio."
+    ],
+    "pageErrors": [],
+    "errorMsg": null
+  }
+]

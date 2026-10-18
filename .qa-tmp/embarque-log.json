@@ -1,0 +1,231 @@
+[
+  {
+    "section": "shell-embarque-page",
+    "data": {
+      "tieneIngresar": false,
+      "tieneFooterInstitucional": false,
+      "tieneEmbarqueHeader": true
+    },
+    "ts": "2026-09-16T01:27:07.258Z"
+  },
+  {
+    "section": "overflow-lista-viajes-360",
+    "data": {
+      "scrollW": 360,
+      "clientW": 360
+    },
+    "ts": "2026-09-16T01:27:07.381Z"
+  },
+  {
+    "section": "botones-descargar-encontrados",
+    "data": {
+      "countBotones": 6
+    },
+    "ts": "2026-09-16T01:27:07.393Z"
+  },
+  {
+    "section": "url-tras-descarga",
+    "data": {
+      "url": "http://localhost:3000/embarque/v2"
+    },
+    "ts": "2026-09-16T01:27:08.234Z"
+  },
+  {
+    "section": "idb-data",
+    "data": {
+      "totalPasajeros": 39,
+      "totalEscaneosSembrados": 13,
+      "codigoPendiente": "ECH-8BD95F",
+      "codigoYaEmbarcado": "ECH-E1A5F4"
+    },
+    "ts": "2026-09-16T01:27:08.763Z"
+  },
+  {
+    "section": "overflow-escaneo-360",
+    "data": {
+      "scrollW": 360,
+      "clientW": 360
+    },
+    "ts": "2026-09-16T01:27:08.770Z"
+  },
+  {
+    "section": "mensajes-camara",
+    "data": [
+      "Este navegador no puede leer QR por cámara. Usa el código manual.",
+      "Entrada manual",
+      "Respaldo si la cámara falla: escribe el código de reserva que aparece impreso en el boleto."
+    ],
+    "ts": "2026-09-16T01:27:09.635Z"
+  },
+  {
+    "section": "resultado-caso-valido",
+    "data": {
+      "codigo": "ECH-8BD95F",
+      "texto": "VÁLIDOQuispe Cusi, MiguelAsiento 1-1BListo, siguiente"
+    },
+    "ts": "2026-09-16T01:27:09.971Z"
+  },
+  {
+    "section": "resultado-caso-repetido",
+    "data": {
+      "codigo": "ECH-8BD95F",
+      "texto": "YA EMBARCADOQuispe Cusi, MiguelPrimer escaneo: 8:27 PMListo, siguiente"
+    },
+    "ts": "2026-09-16T01:27:10.455Z"
+  },
+  {
+    "section": "resultado-caso-ya-embarcado-sembrado",
+    "data": {
+      "codigo": "ECH-E1A5F4",
+      "texto": ""
+    },
+    "ts": "2026-09-16T01:27:10.976Z"
+  },
+  {
+    "section": "resultado-caso-invalido",
+    "data": {
+      "texto": ""
+    },
+    "ts": "2026-09-16T01:27:11.499Z"
+  },
+  {
+    "section": "resultado-caso-vacio",
+    "data": {
+      "mostroError": true
+    },
+    "ts": "2026-09-16T01:27:11.824Z"
+  },
+  {
+    "section": "contexto-offline",
+    "data": {
+      "offline": true
+    },
+    "ts": "2026-09-16T01:27:11.837Z"
+  },
+  {
+    "section": "idb-data-offline-target",
+    "data": {
+      "otroPendiente": "ECH-BFE3E0"
+    },
+    "ts": "2026-09-16T01:27:11.846Z"
+  },
+  {
+    "section": "resultado-caso-valido-OFFLINE",
+    "data": {
+      "codigo": "ECH-BFE3E0",
+      "texto": "VÁLIDOVilca Huamán, FranklinAsiento 1-1CListo, siguiente"
+    },
+    "ts": "2026-09-16T01:27:12.316Z"
+  },
+  {
+    "section": "resultado-repetido-OFFLINE",
+    "data": {
+      "texto": "YA EMBARCADOVilca Huamán, FranklinPrimer escaneo: 8:27 PMListo, siguiente"
+    },
+    "ts": "2026-09-16T01:27:12.960Z"
+  },
+  {
+    "section": "resultado-invalido-OFFLINE",
+    "data": {
+      "texto": ""
+    },
+    "ts": "2026-09-16T01:27:13.664Z"
+  },
+  {
+    "section": "header-mientras-offline",
+    "data": {
+      "texto": "Ecosem H · Embarque\nSin conexión\n2 pendientes"
+    },
+    "ts": "2026-09-16T01:27:13.675Z"
+  },
+  {
+    "section": "contexto-online-de-nuevo",
+    "data": {
+      "offline": false
+    },
+    "ts": "2026-09-16T01:27:13.747Z"
+  },
+  {
+    "section": "estado-sync-tras-reconectar",
+    "data": {
+      "total": 15,
+      "sinSincronizar": 0
+    },
+    "ts": "2026-09-16T01:27:15.256Z"
+  },
+  {
+    "section": "header-tras-reconectar",
+    "data": {
+      "texto": "Ecosem H · Embarque\nEn línea"
+    },
+    "ts": "2026-09-16T01:27:15.261Z"
+  },
+  {
+    "section": "url-final",
+    "data": {
+      "url": "http://localhost:3000/embarque/v2"
+    },
+    "ts": "2026-09-16T01:27:15.306Z"
+  },
+  {
+    "section": "foco-tab-check",
+    "data": {
+      "tag": "BUTTON",
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "ts": "2026-09-16T01:27:15.324Z"
+  },
+  {
+    "section": "consola-acumulada",
+    "data": {
+      "consoleMsgs": [
+        "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozill"
+      ],
+      "pageErrors": [
+        "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math"
+      ]
+    },
+    "ts": "2026-09-16T01:27:15.325Z"
+  },
+  {
+    "section": "overflow-y-consola-768x1024",
+    "data": {
+      "listaOverflow": {
+        "scrollW": 768,
+        "clientW": 768
+      },
+      "escaneoOverflow": {
+        "scrollW": 768,
+        "clientW": 768
+      },
+      "consoleMsgs": [
+        "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozill"
+      ],
+      "pageErrors": [
+        "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math"
+      ]
+    },
+    "ts": "2026-09-16T01:27:18.313Z"
+  },
+  {
+    "section": "overflow-y-consola-1440x900",
+    "data": {
+      "listaOverflow": {
+        "scrollW": 1440,
+        "clientW": 1440
+      },
+      "escaneoOverflow": {
+        "scrollW": 1440,
+        "clientW": 1440
+      },
+      "consoleMsgs": [
+        "[error] Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozill"
+      ],
+      "pageErrors": [
+        "Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math"
+      ]
+    },
+    "ts": "2026-09-16T01:27:21.154Z"
+  }
+]

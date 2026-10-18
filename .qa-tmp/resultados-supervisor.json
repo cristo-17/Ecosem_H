@@ -1,0 +1,244 @@
+[
+  {
+    "vp": "360x640",
+    "area": "precios",
+    "notes": [
+      {
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nMotor de precios\n\nReglas explícitas, no un algoritmo de optimización: precio = tarifa base × ocupación × anticipación × temporada, acotado por el tope de la ruta.\n\nLos cambios de acá solo aplican a reservas nuevas. El precio de un carrito en curso ya quedó congelado al iniciar esa reserva y no se recalcula (regla del proyecto) — nada de lo que edites en esta pantalla toca una compra que ya está en camino.\n\nTarifas por ruta\n\nEl tope máximo es obligatorio: sin él, la ruta no se puede guardar.\n\nRuta\tTarifa base\tTope mínimo\tTope máximo\t\nLima ↔ Huancayo\tS/ 35.00\tS/ 35.00\tS/ 49.00\tEditar\nLima ↔ Cerro de Pasco\tS/ 28.00\tS/ 28.00\tS/ 39.00\tEditar\nHuancayo ↔ Cerro de Pasco\tS/ 15.00\tS/ 15.00\tS/ 21.00\tEditar\nFactores de ocupación\n\nReferenciales de la propuesta técnica — editables.\n\nOcupación\tFactor\t\n0% – 50%\t×1.00\tEditar\n51% – 80%\t×1.10\tEditar\n81% – 100%\t×1.20\tEditar\nFactores de anticipación\n\nPlaceholder: pendiente de definición comercial (ver docs/INFORME-AVANCE.md).\n\nAnticipación\tFactor\t\n0 – 2 días\t×1.15\tEditar\n3 – 7 días\t×1.05\tEditar\n8 – 14 días\t×1.00\tEditar\n15+ días\t×0.95\tEditar\nFactores de temporada\n\nFeriados, Fiestas Patrias, fin de año y eventos locales de Pasco y Junín.\n\nTemporada\tFactor\t\nTemporada baja\t×1.00\tEditar\nFeriados largos\t×1.10\tEditar\nFiestas Patrias\t×1.25\tEditar\nNavidad y Año Nuevo\t×1.25\tEditar\nEventos locales (Pasco / Junín)\t×1.15\tEditar\nSimulador\n\nElige"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "360x640",
+    "area": "tarifario",
+    "notes": [
+      {
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nTarifario\n\nRangos de peso por ruta, exceso de equipaje y recargo por valor declarado. El cotizador de encomiendas lee esta misma configuración.\n\nEncomiendas por ruta\n\nSe cobra por rango de peso, no por kilo exacto — el mayor entre peso real y volumétrico.\n\nLima ↔ Huancayo\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nLima ↔ Cerro de Pasco\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nHuancayo ↔ Cerro de Pasco\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nExceso de equipaje\n\nFranquicia de 20 kg por pasajero. Más de 50 kg se tarifica como encomienda, no como exceso.\n\nRango\tRecargo\t\nHasta 20 kg\tIncluido en el pasaje (franquicia)\n21 – 30 kg\tPendiente de aprobación comercial\tEditar\n31 – 50 kg\tPendiente de aprobación comercial\tEditar\nMás de 50 kg\tSe tarifica como encomienda\nRecargo por valor declarado\n\nOpcional, alineado con el Reglamento Nacional de Administración de Transporte.\n\nPendiente de aprobación comercial\n\nEditar porcentaje\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n\nComprar Pasajes\nEnviar Encomienda\nRastrear Encomienda\nNosotros\nAyuda\n\nCONTACTO Y TERMINALES\n\n987 654 321\ncontacto@ecosemh.pe\nLima: Terminal Lima Norte, Av. Túpac Amaru 1234\nCerro de Pasco: Terminal Cerro de Pasco, Jr. Vilcabamba 456\nHuancayo: Terminal Huancayo Centro, Av. Ferrocarril 789\n\n© 2026 Ecosem H. Todos los derechos reservados.\n\nTérminos y Condiciones\nPolítica de Privacidad\nRol (solo desarrollo):\nSin sesión\nPasajero\nCounter\nSupervisor"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "360x640",
+    "area": "flota-conductores",
+    "notes": [
+      {
+        "step": "flota-lista",
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "step": "flota-detalle",
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "step": "flota-detalle-texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nVolver a Flota\nAGX-921 · Volnova Andina 360\n\nEconómico · 56 asientos\n\nDocumentos\n\nSOAT, revisión técnica y tarjeta de circulación, con su fecha de vencimiento.\n\nDocumento\tNúmero\tVencimiento\tEstado\nSOAT\tSOAT-AGX921-26\t05/10/2026\tPor vencer\nRevisión técnica\tRT-AGX921-26\t03/04/2027\tVigente\nTarjeta de circulación\tTC-AGX921-19\t12/02/2027\tVigente\nUmbral de mantenimiento\n\n210,000 km acumulados de un umbral de 200,000 km — superado.\n\nAtención\nEditar umbral\nHistórico de alertas\n\nEmitidas y atendidas para esta unidad.\n\nDescripción\tEmitida\tEstado\tAtendida por\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\t15/09/2026\tAtención\t—\nSOAT de AGX-921: SOAT vence en 20 días.\t05/09/2026\tPor vencer\t—\nRevisión técnica de AGX-921: venció y fue renovada a tiempo.\t12/06/2026\tAtendida\t\n\nCarlos Mendoza Ruiz\n\n17/06/2026 · Se coordinó con el taller y se renovó el documento antes de la fecha límite.\n\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n\nCom"
+      },
+      {
+        "step": "conductores",
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "step": "conductores-texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nConductores\n\nLicencia, vencimiento y horas de conducción acumuladas frente al límite vigente.\n\nLímite de horas de conducción\n\nParámetro configurable: hoy está en 48 h acumuladas.\n\nEditar límite\n\nManuel Torres Quispe\n\nLicencia A-IIIb 74812345 · vence 30/10/2026\n\n52 h de conducción acumuladas\n\nAtención\n\nWilfredo Salazar Mamani\n\nLicencia A-IIIb 68231190 · vence 21/09/2026\n\n30 h de conducción acumuladas\n\nUrgente\n\nJulio Cárdenas Rojas\n\nLicencia A-IIIb 71234567 · vence 31/08/2026\n\n20 h de conducción acumuladas\n\nVencido\n\nSegundo Huamán Ccoyllo\n\nLicencia A-IIIb 60345678 · vence 12/07/2027\n\n15 h de conducción acumuladas\n\nSin alertas activas\n\nFortunato Vilca Cusi\n\nLicencia A-IIIb 65456789 · vence 14/10/2026\n\n40 h de conducción acumuladas\n\nPor vencer\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n\nComprar Pasajes\nEnviar Encomienda\nRastrear Encomienda\nNosotros\nAyuda\n\nCONTACTO Y TERMINALES\n\n987 654 321\ncontacto@ecosemh.pe\nLima: Terminal Lima Norte, Av. Túpac Amaru 1234\nCerro de"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "360x640",
+    "area": "alertas",
+    "notes": [
+      {
+        "overflow": {
+          "w": 360,
+          "c": 360
+        }
+      },
+      {
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nAlertas\n\nDocumentos por vencer, kilometraje sobre el umbral y horas de conducción acumuladas, ordenadas por urgencia.\n\nVencido\n\nUnidad C7W-118\n\nDocumento por vencer\n\nRevisión técnica de C7W-118: Revisión técnica vencido hace 10 días.\n\nMarcar como atendida\nVencido\n\nUnidad D2K-560\n\nDocumento por vencer\n\nSOAT de D2K-560: SOAT vencido hace 3 días.\n\nMarcar como atendida\nVencido\n\nJulio Cárdenas Rojas\n\nDocumento por vencer\n\nLicencia de conducir de Julio Cárdenas Rojas: La licencia vencido hace 15 días.\n\nMarcar como atendida\nUrgente\n\nUnidad C7W-118\n\nDocumento por vencer\n\nSOAT de C7W-118: SOAT vence en 5 días.\n\nMarcar como atendida\nUrgente\n\nWilfredo Salazar Mamani\n\nDocumento por vencer\n\nLicencia de conducir de Wilfredo Salazar Mamani: La licencia vence en 6 días.\n\nMarcar como atendida\nAtención\n\nUnidad AGX-921\n\nKilometraje\n\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nSOAT de B0P-347: SOAT vence en 12 días.\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nRevisión técnica de B0P-347: Revisión técnica vence en 10 días.\n\nMarcar como atendida\nAtención\n\nUnidad C7W-118\n\nKilometraje\n\nC7W-118: kilometraje acumulado (160,000 km) superó el umbral de mantenimiento (150,000 km).\n\nMarcar como atendida\nAtención\n\nManuel Torres Quispe\n\nHoras de condu"
+      },
+      {
+        "step": "modal-abierto",
+        "dialogCount": 1
+      },
+      {
+        "step": "focus-trap-tab15",
+        "escapedFocus": false
+      },
+      {
+        "step": "modal-elementos-interactivos",
+        "count": 4
+      },
+      {
+        "step": "foco-antes-abrir",
+        "beforeActive": "<button type=\"button\" aria-busy=\"false\" class=\"inline-flex h-12 min-w-11 items-center justify-center gap-2 rounded-pill "
+      },
+      {
+        "step": "foco-tras-cerrar",
+        "afterActive": "<body class=\"min-h-screen flex flex-col\"><div hidden=\"\"><!--$--><!--/$--></div><header class=\"sticky top-0 z-50 flex h-1",
+        "coincide": false
+      },
+      {
+        "step": "texto-tras-atender",
+        "preview": "Panel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nAlertas\n\nDocumentos por vencer, kilometraje sobre el umbral y horas de conducción acumuladas, ordenadas por urgencia.\n\nVencido\n\nUnidad D2K-560\n\nDocumento por vencer\n\nSOAT de D2K-560: SOAT vencido hace 3 días.\n\nMarcar como atendida\nVencido\n\nJulio Cárdenas Rojas\n\nDocumento por vencer\n\nLicencia de conducir de Julio Cárdenas Rojas: La licencia vencido hace 15 días.\n\nMarcar como atendida\nUrgente\n\nUnidad C7W-118\n\nDocumento por vencer\n\nSOAT de C7W-118: SOAT vence en 5 días.\n\nMarcar como atendida\nUrgente\n\nWilfredo Salazar Mamani\n\nDocumento por vencer\n\nLicencia de conducir de Wilfredo Salazar Mamani: La licencia vence en 6 días.\n\nMarcar como atendida\nAtención\n\nUnidad AGX-921\n\nKilometraje\n\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nSOAT de B0P-347: SOAT vence en 12 días.\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nRevisión técnica de B0P-347: Revisión técnica vence en 10 días.\n\nMarcar como atendida\nAtención\n\nUnidad C7W-118\n\nKilometraje\n\nC7W-118: kilometraje acumulado (160,000 km) superó el umbral de mantenimiento (150,000 km).\n\nMarcar como atendida\nAtención\n\nManuel Torres Quispe\n\nHoras de conducción\n\nManuel Torres Quispe: 52 h de conducción acumuladas superan el límite de 48 h.\n\nMarcar como atendida\nPor vencer\n\nUnidad AGX-921\n\nD"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "area": "precios",
+    "notes": [
+      {
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nMotor de precios\n\nReglas explícitas, no un algoritmo de optimización: precio = tarifa base × ocupación × anticipación × temporada, acotado por el tope de la ruta.\n\nLos cambios de acá solo aplican a reservas nuevas. El precio de un carrito en curso ya quedó congelado al iniciar esa reserva y no se recalcula (regla del proyecto) — nada de lo que edites en esta pantalla toca una compra que ya está en camino.\n\nTarifas por ruta\n\nEl tope máximo es obligatorio: sin él, la ruta no se puede guardar.\n\nRuta\tTarifa base\tTope mínimo\tTope máximo\t\nLima ↔ Huancayo\tS/ 35.00\tS/ 35.00\tS/ 49.00\tEditar\nLima ↔ Cerro de Pasco\tS/ 28.00\tS/ 28.00\tS/ 39.00\tEditar\nHuancayo ↔ Cerro de Pasco\tS/ 15.00\tS/ 15.00\tS/ 21.00\tEditar\nFactores de ocupación\n\nReferenciales de la propuesta técnica — editables.\n\nOcupación\tFactor\t\n0% – 50%\t×1.00\tEditar\n51% – 80%\t×1.10\tEditar\n81% – 100%\t×1.20\tEditar\nFactores de anticipación\n\nPlaceholder: pendiente de definición comercial (ver docs/INFORME-AVANCE.md).\n\nAnticipación\tFactor\t\n0 – 2 días\t×1.15\tEditar\n3 – 7 días\t×1.05\tEditar\n8 – 14 días\t×1.00\tEditar\n15+ días\t×0.95\tEditar\nFactores de temporada\n\nFeriados, Fiestas Patrias, fin de año y eventos locales de Pasco y Junín.\n\nTemporada\tFactor\t\nTemporada baja\t×1.00\tEditar\nFeriados largos\t×1.10\tEditar\nFiestas Patrias\t×1.25\tEditar\nNavidad y Año Nuevo\t×1.25\tEditar\nEventos"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "area": "tarifario",
+    "notes": [
+      {
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nTarifario\n\nRangos de peso por ruta, exceso de equipaje y recargo por valor declarado. El cotizador de encomiendas lee esta misma configuración.\n\nEncomiendas por ruta\n\nSe cobra por rango de peso, no por kilo exacto — el mayor entre peso real y volumétrico.\n\nLima ↔ Huancayo\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nLima ↔ Cerro de Pasco\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nHuancayo ↔ Cerro de Pasco\nAgregar rango\nPendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.\nExceso de equipaje\n\nFranquicia de 20 kg por pasajero. Más de 50 kg se tarifica como encomienda, no como exceso.\n\nRango\tRecargo\t\nHasta 20 kg\tIncluido en el pasaje (franquicia)\n21 – 30 kg\tPendiente de aprobación comercial\tEditar\n31 – 50 kg\tPendiente de aprobación comercial\tEditar\nMás de 50 kg\tSe tarifica como encomienda\nRecargo por valor declarado\n\nOpcional, alineado con el Reglamento Nacional de Administración de Transporte.\n\nPendiente de aprobación comercial\n\nEditar porcentaje\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n\nComprar Pasajes\nEnviar Encomienda\nRastrear Encomienda\nNosotros\nAyuda\n\nCONTACTO Y TERMINALES\n\n987 654 321\ncontacto@ecosemh.pe\nLima: Terminal Lima Norte, Av. Túpac Amaru 1234\nCerro de Pasco: Terminal Cerro de Pasco, Jr. Vilcabamba 456\nHuancayo: Terminal Huancayo Centro, Av. Ferrocarril 789\n\n© 2026 Ecosem H. Todos los derechos reservados.\n\nTérminos y Condiciones\nPolítica de Privacidad\nRol (solo desarrollo):\nSin sesión\nPasajero\nCounter\nSupervisor"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "area": "flota-conductores",
+    "notes": [
+      {
+        "step": "flota-lista",
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "step": "flota-detalle",
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "step": "flota-detalle-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nVolver a Flota\nAGX-921 · Volnova Andina 360\n\nEconómico · 56 asientos\n\nDocumentos\n\nSOAT, revisión técnica y tarjeta de circulación, con su fecha de vencimiento.\n\nDocumento\tNúmero\tVencimiento\tEstado\nSOAT\tSOAT-AGX921-26\t05/10/2026\tPor vencer\nRevisión técnica\tRT-AGX921-26\t03/04/2027\tVigente\nTarjeta de circulación\tTC-AGX921-19\t12/02/2027\tVigente\nUmbral de mantenimiento\n\n210,000 km acumulados de un umbral de 200,000 km — superado.\n\nAtención\nEditar umbral\nHistórico de alertas\n\nEmitidas y atendidas para esta unidad.\n\nDescripción\tEmitida\tEstado\tAtendida por\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\t15/09/2026\tAtención\t—\nSOAT de AGX-921: SOAT vence en 20 días.\t05/09/2026\tPor vencer\t—\nRevisión técnica de AGX-921: venció y fue renovada a tiempo.\t12/06/2026\tAtendida\t\n\nCarlos Mendoza Ruiz\n\n17/06/2026 · Se coordinó con el taller y se renovó el documento antes de la fecha límite.\n\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío "
+      },
+      {
+        "step": "conductores",
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "step": "conductores-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nConductores\n\nLicencia, vencimiento y horas de conducción acumuladas frente al límite vigente.\n\nLímite de horas de conducción\n\nParámetro configurable: hoy está en 48 h acumuladas.\n\nEditar límite\n\nManuel Torres Quispe\n\nLicencia A-IIIb 74812345 · vence 30/10/2026\n\n52 h de conducción acumuladas\n\nAtención\n\nWilfredo Salazar Mamani\n\nLicencia A-IIIb 68231190 · vence 21/09/2026\n\n30 h de conducción acumuladas\n\nUrgente\n\nJulio Cárdenas Rojas\n\nLicencia A-IIIb 71234567 · vence 31/08/2026\n\n20 h de conducción acumuladas\n\nVencido\n\nSegundo Huamán Ccoyllo\n\nLicencia A-IIIb 60345678 · vence 12/07/2027\n\n15 h de conducción acumuladas\n\nSin alertas activas\n\nFortunato Vilca Cusi\n\nLicencia A-IIIb 65456789 · vence 14/10/2026\n\n40 h de conducción acumuladas\n\nPor vencer\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n\nComprar Pasajes\nEnviar Encomienda\nRastrear Encomienda\nNosotros\nAyuda\n\nCONTACTO Y TERMINALES\n\n987 654 321\ncontacto@ecosemh.pe\nLi"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "area": "alertas",
+    "notes": [
+      {
+        "overflow": {
+          "w": 1440,
+          "c": 1440
+        }
+      },
+      {
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nAlertas\n\nDocumentos por vencer, kilometraje sobre el umbral y horas de conducción acumuladas, ordenadas por urgencia.\n\nVencido\n\nUnidad C7W-118\n\nDocumento por vencer\n\nRevisión técnica de C7W-118: Revisión técnica vencido hace 10 días.\n\nMarcar como atendida\nVencido\n\nUnidad D2K-560\n\nDocumento por vencer\n\nSOAT de D2K-560: SOAT vencido hace 3 días.\n\nMarcar como atendida\nVencido\n\nJulio Cárdenas Rojas\n\nDocumento por vencer\n\nLicencia de conducir de Julio Cárdenas Rojas: La licencia vencido hace 15 días.\n\nMarcar como atendida\nUrgente\n\nUnidad C7W-118\n\nDocumento por vencer\n\nSOAT de C7W-118: SOAT vence en 5 días.\n\nMarcar como atendida\nUrgente\n\nWilfredo Salazar Mamani\n\nDocumento por vencer\n\nLicencia de conducir de Wilfredo Salazar Mamani: La licencia vence en 6 días.\n\nMarcar como atendida\nAtención\n\nUnidad AGX-921\n\nKilometraje\n\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nSOAT de B0P-347: SOAT vence en 12 días.\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nRevisión técnica de B0P-347: Revisión técnica vence en 10 días.\n\nMarcar como atendida\nAtención\n\nUnidad C7W-118\n\nKilometraje\n\nC7W-118: kilometraje acumulado (160,000 km) superó el umbral de mantenimiento (150,000 km).\n\nMarcar como a"
+      },
+      {
+        "step": "modal-abierto",
+        "dialogCount": 1
+      },
+      {
+        "step": "focus-trap-tab15",
+        "escapedFocus": false
+      },
+      {
+        "step": "modal-elementos-interactivos",
+        "count": 4
+      },
+      {
+        "step": "foco-antes-abrir",
+        "beforeActive": "<button type=\"button\" aria-busy=\"false\" class=\"inline-flex h-12 min-w-11 items-center justify-center gap-2 rounded-pill "
+      },
+      {
+        "step": "foco-tras-cerrar",
+        "afterActive": "<body class=\"min-h-screen flex flex-col\"><div hidden=\"\"><!--$--><!--/$--></div><header class=\"sticky top-0 z-50 flex h-1",
+        "coincide": false
+      },
+      {
+        "step": "texto-tras-atender",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Supervisor\nInicio\nViajes\nVenta\nCaja\nPrecios\nFlota\nConductores\nAlertas\nTarifario\nAlertas\n\nDocumentos por vencer, kilometraje sobre el umbral y horas de conducción acumuladas, ordenadas por urgencia.\n\nVencido\n\nUnidad D2K-560\n\nDocumento por vencer\n\nSOAT de D2K-560: SOAT vencido hace 3 días.\n\nMarcar como atendida\nVencido\n\nJulio Cárdenas Rojas\n\nDocumento por vencer\n\nLicencia de conducir de Julio Cárdenas Rojas: La licencia vencido hace 15 días.\n\nMarcar como atendida\nUrgente\n\nUnidad C7W-118\n\nDocumento por vencer\n\nSOAT de C7W-118: SOAT vence en 5 días.\n\nMarcar como atendida\nUrgente\n\nWilfredo Salazar Mamani\n\nDocumento por vencer\n\nLicencia de conducir de Wilfredo Salazar Mamani: La licencia vence en 6 días.\n\nMarcar como atendida\nAtención\n\nUnidad AGX-921\n\nKilometraje\n\nAGX-921: kilometraje acumulado (210,000 km) superó el umbral de mantenimiento (200,000 km).\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nSOAT de B0P-347: SOAT vence en 12 días.\n\nMarcar como atendida\nAtención\n\nUnidad B0P-347\n\nDocumento por vencer\n\nRevisión técnica de B0P-347: Revisión técnica vence en 10 días.\n\nMarcar como atendida\nAtención\n\nUnidad C7W-118\n\nKilometraje\n\nC7W-118: kilometraje acumulado (160,000 km) superó el umbral de mantenimiento (150,000 km).\n\nMarcar como atendida\nAtención\n\nManuel Torres Quispe\n\nHoras de conducción\n\nManuel Torres Quispe: 52 h de conducción acumuladas superan el límite de 48 "
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  }
+]

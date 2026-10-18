@@ -1,0 +1,89 @@
+{
+  "/": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "nodes": 9,
+      "targets": [
+        [
+          "#_R_n5esmlb_-tab-encomiendas"
+        ],
+        [
+          ".block.rounded-modal.focus-visible\\:outline-secondary:nth-child(1) > .hover\\:shadow-medium.shadow-low.p-4 > .min-w-0 > .text-navy\\/60:nth-child(1)"
+        ],
+        [
+          ".block.rounded-modal.focus-visible\\:outline-secondary:nth-child(1) > .hover\\:shadow-medium.shadow-low.p-4 > .min-w-0 > .mt-1.text-navy\\/60"
+        ]
+      ]
+    }
+  ],
+  "/pasajes/resultados": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "nodes": 3,
+      "targets": [
+        [
+          ".items-start.flex-1:nth-child(2) > .gap-1.flex-col.items-center > .whitespace-nowrap.text-navy\\/40.text-xs"
+        ],
+        [
+          ".items-start.flex-1:nth-child(3) > .gap-1.flex-col.items-center > .whitespace-nowrap.text-navy\\/40.text-xs"
+        ],
+        [
+          ".items-start:nth-child(4) > .gap-1.flex-col.items-center > .whitespace-nowrap.text-navy\\/40.text-xs"
+        ]
+      ]
+    }
+  ],
+  "/panel/alertas": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "nodes": 15,
+      "targets": [
+        [
+          ".sm\\:items-center.p-4.shadow-low:nth-child(1) > .items-start.gap-3.flex > div > .text-navy\\/60.text-xs"
+        ],
+        [
+          ".sm\\:items-center.p-4.shadow-low:nth-child(2) > .items-start.gap-3.flex > div > .text-navy\\/60.text-xs"
+        ],
+        [
+          ".sm\\:items-center.p-4.shadow-low:nth-child(3) > .items-start.gap-3.flex > div > .text-navy\\/60.text-xs"
+        ]
+      ]
+    },
+    {
+      "id": "scrollable-region-focusable",
+      "impact": "serious",
+      "help": "Scrollable region must have keyboard access",
+      "nodes": 1,
+      "targets": [
+        [
+          ".overflow-x-auto"
+        ]
+      ]
+    }
+  ],
+  "/embarque": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "nodes": 12,
+      "targets": [
+        [
+          ".p-4.shadow-low.rounded-md:nth-child(1) > .items-start.gap-3.flex > div > .text-xs.text-navy\\/60:nth-child(2)"
+        ],
+        [
+          ".p-4.shadow-low.rounded-md:nth-child(1) > .items-start.gap-3.flex > div > .mt-1.text-xs.text-navy\\/60"
+        ],
+        [
+          ".p-4.shadow-low.rounded-md:nth-child(2) > .items-start.gap-3.flex > div > .text-xs.text-navy\\/60:nth-child(2)"
+        ]
+      ]
+    }
+  ]
+}
