@@ -1,0 +1,464 @@
+[
+  {
+    "vp": "360x640",
+    "flow": "venta",
+    "steps": [
+      {
+        "step": "buscar-load",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "resultados",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "resultados-count",
+        "hayResultados": 1
+      },
+      {
+        "step": "asientos",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "datos",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "opciones-medio-pago",
+        "opcionesPago": [
+          "Efectivo",
+          "Yape",
+          "Plin",
+          "Tarjeta"
+        ]
+      },
+      {
+        "step": "localStorage-antes-confirmar",
+        "lsAntes": "{}"
+      },
+      {
+        "step": "confirmado",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        },
+        "downloadOk": true,
+        "downloadName": "boleto-ECH-F499A3.pdf"
+      },
+      {
+        "step": "localStorage-despues-confirmar",
+        "lsDespues": "{}"
+      },
+      {
+        "step": "codigo-boleto",
+        "codigoMatch": "ECH-F499A3"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "360x640",
+    "flow": "caja",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nArqueo de caja\n\nElige agencia, turno y usuario para ver el resumen de ese turno.\n\nAgencia\nLima\nTurno\nTurno mañana (06:00 – 14:00)\nUsuario\nRosa Fernández\n\nTotal vendido\n\nS/ 259.00\n\nBoletos\n\n3\n\nEncomiendas\n\n2\n\nTransacciones\n\n5\n\nDesglose por medio de pago\nEfectivo\nS/ 60.00\nYape\nS/ 84.00\nPlin\nS/ 40.00\nTarjeta\nS/ 75.00\nTransacciones del turno\nHora\tTipo\tReferencia\tMedio\tMonto\n6:20 AM\tPasaje\tECH-9F21A0\tEfectivo\tS/ 35.00\n7:05 AM\tPasaje\tECH-4B7C12\tYape\tS/ 84.00\n8:40 AM\tEncomienda\tECH-000123\tEfectivo\tS/ 25.00\n10:15 AM\tPasaje\tECH-11A0F3\tTarjeta\tS/ 75.00\n12:30 PM\tEncomienda\tECH-000321\tPlin\tS/ 40.00\nCerrar turno\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seg"
+      },
+      {
+        "step": "tras-cerrar-turno",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "360x640",
+    "flow": "viajes",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nViajes del día\n\nFiltra por fecha, ruta y agencia, y entra al detalle para generar el manifiesto.\n\nFecha\n31/08/2026\nOrigen\nTodas\nDestino\nTodas\nAgencia\nTodas\n\nLima → Huancayo\n\n5:30 AM · 31/08/2026 · Bus F5R-284 · Económico\n\n56/56 vendidos\n\nEn ruta\nVer detalle\n\nLima → Huancayo\n\n7:00 AM · 31/08/2026 · Bus B0P-347 · Ejecutivo\n\n39/42 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n1:00 PM · 31/08/2026 · Bus B0P-347 · VIP\n\n4/30 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n8:00 PM · 31/08/2026 · Bus F5R-284 · Económico\n\n0/56 vendidos\n\nCancelado\nVer detalle\n\nLima → Cerro de Pasco\n\n6:00 AM · 31/08/2026 · Bus D2K-560 · Económico\n\n16/56 vendidos\n\nCompletado\nVer detalle\n\nHuancayo → Lima\n\n6:30 AM · 31/08/2026 · Bus AGX-921 · Económico\n\n10/56 vendidos\n\nPendiente\nVer detalle\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y envío de encomiendas con seguimiento en línea.\n\nENLACES\n"
+      },
+      {
+        "step": "detalle-v1",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "detalle-v1-texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 5:30 AM · Económico · Terminal Lima Norte\n\nEn ruta\n\nUnidad\n\nF5R-284\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n56/56 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tYupanqui Fernández, Patricia\tDNI 20750122\tHuancayo\tEmbarcado\n1-1B\tGutiérrez Huamán, Carmen\tDNI 22364367\tHuancayo\tPendiente\n1-1C\tCusi Huamán, Pedro\tDNI 60924165\tHuancayo\tPendiente\n1-1D\tRamos Paredes, Raúl\tDNI 64612855\tHuancayo\tEmbarcad"
+      },
+      {
+        "step": "manifiesto-v1-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-0530.pdf"
+      },
+      {
+        "step": "detalle-v4",
+        "overflow": {
+          "docScrollW": 360,
+          "docClientW": 360
+        }
+      },
+      {
+        "step": "detalle-v4-texto",
+        "preview": "Panel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 1:00 PM · VIP · Terminal Lima Norte\n\nConfirmado\n\nUnidad\n\nB0P-347\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n4/30 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tHuamán Torres, Luis\tDNI 17221612\tHuancayo\tEmbarcado\n1-1B\tCcoyllo Torres, Raúl\tDNI 63810339\tHuancayo\tPendiente\n1-1C\tParedes Fernández, Patricia\tDNI 60512630\tHuancayo\tPendiente\n1-2A\tFernández Cusi, José\tDNI 95975363\tHuancayo\tEmbarcado\nEcose"
+      },
+      {
+        "step": "manifiesto-v4-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-1300.pdf"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "768x1024",
+    "flow": "venta",
+    "steps": [
+      {
+        "step": "buscar-load",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "resultados",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "resultados-count",
+        "hayResultados": 1
+      },
+      {
+        "step": "asientos",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "datos",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "opciones-medio-pago",
+        "opcionesPago": [
+          "Efectivo",
+          "Yape",
+          "Plin",
+          "Tarjeta"
+        ]
+      },
+      {
+        "step": "localStorage-antes-confirmar",
+        "lsAntes": "{}"
+      },
+      {
+        "step": "confirmado",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        },
+        "downloadOk": true,
+        "downloadName": "boleto-ECH-B55FF6.pdf"
+      },
+      {
+        "step": "localStorage-despues-confirmar",
+        "lsDespues": "{}"
+      },
+      {
+        "step": "codigo-boleto",
+        "codigoMatch": "ECH-B55FF6"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "768x1024",
+    "flow": "caja",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nArqueo de caja\n\nElige agencia, turno y usuario para ver el resumen de ese turno.\n\nAgencia\nLima\nTurno\nTurno mañana (06:00 – 14:00)\nUsuario\nRosa Fernández\n\nTotal vendido\n\nS/ 259.00\n\nBoletos\n\n3\n\nEncomiendas\n\n2\n\nTransacciones\n\n5\n\nDesglose por medio de pago\nEfectivo\nS/ 60.00\nYape\nS/ 84.00\nPlin\nS/ 40.00\nTarjeta\nS/ 75.00\nTransacciones del turno\nHora\tTipo\tReferencia\tMedio\tMonto\n6:20 AM\tPasaje\tECH-9F21A0\tEfectivo\tS/ 35.00\n7:05 AM\tPasaje\tECH-4B7C12\tYape\tS/ 84.00\n8:40 AM\tEncomienda\tECH-000123\tEfectivo\tS/ 25.00\n10:15 AM\tPasaje\tECH-11A0F3\tTarjeta\tS/ 75.00\n12:30 PM\tEncomienda\tECH-000321\tPlin\tS/ 40.00\nCerrar turno\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Hua"
+      },
+      {
+        "step": "tras-cerrar-turno",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' ",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://ne"
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "768x1024",
+    "flow": "viajes",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nViajes del día\n\nFiltra por fecha, ruta y agencia, y entra al detalle para generar el manifiesto.\n\nFecha\n31/08/2026\nOrigen\nTodas\nDestino\nTodas\nAgencia\nTodas\n\nLima → Huancayo\n\n5:30 AM · 31/08/2026 · Bus F5R-284 · Económico\n\n56/56 vendidos\n\nEn ruta\nVer detalle\n\nLima → Huancayo\n\n7:00 AM · 31/08/2026 · Bus B0P-347 · Ejecutivo\n\n39/42 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n1:00 PM · 31/08/2026 · Bus B0P-347 · VIP\n\n4/30 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n8:00 PM · 31/08/2026 · Bus F5R-284 · Económico\n\n0/56 vendidos\n\nCancelado\nVer detalle\n\nLima → Cerro de Pasco\n\n6:00 AM · 31/08/2026 · Bus D2K-560 · Económico\n\n16/56 vendidos\n\nCompletado\nVer detalle\n\nHuancayo → Lima\n\n6:30 AM · 31/08/2026 · Bus AGX-921 · Económico\n\n10/56 vendidos\n\nPendiente\nVer detalle\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y en"
+      },
+      {
+        "step": "detalle-v1",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "detalle-v1-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 5:30 AM · Económico · Terminal Lima Norte\n\nEn ruta\n\nUnidad\n\nF5R-284\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n56/56 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tYupanqui Fernández, Patricia\tDNI 20750122\tHuancayo\tEmbarcado\n1-1B\tGutiérrez Huamán, Carmen\tDNI 22364367\tHuancayo\tPendiente\n1-1C\tCusi Huamán, Pedro\tDNI 60924165\tHuancayo\tPendiente\n1"
+      },
+      {
+        "step": "manifiesto-v1-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-0530.pdf"
+      },
+      {
+        "step": "detalle-v4",
+        "overflow": {
+          "docScrollW": 768,
+          "docClientW": 768
+        }
+      },
+      {
+        "step": "detalle-v4-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 1:00 PM · VIP · Terminal Lima Norte\n\nConfirmado\n\nUnidad\n\nB0P-347\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n4/30 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tHuamán Torres, Luis\tDNI 17221612\tHuancayo\tEmbarcado\n1-1B\tCcoyllo Torres, Raúl\tDNI 63810339\tHuancayo\tPendiente\n1-1C\tParedes Fernández, Patricia\tDNI 60512630\tHuancayo\tPendiente\n1-2A\tFern"
+      },
+      {
+        "step": "manifiesto-v4-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-1300.pdf"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' ",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://ne"
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "flow": "venta",
+    "steps": [
+      {
+        "step": "buscar-load",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "resultados",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "resultados-count",
+        "hayResultados": 1
+      },
+      {
+        "step": "asientos",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "datos",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "opciones-medio-pago",
+        "opcionesPago": [
+          "Efectivo",
+          "Yape",
+          "Plin",
+          "Tarjeta"
+        ]
+      },
+      {
+        "step": "localStorage-antes-confirmar",
+        "lsAntes": "{}"
+      },
+      {
+        "step": "confirmado",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        },
+        "downloadOk": true,
+        "downloadName": "boleto-ECH-0EC080.pdf"
+      },
+      {
+        "step": "localStorage-despues-confirmar",
+        "lsDespues": "{}"
+      },
+      {
+        "step": "codigo-boleto",
+        "codigoMatch": "ECH-0EC080"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "flow": "caja",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nArqueo de caja\n\nElige agencia, turno y usuario para ver el resumen de ese turno.\n\nAgencia\nLima\nTurno\nTurno mañana (06:00 – 14:00)\nUsuario\nRosa Fernández\n\nTotal vendido\n\nS/ 259.00\n\nBoletos\n\n3\n\nEncomiendas\n\n2\n\nTransacciones\n\n5\n\nDesglose por medio de pago\nEfectivo\nS/ 60.00\nYape\nS/ 84.00\nPlin\nS/ 40.00\nTarjeta\nS/ 75.00\nTransacciones del turno\nHora\tTipo\tReferencia\tMedio\tMonto\n6:20 AM\tPasaje\tECH-9F21A0\tEfectivo\tS/ 35.00\n7:05 AM\tPasaje\tECH-4B7C12\tYape\tS/ 84.00\n8:40 AM\tEncomienda\tECH-000123\tEfectivo\tS/ 25.00\n10:15 AM\tPasaje\tECH-11A0F3\tTarjeta\tS/ 75.00\n12:30 PM\tEncomienda\tECH-000321\tPlin\tS/ 40.00\nCerrar turno\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Hua"
+      },
+      {
+        "step": "tras-cerrar-turno",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' ",
+      "[warning] Image with src \"/images/libro-de-reclamaciones.png\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://ne"
+    ],
+    "pageErrors": []
+  },
+  {
+    "vp": "1440x900",
+    "flow": "viajes",
+    "steps": [
+      {
+        "step": "load",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nViajes del día\n\nFiltra por fecha, ruta y agencia, y entra al detalle para generar el manifiesto.\n\nFecha\n31/08/2026\nOrigen\nTodas\nDestino\nTodas\nAgencia\nTodas\n\nLima → Huancayo\n\n5:30 AM · 31/08/2026 · Bus F5R-284 · Económico\n\n56/56 vendidos\n\nEn ruta\nVer detalle\n\nLima → Huancayo\n\n7:00 AM · 31/08/2026 · Bus B0P-347 · Ejecutivo\n\n39/42 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n1:00 PM · 31/08/2026 · Bus B0P-347 · VIP\n\n4/30 vendidos\n\nConfirmado\nVer detalle\n\nLima → Huancayo\n\n8:00 PM · 31/08/2026 · Bus F5R-284 · Económico\n\n0/56 vendidos\n\nCancelado\nVer detalle\n\nLima → Cerro de Pasco\n\n6:00 AM · 31/08/2026 · Bus D2K-560 · Económico\n\n16/56 vendidos\n\nCompletado\nVer detalle\n\nHuancayo → Lima\n\n6:30 AM · 31/08/2026 · Bus AGX-921 · Económico\n\n10/56 vendidos\n\nPendiente\nVer detalle\nEcosem H\n\nTransporte interprovincial entre Lima, Cerro de Pasco y Huancayo. Venta de pasajes y en"
+      },
+      {
+        "step": "detalle-v1",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "detalle-v1-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 5:30 AM · Económico · Terminal Lima Norte\n\nEn ruta\n\nUnidad\n\nF5R-284\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n56/56 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tYupanqui Fernández, Patricia\tDNI 20750122\tHuancayo\tEmbarcado\n1-1B\tGutiérrez Huamán, Carmen\tDNI 22364367\tHuancayo\tPendiente\n1-1C\tCusi Huamán, Pedro\tDNI 60924165\tHuancayo\tPendiente\n1"
+      },
+      {
+        "step": "manifiesto-v1-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-0530.pdf"
+      },
+      {
+        "step": "detalle-v4",
+        "overflow": {
+          "docScrollW": 1440,
+          "docClientW": 1440
+        }
+      },
+      {
+        "step": "detalle-v4-texto",
+        "preview": "Pasajes\nEncomiendas\nRastreo\nNosotros\nPanel\nMi perfil\n\nPanel interno · Personal\n\nEcosem H · Counter\nInicio\nViajes\nVenta\nCaja\nVolver a viajes\nLima → Huancayo\n\nLunes, 31 de Agosto, 1:00 PM · VIP · Terminal Lima Norte\n\nConfirmado\n\nUnidad\n\nB0P-347\n\nConductores\n\nManuel Torres Quispe / Wilfredo Salazar Mamani\n\nOcupación\n\n4/30 vendidos\n\nPasajeros\nGenerar manifiesto\nAsiento\tNombre completo\tDocumento\tDestino\tEmbarque\n1-1A\tHuamán Torres, Luis\tDNI 17221612\tHuancayo\tEmbarcado\n1-1B\tCcoyllo Torres, Raúl\tDNI 63810339\tHuancayo\tPendiente\n1-1C\tParedes Fernández, Patricia\tDNI 60512630\tHuancayo\tPendiente\n1-2A\tFern"
+      },
+      {
+        "step": "manifiesto-v4-download",
+        "ok": true,
+        "name": "manifiesto-lima-huancayo-1300.pdf"
+      }
+    ],
+    "consoleMsgs": [
+      "[warning] Image with src \"/ecosemh-mark.png\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' "
+    ],
+    "pageErrors": []
+  }
+]
