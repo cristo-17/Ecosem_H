@@ -1,4 +1,5 @@
 import { esCiudad } from "@/lib/mock/viajes";
+import { esFechaBusqueda, hoyEnPeru } from "@/lib/api/ventas";
 import { ResultadosView } from "./ResultadosView";
 
 function primerValor(valor: string | string[] | undefined): string | undefined {
@@ -10,19 +11,21 @@ export default async function ResultadosPasajesPage(props: PageProps<"/pasajes/r
 
   const origenParam = primerValor(searchParams.origen);
   const destinoParam = primerValor(searchParams.destino);
+  const fechaParam = primerValor(searchParams.fecha);
 
   const origen = esCiudad(origenParam) ? origenParam : "Lima";
   const destino = esCiudad(destinoParam) ? destinoParam : "Huancayo";
-  const forzarError = primerValor(searchParams.error) === "1";
+  // Sin fecha (p. ej. desde Rutas populares) se busca hoy, hora de Perú.
+  const fecha = esFechaBusqueda(fechaParam) ? fechaParam : hoyEnPeru();
   const pasajerosParam = Number(primerValor(searchParams.pasajeros));
   const pasajerosCount = Number.isInteger(pasajerosParam) && pasajerosParam > 0 ? pasajerosParam : 1;
 
   return (
     <ResultadosView
-      key={`${origen}-${destino}-${forzarError}`}
+      key={`${origen}-${destino}-${fecha}`}
       origen={origen}
       destino={destino}
-      forzarError={forzarError}
+      fecha={fecha}
       pasajerosCount={pasajerosCount}
     />
   );

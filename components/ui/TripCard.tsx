@@ -9,12 +9,16 @@ export interface TripCardProps {
   terminalOrigen: string;
   destino: string;
   horaSalida: Date;
-  horaLlegada: Date;
-  duracionMinutos: number;
+  /** null si la llegada todavía no se conoce. */
+  horaLlegada: Date | null;
+  duracionMinutos: number | null;
+  /** La llegada sale de una duración de ruta sin confirmar: se muestra como aproximada. */
+  llegadaAproximada?: boolean;
   asientosDisponibles: number;
   /** Etiqueta ya lista para mostrar, p. ej. "Ejecutivo". */
   tipoAsiento: string;
-  precio: number;
+  /** null si la ruta todavía no tiene tarifa: no se puede seleccionar. */
+  precio: number | null;
   /** Tarjeta seleccionada: borde de color + elevación mayor (skill). */
   selected?: boolean;
   onSeleccionar?: () => void;
@@ -32,6 +36,7 @@ export function TripCard({
   horaSalida,
   horaLlegada,
   duracionMinutos,
+  llegadaAproximada = false,
   asientosDisponibles,
   tipoAsiento,
   precio,
@@ -67,13 +72,18 @@ export function TripCard({
           <p className="text-xs text-navy/60">{terminalOrigen}</p>
         </div>
         <div className="flex flex-1 flex-col items-center px-2">
-          <span className="text-xs whitespace-nowrap text-navy/60">
-            {formatDuracion(duracionMinutos)}
-          </span>
+          {duracionMinutos !== null && (
+            <span className="text-xs whitespace-nowrap text-navy/60">
+              {llegadaAproximada && "aprox. "}
+              {formatDuracion(duracionMinutos)}
+            </span>
+          )}
           <span aria-hidden="true" className="mt-1 h-px w-full bg-navy/15" />
         </div>
         <div className="text-right">
-          <p className="text-lg font-semibold text-navy">{formatHora12(horaLlegada)}</p>
+          <p className="text-lg font-semibold text-navy">
+            {horaLlegada ? formatHora12(horaLlegada) : "Por confirmar"}
+          </p>
           <p className="text-xs text-navy/60">{destino}</p>
         </div>
       </div>
@@ -83,7 +93,9 @@ export function TripCard({
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>
           <p className="text-xs text-navy/60">Precio</p>
-          <p className="text-xl font-bold text-navy">{formatPrecio(precio)}</p>
+          <p className="text-xl font-bold text-navy">
+            {precio !== null ? formatPrecio(precio) : "Sin tarifa"}
+          </p>
         </div>
         {/*
           disabled es "no se puede interactuar", no "ya confirmado" — usarlo
@@ -92,7 +104,12 @@ export function TripCard({
           por skill); el botón se mantiene interactivo y solo cambia de
           etiqueta para confirmar visualmente el estado.
         */}
-        <Button variant="secundario" onClick={onSeleccionar} className="min-w-32">
+        <Button
+          variant="secundario"
+          onClick={onSeleccionar}
+          disabled={precio === null}
+          className="min-w-32"
+        >
           {selected ? (
             <>
               <CheckIcon className="!text-white" />
