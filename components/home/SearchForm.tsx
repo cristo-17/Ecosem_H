@@ -10,6 +10,8 @@ import { PassengerStepper } from "@/components/home/PassengerStepper";
 import { PinIcon } from "@/components/ui/icons";
 import { OPCIONES_CIUDAD } from "@/lib/mock/viajes";
 import { RUTAS } from "@/lib/routes";
+import { fechaParaBusqueda, iniciarBusqueda } from "@/lib/api/ventas";
+import type { AvisoReintento } from "@/lib/api/cliente";
 
 // Misma referencia de "hoy" que usa DatePicker internamente (new Date() en
 // el cuerpo del componente): no vendemos pasajes para fechas pasadas.
@@ -24,6 +26,8 @@ export function SearchForm() {
   const [mostrarRetorno, setMostrarRetorno] = useState(false);
   const [fechaRetorno, setFechaRetorno] = useState<Date | null>(null);
   const [pasajeros, setPasajeros] = useState(1);
+  const [buscando, setBuscando] = useState(false);
+  const [reintento, setReintento] = useState<AvisoReintento | null>(null);
   const [errores, setErrores] = useState<{
     origen?: string;
     destino?: string;
@@ -34,7 +38,7 @@ export function SearchForm() {
     (opcion) => opcion.value !== origen,
   );
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
     const nuevosErrores: typeof errores = {};
@@ -48,16 +52,29 @@ export function SearchForm() {
     setErrores(nuevosErrores);
     if (Object.keys(nuevosErrores).length > 0) return;
 
+    // Fecha de calendario (AAAA-MM-DD), no toISOString(): en UTC una
+    // fecha elegida de noche en Perú podía pasar al día siguiente.
+    const fecha = fechaParaBusqueda(fechaIda!);
     const params = new URLSearchParams({
       origen: origen!,
       destino: destino!,
-      fechaIda: fechaIda!.toISOString(),
+      fecha,
       pasajeros: String(pasajeros),
     });
     if (mostrarRetorno && fechaRetorno) {
-      params.set("fechaRetorno", fechaRetorno.toISOString());
+      params.set("fechaRetorno", fechaParaBusqueda(fechaRetorno));
     }
 
+    // El botón queda cargando mientras dura la búsqueda real. Si falla, se
+    // navega igual: resultados muestra el error de esta misma búsqueda (sin
+    // repetirla) y ofrece reintentar.
+    setBuscando(true);
+    setReintento(null);
+    try {
+      await iniciarBusqueda(origen!, destino!, fecha, { onReintento: setReintento });
+    } catch {
+      // Lo muestra resultados.
+    }
     router.push(`${RUTAS.resultadosPasajes}?${params.toString()}`);
   }
 
@@ -121,9 +138,13 @@ sition hover:bg-secondary/5 focus-visible:outline-2 focus-visible:outline-offset
 
       <PassengerStepper value={pasajeros} onChange={setPasajeros} />
 
-      <Button type="submit" className="mt-1 w-full">
+      <Button type="submit" className="mt-1 w-full" isLoading={buscando}>
         Buscar
       </Button>
+      <p role="status" aria-live="polite" className="text-center text-sm text-navy/70 empty:hidden">
+        {reintento &&
+          `Hay mucha demanda en este momento. Reintentando (${reintento.intento} de ${reintento.maximo})…`}
+      </p>
     </form>
   );
 }

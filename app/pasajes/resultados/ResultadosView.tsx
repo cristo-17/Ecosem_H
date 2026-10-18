@@ -11,17 +11,50 @@ import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
 import { SearchOffIcon, ExclamationIcon } from "@/components/ui/icons";
 import {
-  buscarViajes,
   franjaHoraria,
   labelTipoAsiento,
   FRANJAS_HORARIAS,
   TIPOS_ASIENTO,
   type Ciudad,
-  type Viaje,
 } from "@/lib/mock/viajes";
 import { RUTAS } from "@/lib/routes";
+import { formatFechaLarga } from "@/lib/format";
+import {
+  buscarViajes,
+  busquedaEntregada,
+  fechaDesdeBusqueda,
+  type ResultadoBusqueda,
+} from "@/lib/api/ventas";
+import { ApiError, type AvisoReintento, type TipoFalla } from "@/lib/api/cliente";
 
-type Estado = "cargando" | "error" | "listo";
+type Estado =
+  | { tipo: "cargando"; reintento: AvisoReintento | null }
+  | { tipo: "error"; falla: ApiError }
+  | { tipo: "listo"; resultado: ResultadoBusqueda };
+
+const MENSAJES_FALLA: Record<TipoFalla, { titulo: string; descripcion: string }> = {
+  red: {
+    titulo: "Sin conexión a internet",
+    descripcion: "No pudimos completar la búsqueda. Revisa tu conexión e intenta nuevamente.",
+  },
+  tiempo: {
+    titulo: "La búsqueda tardó demasiado",
+    descripcion:
+      "El servidor no respondió a tiempo. Puede ser una señal débil: intenta nuevamente en unos segundos.",
+  },
+  ocupado: {
+    titulo: "Hay mucha demanda en este momento",
+    descripcion:
+      "Intentamos varias veces y el sistema de ventas sigue ocupado. Espera un momento e intenta nuevamente.",
+  },
+  // La descripción es el mensaje del backend: viene en español y sin datos personales.
+  servidor: {
+    titulo: "No se pudo completar la búsqueda",
+    descripcion: "",
+  },
+};
+
+const MARCA = "Ecosem H";
 
 const OPCIONES_HORARIO: SelectOption[] = [
   { value: "todos", label: "Todos los horarios" },
@@ -36,53 +69,66 @@ const OPCIONES_SERVICIO: SelectOption[] = [
 export interface ResultadosViewProps {
   origen: Ciudad;
   destino: Ciudad;
-  /**
-   * true cuando la URL trae ?error=1. No hay backend todavía: es la forma
-   * de probar el estado de error de esta pantalla sin depender de una
-   * falla real de red. Se reemplaza cuando se integre la búsqueda real.
-   */
-  forzarError: boolean;
+  /** `AAAA-MM-DD`, hora de Perú. */
+  fecha: string;
   pasajerosCount: number;
 }
 
 export function ResultadosView({
   origen,
   destino,
-  forzarError,
+  fecha,
   pasajerosCount,
 }: ResultadosViewProps) {
   const router = useRouter();
-  const [estado, setEstado] = useState<Estado>("cargando");
-  const [viajesRuta, setViajesRuta] = useState<Viaje[]>([]);
+  const [estado, setEstado] = useState<Estado>({ tipo: "cargando", reintento: null });
   const [horario, setHorario] = useState("todos");
   const [tipoServicio, setTipoServicio] = useState("todos");
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
-  // Cambiar este contador reprograma la simulación de red sin necesitar un
-  // setState síncrono en el efecto (el reintento ya puso "cargando" antes
-  // de incrementarlo, desde el event handler del botón).
+  // Cambiar este contador repite la búsqueda sin necesitar un setState
+  // síncrono en el efecto (el reintento ya puso "cargando" antes de
+  // incrementarlo, desde el event handler del botón).
   const [intento, setIntento] = useState(0);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (forzarError) {
-        setEstado("error");
-        return;
-      }
-      setViajesRuta(buscarViajes(origen, destino));
-      setEstado("listo");
-    }, 700);
-    return () => clearTimeout(timeoutId);
-  }, [origen, destino, forzarError, intento]);
+    const controlador = new AbortController();
+    // La primera vez se usa la búsqueda que ya hizo el buscador; "Reintentar"
+    // siempre pide datos nuevos.
+    const busqueda =
+      (intento === 0 && busquedaEntregada(origen, destino, fecha)) ||
+      buscarViajes(origen, destino, fecha, {
+        signal: controlador.signal,
+        onReintento: (reintento) => setEstado({ tipo: "cargando", reintento }),
+      });
+
+    busqueda.then(
+      (resultado) => {
+        if (!controlador.signal.aborted) setEstado({ tipo: "listo", resultado });
+      },
+      (error: unknown) => {
+        if (controlador.signal.aborted) return;
+        setEstado({
+          tipo: "error",
+          falla:
+            error instanceof ApiError
+              ? error
+              : new ApiError("servidor", "No pudimos completar la búsqueda."),
+        });
+      },
+    );
+    return () => controlador.abort();
+  }, [origen, destino, fecha, intento]);
 
   function reintentar() {
-    setEstado("cargando");
+    setEstado({ tipo: "cargando", reintento: null });
     setIntento((valor) => valor + 1);
   }
 
-  const viajesFiltrados = viajesRuta.filter((viaje) => {
-    if (horario !== "todos" && franjaHoraria(viaje.horaSalida) !== horario)
+  const viajesRuta = estado.tipo === "listo" ? estado.resultado.viajes : [];
+  const viajesFiltrados = viajesRuta.filter(({ viaje }) => {
+    if (horario !== "todos" && franjaHoraria(new Date(viaje.departsAt)) !== horario)
       return false;
-    if (tipoServicio !== "todos" && viaje.tipoAsiento !== tipoServicio)
+    if (tipoServicio !== "todos" && viaje.serviceType !== tipoServicio)
       return false;
     return true;
   });
@@ -92,7 +138,8 @@ export function ResultadosView({
     setTipoServicio("todos");
   }
 
-  const filtrosDeshabilitados = estado !== "listo";
+  const filtrosDeshabilitados = estado.tipo !== "listo";
+  const fechaLegible = formatFechaLarga(fechaDesdeBusqueda(fecha));
 
   return (
     <main
@@ -106,10 +153,14 @@ export function ResultadosView({
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">
         {origen} → {destino}
       </h1>
-      <p className="mt-1 text-sm text-navy/70">
-        {estado === "cargando" && "Buscando los mejores horarios…"}
-        {estado === "error" && "No se pudo completar la búsqueda"}
-        {estado === "listo" &&
+      <p className="mt-1 text-sm font-medium text-navy">{fechaLegible}</p>
+      <p aria-live="polite" className="mt-1 text-sm text-navy/70">
+        {estado.tipo === "cargando" &&
+          (estado.reintento
+            ? `Hay mucha demanda en este momento. Reintentando (${estado.reintento.intento} de ${estado.reintento.maximo})…`
+            : "Buscando los mejores horarios…")}
+        {estado.tipo === "error" && "No se pudo completar la búsqueda"}
+        {estado.tipo === "listo" &&
           `${viajesFiltrados.length} ${viajesFiltrados.length === 1 ? "viaje encontrado" : "viajes encontrados"}`}
       </p>
 
@@ -131,7 +182,7 @@ export function ResultadosView({
       </div>
 
       <div className="mt-4 flex flex-col gap-4">
-        {estado === "cargando" && (
+        {estado.tipo === "cargando" && (
           <div
             role="status"
             aria-label="Cargando resultados"
@@ -143,22 +194,31 @@ export function ResultadosView({
           </div>
         )}
 
-        {estado === "error" && (
+        {estado.tipo === "error" && (
           <EmptyState
             icon={<ExclamationIcon className="!size-12 !text-primary" />}
-            title="Sin conexión a internet"
-            description="No pudimos completar la búsqueda. Revisa tu conexión e intenta nuevamente."
+            title={MENSAJES_FALLA[estado.falla.tipo].titulo}
+            description={
+              estado.falla.tipo === "servidor"
+                ? estado.falla.message
+                : MENSAJES_FALLA[estado.falla.tipo].descripcion
+            }
             actionLabel="Reintentar"
             onAction={reintentar}
             footer={
-              <p className="text-sm text-navy/70">
-                O llama a la central: +51 959 366 710
-              </p>
+              <div className="flex flex-col gap-1 text-sm text-navy/70">
+                <p>O llama a la central: +51 959 366 710</p>
+                {estado.falla.correlationId && (
+                  <p className="text-xs">
+                    Código de referencia: {estado.falla.correlationId.slice(0, 8)}
+                  </p>
+                )}
+              </div>
             }
           />
         )}
 
-        {estado === "listo" && viajesRuta.length === 0 && (
+        {estado.tipo === "listo" && !estado.resultado.existeRuta && (
           <EmptyState
             icon={<SearchOffIcon />}
             title="No hay viajes para esta ruta"
@@ -168,7 +228,19 @@ export function ResultadosView({
           />
         )}
 
-        {estado === "listo" &&
+        {estado.tipo === "listo" &&
+          estado.resultado.existeRuta &&
+          viajesRuta.length === 0 && (
+            <EmptyState
+              icon={<SearchOffIcon />}
+              title="No hay viajes para esta fecha"
+              description={`No tenemos salidas programadas de ${origen} a ${destino} el ${fechaLegible}. Prueba con otra fecha.`}
+              actionLabel="Cambiar fecha"
+              onAction={() => router.push(RUTAS.inicio)}
+            />
+          )}
+
+        {estado.tipo === "listo" &&
           viajesRuta.length > 0 &&
           viajesFiltrados.length === 0 && (
             <EmptyState
@@ -180,23 +252,31 @@ export function ResultadosView({
             />
           )}
 
-        {estado === "listo" &&
-          viajesFiltrados.map((viaje) => (
-            <TripCard
-              key={viaje.id}
-              marca={viaje.marca}
-              terminalOrigen={viaje.terminalOrigen}
-              destino={viaje.destino}
-              horaSalida={viaje.horaSalida}
-              horaLlegada={viaje.horaLlegada}
-              duracionMinutos={viaje.duracionMinutos}
-              asientosDisponibles={viaje.asientosDisponibles}
-              tipoAsiento={labelTipoAsiento(viaje.tipoAsiento)}
-              precio={viaje.precio}
-              selected={seleccionadoId === viaje.id}
-              onSeleccionar={() => setSeleccionadoId(viaje.id)}
-            />
-          ))}
+        {estado.tipo === "listo" &&
+          viajesFiltrados.map(({ viaje, terminalOrigen }) => {
+            const salida = new Date(viaje.departsAt);
+            const llegada = viaje.arrivesAt ? new Date(viaje.arrivesAt) : null;
+            return (
+              <TripCard
+                key={viaje.id}
+                marca={MARCA}
+                terminalOrigen={terminalOrigen}
+                destino={destino}
+                horaSalida={salida}
+                horaLlegada={llegada}
+                duracionMinutos={
+                  llegada ? Math.round((llegada.getTime() - salida.getTime()) / 60_000) : null
+                }
+                llegadaAproximada={viaje.arrivalProvisional}
+                asientosDisponibles={viaje.availableSeats}
+                tipoAsiento={labelTipoAsiento(viaje.serviceType)}
+                // Informativo: el precio que vale es el que congela la reserva.
+                precio={viaje.unitPrice !== null ? Number(viaje.unitPrice) : null}
+                selected={seleccionadoId === viaje.id}
+                onSeleccionar={() => setSeleccionadoId(viaje.id)}
+              />
+            );
+          })}
       </div>
 
       {seleccionadoId && (
