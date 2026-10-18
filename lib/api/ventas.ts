@@ -25,7 +25,7 @@ export interface ResultadoBusqueda {
 // falla, se olvida para que el siguiente intento la repita.
 let catalogo: Promise<CatalogResponse> | null = null;
 
-function obtenerCatalogo(opciones: OpcionesPeticion): Promise<CatalogResponse> {
+export function obtenerCatalogo(opciones: OpcionesPeticion = {}): Promise<CatalogResponse> {
   if (!catalogo) {
     // Sin `signal`: la promesa se comparte, y que una pantalla se desmonte no
     // debe cancelarla para las demás.
@@ -37,6 +37,35 @@ function obtenerCatalogo(opciones: OpcionesPeticion): Promise<CatalogResponse> {
     });
   }
   return catalogo;
+}
+
+export interface CiudadesConRuta {
+  /** Ciudades desde las que sale al menos una ruta activa, en orden alfabético. */
+  origenes: string[];
+  /** Por cada origen, las ciudades a las que llega una ruta activa. */
+  destinosDesde: Record<string, string[]>;
+}
+
+/**
+ * Lo que ofrece el buscador, sacado del catálogo: solo pares de ciudades con
+ * una ruta activa. Una ruta nueva en el backend aparece sola.
+ */
+export function ciudadesConRuta({ terminals, routes }: CatalogResponse): CiudadesConRuta {
+  const ciudad = new Map(terminals.map((t) => [t.id, t.city]));
+  const destinos = new Map<string, Set<string>>();
+  for (const ruta of routes) {
+    const origen = ciudad.get(ruta.originId);
+    const destino = ciudad.get(ruta.destinationId);
+    if (!ruta.active || !origen || !destino || origen === destino) continue;
+    destinos.set(origen, (destinos.get(origen) ?? new Set()).add(destino));
+  }
+  const ordenar = (lista: Iterable<string>) => [...lista].sort((a, b) => a.localeCompare(b, "es"));
+  return {
+    origenes: ordenar(destinos.keys()),
+    destinosDesde: Object.fromEntries(
+      [...destinos].map(([origen, lista]) => [origen, ordenar(lista)]),
+    ),
+  };
 }
 
 /**
