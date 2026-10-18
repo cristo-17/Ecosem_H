@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
+import { enviarRecuperacion } from "@/lib/auth/acciones";
+import { REGEX_CORREO } from "@/lib/auth/tipos";
 import { RUTAS } from "@/lib/routes";
-
-const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function RecuperarClaveView() {
   const [correo, setCorreo] = useState("");
@@ -17,7 +17,7 @@ export function RecuperarClaveView() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
     if (!correo) {
@@ -30,13 +30,16 @@ export function RecuperarClaveView() {
     }
 
     setError(undefined);
-    // Sin backend todavía (docs/prompts/07-autenticacion.md): solo el flujo
-    // visual de confirmación, sin envío real de correo.
     setEnviando(true);
-    setTimeout(() => {
-      setEnviando(false);
-      setEnviado(true);
-    }, 600);
+    // Supabase Auth envía el enlace. La respuesta es la misma tenga o no
+    // cuenta ese correo: no se revela quién está registrado.
+    const resultado = await enviarRecuperacion(correo);
+    setEnviando(false);
+    if (resultado.error) {
+      setError(resultado.error);
+      return;
+    }
+    setEnviado(true);
   }
 
   if (enviado) {

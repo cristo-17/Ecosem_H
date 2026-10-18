@@ -1,62 +1,76 @@
-import { cookies } from "next/headers";
-import type { RolUsuario } from "@/lib/mock/sesion";
+import "server-only";
+import { cache } from "react";
+import { redirect } from "next/navigation";
+import { clienteSupabaseServidor } from "@/lib/supabase/servidor";
+import { esPersonal, esSupervisor, rolDesdeClaims, type RolUsuario } from "@/lib/auth/roles";
+import { RUTAS } from "@/lib/routes";
+
+export interface Sesion {
+  /** Identificador interno de Supabase Auth. No es un dato personal. */
+  userId: string;
+  rol: RolUsuario;
+  /** Para saludar. Lo escribió el propio usuario al registrarse. */
+  nombre: string | null;
+  correo: string | null;
+}
 
 /**
- * Cookie de sesión: reemplaza a HAY_SESION_MOCK (antes una constante fija en
- * lib/mock/sesion.ts). Server-side, httpOnly — nunca localStorage (regla de
- * CLAUDE.md). Solo guarda una marca de "hay sesión", nunca DNI, nombre,
- * correo ni celular (Ley 29733): esos datos para mostrar en pantalla siguen
- * viniendo de USUARIO_MOCK hasta que exista Supabase Auth.
+ * La sesión de quien hace la petición, verificada en el servidor.
+ *
+ * `getClaims()` comprueba la firma del token de acceso (ES256, con las claves
+ * públicas del proyecto), su vencimiento y su emisor. El rol sale de `app_rol`,
+ * que pone la base al emitir el token: editar cookies o cualquier cosa en el
+ * navegador rompe la firma y deja sin sesión. Nunca se mira `user_metadata`
+ * para decidir permisos.
+ *
+ * `cache` la memoriza durante un render: varios layouts y páginas preguntan
+ * sin repetir la verificación.
  */
-const NOMBRE_COOKIE_SESION = "ecosem_sesion";
+export const obtenerSesion = cache(async (): Promise<Sesion | null> => {
+  const supabase = await clienteSupabaseServidor();
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (error || !claims?.sub || claims.is_anonymous === true) return null;
+  const metadatos = (claims.user_metadata ?? {}) as Record<string, unknown>;
+  return {
+    userId: claims.sub,
+    rol: rolDesdeClaims(claims as Record<string, unknown>),
+    nombre: typeof metadatos.nombre === "string" ? metadatos.nombre : null,
+    correo: typeof claims.email === "string" ? claims.email : null,
+  };
+});
 
 export async function haySesionActiva(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return cookieStore.get(NOMBRE_COOKIE_SESION)?.value === "activa";
+  return (await obtenerSesion()) !== null;
 }
 
-export async function crearCookieSesion(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(NOMBRE_COOKIE_SESION, "activa", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
+/** Ruta de ingreso que, al entrar, vuelve a donde estaba. */
+export function rutaIngreso(siguiente: string): string {
+  return `${RUTAS.ingresar}?${new URLSearchParams({ siguiente }).toString()}`;
 }
 
-export async function eliminarCookieSesion(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(NOMBRE_COOKIE_SESION);
-}
+export type Acceso =
+  | { tipo: "permitido"; sesion: Sesion }
+  | { tipo: "denegado"; sesion: Sesion };
 
 /**
- * Rol simulado (docs/prompts/16-navbar-por-rol.md, D-040 — reemplaza a
- * `ROL_MOCK`, la constante de mano que vivía en `lib/mock/sesion.ts`, D-016):
- * misma cookie de servidor que la sesión, para que el selector de rol de
- * desarrollo pueda cambiarlo sin editar código. `pasajero` es el valor por
- * defecto cuando no hay cookie — el estado de un visitante nuevo, con o sin
- * sesión.
+ * Protege una sección en el servidor. Sin sesión, al ingreso (y de vuelta
+ * aquí al entrar). Con sesión pero sin el rol, "denegado": el layout muestra
+ * la pantalla de acceso denegado y no renderiza nada de la sección.
+ *
+ * Es la barrera de la interfaz. Los datos reales los protegen además los
+ * servicios, que verifican el token y, para el personal, que siga activo en
+ * la base (D-015 del backend).
  */
-const NOMBRE_COOKIE_ROL_DEMO = "ecosem_rol_demo";
-
-export async function obtenerRolDemo(): Promise<RolUsuario> {
-  const cookieStore = await cookies();
-  const valor = cookieStore.get(NOMBRE_COOKIE_ROL_DEMO)?.value;
-  return valor === "counter" || valor === "supervisor" ? valor : "pasajero";
-}
-
-export async function establecerRolDemo(rol: RolUsuario): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(NOMBRE_COOKIE_ROL_DEMO, rol, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
-}
-
-export async function eliminarRolDemo(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(NOMBRE_COOKIE_ROL_DEMO);
+export async function exigirAcceso(
+  requisito: "sesion" | "personal" | "supervisor",
+  rutaActual: string,
+): Promise<Acceso> {
+  const sesion = await obtenerSesion();
+  if (!sesion) redirect(rutaIngreso(rutaActual));
+  const permitido =
+    requisito === "sesion" ||
+    (requisito === "personal" && esPersonal(sesion.rol)) ||
+    (requisito === "supervisor" && esSupervisor(sesion.rol));
+  return { tipo: permitido ? "permitido" : "denegado", sesion };
 }

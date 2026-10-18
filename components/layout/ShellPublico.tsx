@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
-import type { RolUsuario } from "@/lib/mock/sesion";
+import type { RolUsuario } from "@/lib/auth/roles";
 
 export interface ShellPublicoProps {
   haySesion: boolean;

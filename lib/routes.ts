@@ -11,6 +11,7 @@ export const RUTAS = {
   ingresar: "/ingresar",
   registro: "/registro",
   recuperarClave: "/recuperar-clave",
+  nuevaClave: "/recuperar-clave/nueva",
   enviarEncomienda: "/encomiendas/enviar",
   rastrearEncomienda: "/encomiendas/rastrear",
   ayuda: "/ayuda",

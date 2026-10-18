@@ -55,6 +55,25 @@ function guardarSesion(sesion: SessionResponse) {
 
 let sesionEnMemoria: SessionResponse | null = null;
 
+/** El token guardado, sin crear uno nuevo. Para vincular lo comprado al iniciar sesión. */
+export function tokenSesionCompraGuardado(): string | null {
+  const sesion = sesionEnMemoria ?? leerSesion();
+  return sesion && Date.parse(sesion.expiresAt) > ahoraServidor() ? sesion.sessionToken : null;
+}
+
+/**
+ * Al cerrar sesión: en un dispositivo compartido, quien use esta pestaña
+ * después no debe poder consultar lo que compró la persona anterior.
+ */
+export function olvidarSesionCompra() {
+  sesionEnMemoria = null;
+  try {
+    sessionStorage.removeItem(CLAVE_SESION);
+  } catch {
+    // Sin almacenamiento: no había nada guardado.
+  }
+}
+
 export function haySesionCompra(): boolean {
   const sesion = sesionEnMemoria ?? leerSesion();
   return sesion !== null && Date.parse(sesion.expiresAt) > ahoraServidor();

@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { PerfilView } from "./PerfilView";
-import { haySesionActiva } from "@/lib/auth/sesion";
+import { exigirAcceso } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 function primerValor(valor: string | string[] | undefined): string | undefined {
@@ -8,15 +7,16 @@ function primerValor(valor: string | string[] | undefined): string | undefined {
 }
 
 export default async function MiPerfilPage(props: PageProps<"/mi-perfil">) {
-  if (!(await haySesionActiva())) {
-    redirect(RUTAS.ingresar);
-  }
+  // Cualquier sesión verificada; sin ella, al ingreso y de vuelta aquí.
+  const { sesion } = await exigirAcceso("sesion", RUTAS.miPerfil);
 
   const searchParams = await props.searchParams;
   const vacio = primerValor(searchParams.vacio);
 
   return (
     <PerfilView
+      nombre={sesion.nombre}
+      correo={sesion.correo}
       forzarViajesVacios={vacio === "viajes"}
       forzarEncomiendasVacias={vacio === "encomiendas"}
     />

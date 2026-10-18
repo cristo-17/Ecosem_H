@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
-import { esSupervisor } from "@/lib/mock/sesion";
-import { obtenerRolDemo } from "@/lib/auth/sesion";
+import { esSupervisor } from "@/lib/auth/roles";
+import { obtenerSesion } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 export default async function PanelIndexPage() {
-  const rol = await obtenerRolDemo();
+  // El layout ya exigió personal; aquí el rol solo decide qué tarjetas mostrar.
+  const rol = (await obtenerSesion())?.rol ?? "pasajero";
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

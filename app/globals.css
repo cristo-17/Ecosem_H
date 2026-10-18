@@ -73,6 +73,8 @@ body {
   background: var(--color-surface-base);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  /* Alto de la barra de rol de desarrollo (SelectorRolDemo); 0 en producción. */
+  padding-bottom: var(--alto-barra-dev, 0px);
 }
 
 /* Oculta la scrollbar manteniendo el scroll funcional.

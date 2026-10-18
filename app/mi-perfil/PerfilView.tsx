@@ -5,7 +5,6 @@ import { PillTabs, pillTabPanelProps, type PillTabItem } from "@/components/ui/P
 import { UserIcon, EncomiendasTabIcon, PasajesTabIcon } from "@/components/ui/icons";
 import { MisViajesTab } from "@/components/perfil/MisViajesTab";
 import { MisEncomiendasTab } from "@/components/perfil/MisEncomiendasTab";
-import { USUARIO_MOCK } from "@/lib/mock/sesion";
 
 type Pestana = "viajes" | "encomiendas";
 
@@ -15,11 +14,19 @@ const TABS: PillTabItem<Pestana>[] = [
 ];
 
 export interface PerfilViewProps {
+  /** De la sesión verificada en el servidor. */
+  nombre: string | null;
+  correo: string | null;
   forzarViajesVacios: boolean;
   forzarEncomiendasVacias: boolean;
 }
 
-export function PerfilView({ forzarViajesVacios, forzarEncomiendasVacias }: PerfilViewProps) {
+export function PerfilView({
+  nombre,
+  correo,
+  forzarViajesVacios,
+  forzarEncomiendasVacias,
+}: PerfilViewProps) {
   const [pestana, setPestana] = useState<Pestana>("viajes");
   const baseId = useId();
 
@@ -30,8 +37,8 @@ export function PerfilView({ forzarViajesVacios, forzarEncomiendasVacias }: Perf
           <UserIcon className="!text-secondary" />
         </span>
         <div>
-          <h1 className="text-xl font-semibold text-navy sm:text-2xl">{USUARIO_MOCK.nombre}</h1>
-          <p className="text-sm text-navy/60">Documento {USUARIO_MOCK.documentoEnmascarado}</p>
+          <h1 className="text-xl font-semibold text-navy sm:text-2xl">{nombre ?? "Mi perfil"}</h1>
+          {correo && <p className="text-sm text-navy/60">{correo}</p>}
         </div>
       </div>
 
