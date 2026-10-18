@@ -1,250 +1,224 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
-import { Select, type SelectOption } from "@/components/ui/Select";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { PurchaseSummary } from "@/components/pasajes/PurchaseSummary";
 import { PaymentMethodPicker } from "@/components/pasajes/PaymentMethodPicker";
-import { QrPlaceholder } from "@/components/pasajes/QrPlaceholder";
 import { ReservationTimer } from "@/components/pasajes/ReservationTimer";
+import {
+  CompraInterrumpida,
+  ReservaVencida,
+  SinCompraEnCurso,
+} from "@/components/pasajes/EstadosReserva";
+import { useVigenciaReserva } from "@/components/pasajes/useVigenciaReserva";
 import { usePurchase } from "@/components/pasajes/PurchaseProvider";
-import type { MetodoPago, TipoComprobante } from "@/components/pasajes/PurchaseProvider";
 import { useToast } from "@/components/ui/Toast";
-import { SearchOffIcon } from "@/components/ui/icons";
+import type { ElectronicPaymentMethod } from "@/lib/types/contratos-frontend";
+import { ApiError } from "@/lib/api/cliente";
+import { esReservaNoVigente, iniciarPago, mensajeCompra } from "@/lib/api/compra";
 import { formatPrecio } from "@/lib/format";
-import { RUTAS } from "@/lib/routes";
-
-const OPCIONES_COMPROBANTE: SelectOption[] = [
-  { value: "boleta", label: "Boleta" },
-  { value: "factura", label: "Factura" },
-];
+import { RUTAS, rutaCompraConfirmacion, rutaCompraDatos } from "@/lib/routes";
 
 interface ErroresPago {
-  comprobante?: string;
-  ruc?: string;
-  razonSocial?: string;
   metodo?: string;
-  numeroTarjeta?: string;
-  vencimiento?: string;
-  cvv?: string;
-  titular?: string;
+  ruc?: string;
+  nombre?: string;
 }
 
-export interface PagoViewProps {
-  simularError: boolean;
-}
-
-export function PagoView({ simularError }: PagoViewProps) {
+export function PagoView({ reservationId }: { reservationId: string }) {
   const router = useRouter();
   const purchase = usePurchase();
   const { showToast } = useToast();
+  const reserva = purchase.reserva?.reservationId === reservationId ? purchase.reserva : null;
+  const viaje = purchase.viaje;
+  const { restanteMs, vigencia } = useVigenciaReserva(
+    reserva?.reservationId ?? null,
+    reserva?.expiresAt ?? null,
+  );
 
-  const [tipoComprobante, setTipoComprobante] = useState<TipoComprobante>("boleta");
+  const [metodo, setMetodo] = useState<ElectronicPaymentMethod | null>(null);
+  const [sustentarGasto, setSustentarGasto] = useState(false);
   const [ruc, setRuc] = useState("");
-  const [razonSocial, setRazonSocial] = useState("");
-  const [metodo, setMetodo] = useState<MetodoPago | null>(null);
-  const [numeroTarjeta, setNumeroTarjeta] = useState("");
-  const [vencimiento, setVencimiento] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [titular, setTitular] = useState("");
+  const [nombre, setNombre] = useState("");
   const [errores, setErrores] = useState<ErroresPago>({});
   const [procesando, setProcesando] = useState(false);
+  const [vencidaAlPagar, setVencidaAlPagar] = useState(false);
+  // El estado de React no alcanza para bloquear un doble clic: dos clics en el
+  // mismo instante leen `procesando` en false antes del siguiente render.
+  const pagandoRef = useRef(false);
 
-  // Si falta el paso anterior (datos de pasajeros incompletos, o se
-  // recargó la página), se vuelve a ese paso en vez de mostrar un pago
-  // sin datos que cobrar.
   useEffect(() => {
-    if (!purchase.viaje) return;
-    if (
-      purchase.asientos.length !== purchase.pasajerosCount ||
-      purchase.datosPasajeros.length !== purchase.pasajerosCount
-    ) {
-      router.replace(RUTAS.compraDatos);
-    }
-  }, [purchase.viaje, purchase.asientos.length, purchase.datosPasajeros.length, purchase.pasajerosCount, router]);
+    if (vigencia === "comprada") router.replace(rutaCompraConfirmacion(reservationId));
+  }, [vigencia, reservationId, router]);
 
-  function manejarExpiracion() {
-    const viaje = purchase.viaje;
-    const rutaVuelta = viaje
-      ? `${RUTAS.resultadosPasajes}?origen=${encodeURIComponent(viaje.origen)}&destino=${encodeURIComponent(viaje.destino)}`
-      : RUTAS.inicio;
-    showToast({
-      type: "error",
-      title: "Tu reserva expiró",
-      description: "Los asientos que elegiste fueron liberados. Vuelve a intentarlo.",
-    });
-    purchase.reiniciar();
-    router.push(rutaVuelta);
-  }
+  if (!reservationId) return <Pantalla><SinCompraEnCurso /></Pantalla>;
+  if (!reserva || !viaje) return <Pantalla><CompraInterrumpida reservationId={reservationId} /></Pantalla>;
 
-  if (!purchase.viaje) {
-    return (
-      <main className="mx-auto max-w-2xl px-4 py-16">
-        <EmptyState
-          icon={<SearchOffIcon />}
-          title="No hay una compra en curso"
-          description="Busca un viaje para empezar a reservar tus pasajes."
-          actionLabel="Buscar pasajes"
-          onAction={() => router.push(RUTAS.inicio)}
-        />
-      </main>
+  function volverAEmpezar() {
+    purchase.olvidarReserva();
+    router.push(
+      `${RUTAS.compraAsientos}?${new URLSearchParams({
+        viajeId: viaje!.viaje.id,
+        pasajeros: String(purchase.pasajerosCount),
+        origen: viaje!.origen,
+        destino: viaje!.destino,
+        fecha: viaje!.fecha,
+      }).toString()}`,
     );
   }
 
-  if (
-    purchase.asientos.length !== purchase.pasajerosCount ||
-    purchase.datosPasajeros.length !== purchase.pasajerosCount
-  ) {
-    return null;
+  if (!purchase.pagoIniciado && (vigencia === "vencida" || vencidaAlPagar)) {
+    return (
+      <Pantalla>
+        <ReservaVencida asientos={reserva.seats} onVolverAEmpezar={volverAEmpezar} />
+      </Pantalla>
+    );
   }
-
-  const total = purchase.viaje.precio * purchase.pasajerosCount;
 
   function validar(): ErroresPago {
-    const nuevosErrores: ErroresPago = {};
-    if (tipoComprobante === "factura") {
-      if (!ruc) nuevosErrores.ruc = "Este campo es obligatorio";
-      else if (!/^\d{11}$/.test(ruc)) nuevosErrores.ruc = "El RUC debe tener 11 dígitos";
-      if (!razonSocial) nuevosErrores.razonSocial = "Este campo es obligatorio";
+    const nuevos: ErroresPago = {};
+    if (!metodo) nuevos.metodo = "Elige un método de pago";
+    if (sustentarGasto) {
+      if (!/^\d{11}$/.test(ruc.trim())) nuevos.ruc = "El RUC debe tener 11 dígitos";
+      if (!nombre.trim()) nuevos.nombre = "Este campo es obligatorio";
+      else if (nombre.trim().length > 120) nuevos.nombre = "Máximo 120 caracteres";
     }
-    if (!metodo) {
-      nuevosErrores.metodo = "Elige un método de pago";
-    } else if (metodo === "tarjeta") {
-      if (!/^\d{16}$/.test(numeroTarjeta)) nuevosErrores.numeroTarjeta = "Ingresa los 16 dígitos de la tarjeta";
-      if (!/^\d{2}\/\d{2}$/.test(vencimiento)) nuevosErrores.vencimiento = "Formato MM/AA";
-      if (!/^\d{3}$/.test(cvv)) nuevosErrores.cvv = "3 dígitos";
-      if (!titular) nuevosErrores.titular = "Este campo es obligatorio";
-    }
-    return nuevosErrores;
+    return nuevos;
   }
 
-  function confirmarPago() {
-    const nuevosErrores = validar();
-    setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0 || !metodo) return;
+  async function pagar() {
+    if (pagandoRef.current || purchase.pagoIniciado) return;
+    const nuevos = validar();
+    setErrores(nuevos);
+    if (Object.keys(nuevos).length > 0 || !metodo) return;
 
+    pagandoRef.current = true;
     setProcesando(true);
-    // La compra nunca se confirma desde la respuesta del navegador
-    // (CLAUDE.md): en producción esto espera el webhook de la pasarela.
-    // Sin pasarela real, se simula esa espera con un timeout.
-    setTimeout(() => {
-      if (simularError) {
-        setProcesando(false);
-        showToast({
-          type: "error",
-          title: "Pago rechazado",
-          description: "Tu banco o billetera rechazó la operación. Intenta con otro método.",
-        });
-        return;
+    try {
+      await iniciarPago(reserva!.reservationId, {
+        method: metodo,
+        billTo: sustentarGasto ? { ruc: ruc.trim(), name: nombre.trim() } : null,
+      });
+      // Iniciar el pago NO confirma la compra: la confirma solo el webhook de
+      // la pasarela en el backend. Desde aquí la pantalla de confirmación
+      // espera y consulta el estado real.
+      purchase.marcarPagoIniciado();
+      router.push(rutaCompraConfirmacion(reserva!.reservationId));
+    } catch (error) {
+      pagandoRef.current = false;
+      setProcesando(false);
+      if (esReservaNoVigente(error)) return setVencidaAlPagar(true);
+      const mensaje = mensajeCompra(error);
+      showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
+      if (error instanceof ApiError && error.codigo === "PASSENGERS_REQUIRED") {
+        router.push(rutaCompraDatos(reserva!.reservationId));
       }
-      purchase.confirmarCompra(
-        { tipo: tipoComprobante, ruc: tipoComprobante === "factura" ? ruc : "", razonSocial: tipoComprobante === "factura" ? razonSocial : "" },
-        metodo
-      );
-      router.push(RUTAS.compraConfirmacion);
-    }, 1200);
+    }
   }
+
+  const salida = new Date(viaje.viaje.departsAt);
+  const nombres = reserva.seats.map((_, i) => {
+    const p = purchase.borradores[i];
+    return p ? `${p.firstNames} ${p.lastNames}`.trim() : "";
+  });
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
-      <Stepper currentStep={4} className="mb-6" />
-
+    <Pantalla>
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">Pago</h1>
       <p className="mt-1 text-sm text-navy/70">Revisa tu compra y elige cómo quieres pagar.</p>
 
-      <ReservationTimer expiraEn={purchase.reservaExpiraEn} onExpire={manejarExpiracion} className="mt-4" />
-
-      <PurchaseSummary
-        viaje={purchase.viaje}
-        asientos={purchase.asientos}
-        pasajeros={purchase.datosPasajeros}
+      <ReservationTimer
+        restanteMs={restanteMs}
+        verificando={vigencia === "verificando"}
         className="mt-4"
       />
 
-      <div className="mt-4 flex flex-col gap-4 rounded-modal bg-white p-4 shadow-low sm:p-6">
-        <h2 className="text-base font-semibold text-navy">Comprobante</h2>
-        <Select
-          label="Tipo de comprobante"
-          options={OPCIONES_COMPROBANTE}
-          value={tipoComprobante}
-          onChange={(valor) => setTipoComprobante(valor as TipoComprobante)}
-        />
-        {tipoComprobante === "factura" && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="RUC"
-              inputMode="numeric"
-              value={ruc}
-              onChange={(evento) => setRuc(evento.target.value)}
-              errorText={errores.ruc}
-            />
-            <Input
-              label="Razón social"
-              value={razonSocial}
-              onChange={(evento) => setRazonSocial(evento.target.value)}
-              errorText={errores.razonSocial}
-            />
-          </div>
-        )}
-      </div>
+      <PurchaseSummary
+        origen={viaje.origen}
+        destino={viaje.destino}
+        terminalOrigen={viaje.terminalOrigen}
+        salida={salida}
+        asientos={reserva.seats}
+        pasajeros={nombres}
+        precioAsiento={reserva.priceBreakdown.unitPrice}
+        total={reserva.totalAmount}
+        className="mt-4"
+      />
 
-      <div className="mt-4 flex flex-col gap-4 rounded-modal bg-white p-4 shadow-low sm:p-6">
-        <PaymentMethodPicker value={metodo} onChange={setMetodo} errorText={errores.metodo} />
-
-        {(metodo === "yape" || metodo === "plin") && (
-          <div className="flex flex-col items-center gap-3 border-t border-navy/10 pt-4 text-center">
-            <QrPlaceholder semilla={`${metodo}-${purchase.viaje.id}-${total}`} />
-            <p className="max-w-xs text-sm text-navy/70">
-              Escanea el código con tu app {metodo === "yape" ? "Yape" : "Plin"} y confirma el pago de{" "}
-              <span className="font-semibold text-navy">{formatPrecio(total)}</span>.
-            </p>
-            <Button isLoading={procesando} onClick={confirmarPago} className="w-full sm:w-auto">
-              Ya pagué
-            </Button>
-          </div>
-        )}
-
-        {metodo === "tarjeta" && (
-          <div className="flex flex-col gap-4 border-t border-navy/10 pt-4">
-            <Input
-              label="Número de tarjeta"
-              inputMode="numeric"
-              value={numeroTarjeta}
-              onChange={(evento) => setNumeroTarjeta(evento.target.value)}
-              errorText={errores.numeroTarjeta}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Vencimiento (MM/AA)"
-                placeholder="MM/AA"
-                value={vencimiento}
-                onChange={(evento) => setVencimiento(evento.target.value)}
-                errorText={errores.vencimiento}
-              />
-              <Input
-                label="CVV"
-                inputMode="numeric"
-                value={cvv}
-                onChange={(evento) => setCvv(evento.target.value)}
-                errorText={errores.cvv}
-              />
+      {purchase.pagoIniciado ? (
+        <div className="mt-4 flex flex-col gap-3 rounded-modal bg-white p-4 shadow-low sm:p-6">
+          <p className="text-sm text-navy">
+            Ya iniciaste el pago de esta reserva. Para no cobrarte dos veces, no se puede volver a
+            pagar desde aquí.
+          </p>
+          <Button
+            variant="secundario"
+            onClick={() => router.push(rutaCompraConfirmacion(reserva.reservationId))}
+            className="self-start"
+          >
+            Ver el estado de mi compra
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="mt-4 flex flex-col gap-4 rounded-modal bg-white p-4 shadow-low sm:p-6">
+            <div>
+              <h2 className="text-base font-semibold text-navy">Comprobante</h2>
+              <p className="text-sm text-navy/70">
+                El pasaje se emite como boleto de viaje, que es el comprobante del transporte de
+                pasajeros. No se emite factura por un pasaje.
+              </p>
             </div>
-            <Input
-              label="Nombre del titular"
-              value={titular}
-              onChange={(evento) => setTitular(evento.target.value)}
-              errorText={errores.titular}
+            <Checkbox
+              label="Quiero que el boleto sustente el gasto de una empresa o persona con RUC"
+              checked={sustentarGasto}
+              onChange={(evento) => setSustentarGasto(evento.target.checked)}
             />
-            <Button isLoading={procesando} onClick={confirmarPago} className="self-end min-w-40">
-              Pagar {formatPrecio(total)}
+            {sustentarGasto && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  label="RUC"
+                  inputMode="numeric"
+                  value={ruc}
+                  onChange={(evento) => setRuc(evento.target.value)}
+                  errorText={errores.ruc}
+                />
+                <Input
+                  label="Razón social o nombre"
+                  value={nombre}
+                  onChange={(evento) => setNombre(evento.target.value)}
+                  errorText={errores.nombre}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-4 rounded-modal bg-white p-4 shadow-low sm:p-6">
+            <PaymentMethodPicker value={metodo} onChange={setMetodo} errorText={errores.metodo} />
+            <p className="text-sm text-navy/70">
+              El pago se completa en la pasarela. Tu compra queda confirmada cuando la pasarela nos
+              avisa que el pago se aprobó, no antes.
+            </p>
+            <Button isLoading={procesando} onClick={pagar} className="w-full sm:w-auto sm:self-end">
+              Pagar {formatPrecio(Number(reserva.totalAmount))}
             </Button>
           </div>
-        )}
-      </div>
+        </>
+      )}
+    </Pantalla>
+  );
+}
+
+function Pantalla({ children }: { children: ReactNode }) {
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
+      <Stepper currentStep={4} className="mb-6" />
+      {children}
     </main>
   );
 }

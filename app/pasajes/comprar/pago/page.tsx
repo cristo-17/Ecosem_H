@@ -6,10 +6,7 @@ function primerValor(valor: string | string[] | undefined): string | undefined {
 
 export default async function PagoPage(props: PageProps<"/pasajes/comprar/pago">) {
   const searchParams = await props.searchParams;
-  // Sin pasarela real todavía: para probar el rechazo de pago sin depender
-  // de una tarjeta de prueba, ?simular=error fuerza esa rama. Mismo patrón
-  // que ?error=1 en /pasajes/resultados.
-  const simularError = primerValor(searchParams.simular) === "error";
-
-  return <PagoView simularError={simularError} />;
+  // La reserva va en la URL (un UUID, sin datos personales): sin ella no hay
+  // compra que mostrar.
+  return <PagoView reservationId={primerValor(searchParams.reserva) ?? ""} />;
 }

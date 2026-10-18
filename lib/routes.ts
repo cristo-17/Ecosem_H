@@ -48,3 +48,23 @@ export function rutaPanelUnidad(placa: string): string {
 export function rutaEmbarqueViaje(id: string): string {
   return `${RUTAS.embarque}/${id}`;
 }
+
+// Pasos de la compra web: la reserva va en la URL (un UUID, sin datos
+// personales) para que cada paso pueda consultar su estado real al backend
+// tras una recarga o al volver de la pasarela.
+function conReserva(ruta: string, reservationId: string): string {
+  return `${ruta}?reserva=${encodeURIComponent(reservationId)}`;
+}
+
+export function rutaCompraDatos(reservationId: string): string {
+  return conReserva(RUTAS.compraDatos, reservationId);
+}
+
+export function rutaCompraPago(reservationId: string): string {
+  return conReserva(RUTAS.compraPago, reservationId);
+}
+
+/** También es la página de retorno de la pasarela. */
+export function rutaCompraConfirmacion(reservationId: string): string {
+  return conReserva(RUTAS.compraConfirmacion, reservationId);
+}

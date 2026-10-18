@@ -10,7 +10,12 @@ import { Card } from "@/components/ui/Card";
 import { TripCard } from "@/components/ui/TripCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SeatMap } from "@/components/pasajes/SeatMap";
-import { PassengerForm, type ErroresPasajero } from "@/components/pasajes/PassengerForm";
+import {
+  PassengerForm,
+  type DatosPasajero,
+  type ErroresPasajero,
+  type TipoComprobante,
+} from "@/components/pasajes/PassengerForm";
 import { PassengerStepper } from "@/components/home/PassengerStepper";
 import { CheckIcon, SearchOffIcon, TicketIcon } from "@/components/ui/icons";
 import {
@@ -23,7 +28,6 @@ import {
 } from "@/lib/mock/viajes";
 import { distribucionBus, generarAsientos, type Asiento } from "@/lib/mock/asientos";
 import { OPCIONES_MEDIO_PAGO, type MedioPago } from "@/lib/mock/caja";
-import type { DatosPasajero, TipoComprobante } from "@/components/pasajes/PurchaseProvider";
 import { descargarBoletoPdf, type BoletoPdfData } from "@/lib/pdf/boleto";
 import { maskDocumento, formatPrecio, formatHora12, formatDuracion } from "@/lib/format";
 

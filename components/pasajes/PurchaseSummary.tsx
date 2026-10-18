@@ -1,32 +1,49 @@
 import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/Card";
-import { formatDuracion, formatHora12, formatPrecio } from "@/lib/format";
-import type { Viaje } from "@/lib/mock/viajes";
-import type { DatosPasajero } from "@/components/pasajes/PurchaseProvider";
+import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
+import { etiquetaAsiento } from "@/lib/asientos";
 
 export interface PurchaseSummaryProps {
-  viaje: Viaje;
+  origen: string;
+  destino: string;
+  terminalOrigen: string;
+  salida: Date;
   asientos: string[];
-  pasajeros: DatosPasajero[];
+  /** Nombres ya escritos; vacío si todavía no hay. */
+  pasajeros: string[];
+  /** Precio de un asiento, tal como lo congeló la reserva (`priceBreakdown.unitPrice`). */
+  precioAsiento: string;
+  /** Total congelado de la reserva (`totalAmount`). Es lo que se cobra. */
+  total: string;
   className?: string;
 }
 
-function etiquetaAsiento(id: string): string {
-  return id.replace(/^P\d-/, "");
+// Los montos son texto decimal del backend; solo se les da formato. Nada se
+// multiplica ni se suma aquí: una cuenta propia podría mostrar un número
+// distinto del que se va a cobrar.
+function soles(monto: string): string {
+  return formatPrecio(Number(monto));
 }
 
-export function PurchaseSummary({ viaje, asientos, pasajeros, className }: PurchaseSummaryProps) {
-  const total = viaje.precio * asientos.length;
-
+export function PurchaseSummary({
+  origen,
+  destino,
+  terminalOrigen,
+  salida,
+  asientos,
+  pasajeros,
+  precioAsiento,
+  total,
+  className,
+}: PurchaseSummaryProps) {
   return (
     <Card className={cn("flex flex-col gap-3", className)}>
       <div>
-        <p className="text-xs font-semibold text-navy/60">{viaje.marca}</p>
         <p className="text-base font-semibold text-navy">
-          {viaje.origen} → {viaje.destino}
+          {origen} → {destino}
         </p>
         <p className="text-xs text-navy/60">
-          {formatHora12(viaje.horaSalida)} · {formatDuracion(viaje.duracionMinutos)}
+          {formatFechaLarga(salida)} · {formatHora12(salida)} · {terminalOrigen}
         </p>
       </div>
 
@@ -35,22 +52,24 @@ export function PurchaseSummary({ viaje, asientos, pasajeros, className }: Purch
         <p className="text-sm text-navy">{asientos.map(etiquetaAsiento).join(", ")}</p>
       </div>
 
-      {pasajeros.length > 0 && (
+      {pasajeros.some(Boolean) && (
         <div className="border-t border-navy/10 pt-3">
           <p className="text-xs font-medium text-navy/60">Pasajeros</p>
           <ul className="text-sm text-navy">
-            {pasajeros.map((pasajero, indice) => (
-              <li key={indice}>{pasajero.nombres || `Pasajero ${indice + 1}`}</li>
+            {pasajeros.map((nombre, indice) => (
+              <li key={indice}>{nombre || `Pasajero ${indice + 1}`}</li>
             ))}
           </ul>
         </div>
       )}
 
       <div className="flex items-center justify-between border-t border-navy/10 pt-3">
-        <span className="text-sm font-medium text-navy/70">
-          Total ({asientos.length} × {formatPrecio(viaje.precio)})
-        </span>
-        <span className="text-xl font-bold text-navy">{formatPrecio(total)}</span>
+        <span className="text-sm text-navy/70">Precio por asiento</span>
+        <span className="text-sm font-medium text-navy">{soles(precioAsiento)}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-navy/70">Total</span>
+        <span className="text-xl font-bold text-navy">{soles(total)}</span>
       </div>
     </Card>
   );

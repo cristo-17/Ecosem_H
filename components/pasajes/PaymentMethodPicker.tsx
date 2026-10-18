@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import { CreditCardIcon, PhoneIcon } from "@/components/ui/icons";
-import type { MetodoPago } from "@/components/pasajes/PurchaseProvider";
+import type { ElectronicPaymentMethod as MetodoPago } from "@/lib/types/contratos-frontend";
 
 const METODOS: { value: MetodoPago; label: string; Icon: typeof PhoneIcon }[] = [
   { value: "yape", label: "Yape", Icon: PhoneIcon },
