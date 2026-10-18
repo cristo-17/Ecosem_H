@@ -1,156 +1,256 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { PassengerForm, type ErroresPasajero } from "@/components/pasajes/PassengerForm";
+import { Card } from "@/components/ui/Card";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Input } from "@/components/ui/Input";
+import {
+  PasajeroReservaForm,
+  validarPasajeroReserva,
+  type ErroresPasajeroReserva,
+} from "@/components/pasajes/PasajeroReservaForm";
 import { ReservationTimer } from "@/components/pasajes/ReservationTimer";
-import { usePurchase } from "@/components/pasajes/PurchaseProvider";
-import type { DatosPasajero } from "@/components/pasajes/PurchaseProvider";
+import {
+  CompraInterrumpida,
+  ReservaVencida,
+  SinCompraEnCurso,
+} from "@/components/pasajes/EstadosReserva";
+import { useVigenciaReserva } from "@/components/pasajes/useVigenciaReserva";
+import {
+  PASAJERO_VACIO,
+  usePurchase,
+  type BorradorContacto,
+  type BorradorPasajero,
+} from "@/components/pasajes/PurchaseProvider";
 import { useToast } from "@/components/ui/Toast";
-import { SearchOffIcon } from "@/components/ui/icons";
-import { RUTAS } from "@/lib/routes";
+import {
+  esReservaNoVigente,
+  guardarContacto,
+  guardarPasajero,
+  mensajeCompra,
+} from "@/lib/api/compra";
+import { RUTAS, rutaCompraConfirmacion, rutaCompraPago } from "@/lib/routes";
 
-const PASAJERO_VACIO: DatosPasajero = {
-  tipoDocumento: "dni",
-  numeroDocumento: "",
-  nombres: "",
-  correo: "",
-  celular: "",
-  equipajeKg: "",
-};
+type ErroresContacto = Partial<Record<keyof BorradorContacto, string>>;
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validarPasajero(datos: DatosPasajero): ErroresPasajero {
-  const errores: ErroresPasajero = {};
-
-  if (!datos.numeroDocumento) {
-    errores.numeroDocumento = "Este campo es obligatorio";
-  } else if (datos.tipoDocumento === "dni" && !/^\d{8}$/.test(datos.numeroDocumento)) {
-    errores.numeroDocumento = "El DNI debe tener 8 dígitos";
-  }
-
-  if (!datos.nombres) errores.nombres = "Este campo es obligatorio";
-
-  if (!datos.correo) {
-    errores.correo = "Este campo es obligatorio";
-  } else if (!REGEX_CORREO.test(datos.correo)) {
-    errores.correo = "Ingrese un correo electrónico válido";
-  }
-
-  if (!datos.celular) {
-    errores.celular = "Este campo es obligatorio";
-  } else if (!/^\d{9}$/.test(datos.celular)) {
-    errores.celular = "Debe contener exactamente 9 dígitos";
-  }
-
+function validarContacto(c: BorradorContacto): ErroresContacto {
+  const errores: ErroresContacto = {};
+  const correo = c.email.trim();
+  const celular = c.phone.trim();
+  if (!correo && !celular) errores.email = "Indica un correo o un celular para enviarte tus boletos";
+  if (correo && !REGEX_CORREO.test(correo)) errores.email = "Ingresa un correo electrónico válido";
+  if (celular && !/^\d{9}$/.test(celular)) errores.phone = "Debe contener exactamente 9 dígitos";
+  if (c.whatsappOptIn && !celular) errores.phone = "Para recibir WhatsApp, indica tu celular";
+  if (!c.dataAuthorization) errores.dataAuthorization = "Necesitamos esta declaración para emitir los boletos";
   return errores;
 }
 
-export function DatosView() {
+const sinErrores = (errores: object) => Object.keys(errores).length === 0;
+
+export function DatosView({ reservationId }: { reservationId: string }) {
   const router = useRouter();
   const purchase = usePurchase();
   const { showToast } = useToast();
-
-  const [pasajeros, setPasajeros] = useState<DatosPasajero[]>(() =>
-    Array.from(
-      { length: purchase.pasajerosCount },
-      (_, i) => purchase.datosPasajeros[i] ?? PASAJERO_VACIO
-    )
+  const reserva = purchase.reserva?.reservationId === reservationId ? purchase.reserva : null;
+  const viaje = purchase.viaje;
+  const { restanteMs, vigencia } = useVigenciaReserva(
+    reserva?.reservationId ?? null,
+    reserva?.expiresAt ?? null,
   );
-  const [errores, setErrores] = useState<ErroresPasajero[]>([]);
 
-  // Si se llegó directo a esta URL (o se recargó) sin haber completado la
-  // selección de asientos, se vuelve a esa pantalla en vez de mostrar un
-  // formulario sin base.
+  const [erroresPasajeros, setErroresPasajeros] = useState<ErroresPasajeroReserva[]>([]);
+  const [erroresContacto, setErroresContacto] = useState<ErroresContacto>({});
+  const [enviando, setEnviando] = useState(false);
+  // Un guardado devolvió "reserva no vigente" antes de que la consulta
+  // periódica lo notara: se trata igual que vencida.
+  const [vencidaAlGuardar, setVencidaAlGuardar] = useState(false);
+  const enviandoRef = useRef(false);
+
   useEffect(() => {
-    if (!purchase.viaje) return;
-    if (purchase.asientos.length !== purchase.pasajerosCount) {
-      router.replace(
-        `${RUTAS.compraAsientos}?viajeId=${encodeURIComponent(purchase.viaje.id)}&pasajeros=${purchase.pasajerosCount}`
-      );
-    }
-  }, [purchase.viaje, purchase.asientos.length, purchase.pasajerosCount, router]);
+    if (vigencia === "comprada") router.replace(rutaCompraConfirmacion(reservationId));
+  }, [vigencia, reservationId, router]);
 
-  function manejarExpiracion() {
-    const viaje = purchase.viaje;
-    const rutaVuelta = viaje
-      ? `${RUTAS.resultadosPasajes}?origen=${encodeURIComponent(viaje.origen)}&destino=${encodeURIComponent(viaje.destino)}`
-      : RUTAS.inicio;
-    showToast({
-      type: "error",
-      title: "Tu reserva expiró",
-      description: "Los asientos que elegiste fueron liberados. Vuelve a intentarlo.",
-    });
-    purchase.reiniciar();
-    router.push(rutaVuelta);
-  }
+  if (!reservationId) return <Pantalla><SinCompraEnCurso /></Pantalla>;
+  if (!reserva || !viaje) return <Pantalla><CompraInterrumpida reservationId={reservationId} /></Pantalla>;
 
-  if (!purchase.viaje) {
-    return (
-      <main className="mx-auto max-w-2xl px-4 py-16">
-        <EmptyState
-          icon={<SearchOffIcon />}
-          title="No hay una compra en curso"
-          description="Busca un viaje para empezar a reservar tus pasajes."
-          actionLabel="Buscar pasajes"
-          onAction={() => router.push(RUTAS.inicio)}
-        />
-      </main>
+  const salida = new Date(viaje.viaje.departsAt);
+  const borradores = reserva.seats.map((_, i) => purchase.borradores[i] ?? PASAJERO_VACIO);
+
+  function volverAEmpezar() {
+    // Lo escrito queda en memoria y vuelve a aparecer con la nueva reserva.
+    purchase.olvidarReserva();
+    router.push(
+      `${RUTAS.compraAsientos}?${new URLSearchParams({
+        viajeId: viaje!.viaje.id,
+        pasajeros: String(purchase.pasajerosCount),
+        origen: viaje!.origen,
+        destino: viaje!.destino,
+        fecha: viaje!.fecha,
+      }).toString()}`,
     );
   }
 
-  if (purchase.asientos.length !== purchase.pasajerosCount) {
-    // El efecto de arriba ya está redirigiendo a la selección de asientos.
-    return null;
+  if (vigencia === "vencida" || vencidaAlGuardar) {
+    return (
+      <Pantalla>
+        <ReservaVencida asientos={reserva.seats} onVolverAEmpezar={volverAEmpezar} />
+      </Pantalla>
+    );
   }
 
-  function actualizarPasajero(indice: number, valor: DatosPasajero) {
-    setPasajeros((prev) => prev.map((p, i) => (i === indice ? valor : p)));
+  function actualizarPasajero(indice: number, valor: BorradorPasajero) {
+    purchase.setBorradores(borradores.map((p, i) => (i === indice ? valor : p)));
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    const nuevosErrores = pasajeros.map(validarPasajero);
-    setErrores(nuevosErrores);
-    if (nuevosErrores.some((error) => Object.keys(error).length > 0)) return;
+    if (enviandoRef.current) return;
 
-    purchase.setDatosPasajeros(pasajeros);
-    router.push(RUTAS.compraPago);
+    const nuevosErroresPasajeros = borradores.map((p) => validarPasajeroReserva(p, salida));
+    const nuevosErroresContacto = validarContacto(purchase.contacto);
+    setErroresPasajeros(nuevosErroresPasajeros);
+    setErroresContacto(nuevosErroresContacto);
+    if (!nuevosErroresPasajeros.every(sinErrores) || !sinErrores(nuevosErroresContacto)) return;
+
+    enviandoRef.current = true;
+    setEnviando(true);
+    try {
+      // Un PUT por asiento: el backend guarda y valida cada pasajero contra la
+      // fecha del viaje. Ningún dato personal va en la URL, solo el asiento.
+      await Promise.all(
+        reserva!.seats.map((seat, i) => {
+          const p = borradores[i];
+          const menor = p.companionName.trim() || p.companionRelationship.trim();
+          return guardarPasajero(reserva!.reservationId, seat, {
+            documentType: p.documentType,
+            documentNumber: p.documentNumber.trim(),
+            firstNames: p.firstNames.trim(),
+            lastNames: p.lastNames.trim(),
+            birthDate: p.birthDate,
+            companion: menor
+              ? { name: p.companionName.trim(), relationship: p.companionRelationship.trim() }
+              : null,
+            dataAuthorization: true,
+          });
+        }),
+      );
+      const { email, phone, whatsappOptIn } = purchase.contacto;
+      await guardarContacto(reserva!.reservationId, {
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        whatsappOptIn,
+      });
+      router.push(rutaCompraPago(reserva!.reservationId));
+    } catch (error) {
+      if (esReservaNoVigente(error)) {
+        setVencidaAlGuardar(true);
+      } else {
+        const mensaje = mensajeCompra(error);
+        showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
+      }
+      enviandoRef.current = false;
+      setEnviando(false);
+    }
+  }
+
+  const contacto = purchase.contacto;
+  function actualizarContacto<K extends keyof BorradorContacto>(campo: K, valor: BorradorContacto[K]) {
+    purchase.setContacto({ ...contacto, [campo]: valor });
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
-      <Stepper currentStep={3} className="mb-6" />
-
+    <Pantalla>
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">Datos de los pasajeros</h1>
       <p className="mt-1 text-sm text-navy/70">
-        {purchase.viaje.origen} → {purchase.viaje.destino} · Ingresa los datos de cada pasajero tal
-        como figuran en su documento.
+        {viaje.origen} → {viaje.destino} · Ingresa los datos de cada pasajero tal como figuran en su
+        documento.
       </p>
 
-      <ReservationTimer expiraEn={purchase.reservaExpiraEn} onExpire={manejarExpiracion} className="mt-4" />
+      <ReservationTimer
+        restanteMs={restanteMs}
+        verificando={vigencia === "verificando"}
+        className="mt-4"
+      />
 
       <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
-        {pasajeros.map((pasajero, indice) => (
-          <PassengerForm
-            key={purchase.asientos[indice]}
+        {reserva.seats.map((seat, indice) => (
+          <PasajeroReservaForm
+            key={seat}
             indice={indice}
-            asientoId={purchase.asientos[indice]}
-            valor={pasajero}
-            errores={errores[indice]}
+            asiento={seat}
+            valor={borradores[indice]}
+            errores={erroresPasajeros[indice]}
+            salida={salida}
             onChange={(valor) => actualizarPasajero(indice, valor)}
           />
         ))}
 
-        <Button type="submit" className="min-w-40 self-end">
+        <Card className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-navy">¿A dónde te enviamos los boletos?</h2>
+            <p className="text-sm text-navy/70">Un correo, un celular o ambos.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Correo electrónico"
+              type="email"
+              autoComplete="email"
+              value={contacto.email}
+              onChange={(evento) => actualizarContacto("email", evento.target.value)}
+              errorText={erroresContacto.email}
+            />
+            <Input
+              label="Celular"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              value={contacto.phone}
+              onChange={(evento) => actualizarContacto("phone", evento.target.value)}
+              helperText="9 dígitos"
+              errorText={erroresContacto.phone}
+            />
+          </div>
+          <Checkbox
+            label="Acepto recibir por WhatsApp mensajes de ECOSEM H sobre esta compra y este viaje."
+            checked={contacto.whatsappOptIn}
+            onChange={(evento) => actualizarContacto("whatsappOptIn", evento.target.checked)}
+          />
+          <Checkbox
+            label={
+              <>
+                Declaro que tengo autorización de cada pasajero para registrar sus datos personales
+                para este viaje, conforme a la Ley 29733 y la{" "}
+                <Link href={RUTAS.privacidad} className="font-medium text-secondary underline">
+                  Política de privacidad
+                </Link>
+                .
+              </>
+            }
+            checked={contacto.dataAuthorization}
+            onChange={(evento) => actualizarContacto("dataAuthorization", evento.target.checked)}
+            errorText={erroresContacto.dataAuthorization}
+          />
+        </Card>
+
+        <Button type="submit" isLoading={enviando} className="min-w-40 self-end">
           Continuar
         </Button>
       </form>
+    </Pantalla>
+  );
+}
+
+function Pantalla({ children }: { children: ReactNode }) {
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
+      <Stepper currentStep={3} className="mb-6" />
+      {children}
     </main>
   );
 }

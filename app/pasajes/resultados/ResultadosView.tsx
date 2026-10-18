@@ -285,7 +285,15 @@ export function ResultadosView({
               className="w-full"
               onClick={() =>
                 router.push(
-                  `${RUTAS.compraAsientos}?viajeId=${encodeURIComponent(seleccionadoId)}&pasajeros=${pasajerosCount}`,
+                  `${RUTAS.compraAsientos}?${new URLSearchParams({
+                    viajeId: seleccionadoId,
+                    pasajeros: String(pasajerosCount),
+                    // La búsqueda viaja con el viaje: si se recarga la página de
+                    // asientos, se vuelve a pedir y se encuentra el viaje por id.
+                    origen,
+                    destino,
+                    fecha,
+                  }).toString()}`,
                 )
               }
             >

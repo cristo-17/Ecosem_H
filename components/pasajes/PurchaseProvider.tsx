@@ -1,88 +1,116 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { Viaje } from "@/lib/mock/viajes";
+import type {
+  DocumentKind,
+  ReservationResponse,
+  TripSummary,
+} from "@/lib/types/contratos-frontend";
+import { liberarReserva } from "@/lib/api/compra";
 
-export type MetodoPago = "yape" | "plin" | "tarjeta";
-export type TipoDocumento = "dni" | "ce" | "pasaporte";
-export type TipoComprobante = "boleta" | "factura";
-
-export interface DatosPasajero {
-  tipoDocumento: TipoDocumento;
-  numeroDocumento: string;
-  nombres: string;
-  correo: string;
-  celular: string;
-  /**
-   * Opcional (docs/prompts/13-tarifario-encomiendas.md: "si el flujo de
-   * compra lo permite, agregar la declaración de equipaje"). Solo informa
-   * qué escalón de exceso aplicaría (lib/mock/tarifario.ts); no se suma al
-   * total del pasaje porque el monto de cada escalón todavía no está
-   * definido por comercial.
-   */
-  equipajeKg: string;
+/** El viaje elegido en resultados, con lo necesario para volver a esa búsqueda. */
+export interface ViajeCompra {
+  viaje: TripSummary;
+  terminalOrigen: string;
+  origen: string;
+  destino: string;
+  /** `AAAA-MM-DD` de la búsqueda. */
+  fecha: string;
 }
 
-export interface DatosComprobante {
-  tipo: TipoComprobante;
-  ruc: string;
-  razonSocial: string;
+/** Lo que se va escribiendo de un pasajero. Solo en memoria. */
+export interface BorradorPasajero {
+  documentType: DocumentKind;
+  documentNumber: string;
+  firstNames: string;
+  lastNames: string;
+  /** `AAAA-MM-DD`. */
+  birthDate: string;
+  companionName: string;
+  companionRelationship: string;
 }
 
-export interface Boleto {
-  codigo: string;
-  emitidoEn: Date;
-  viaje: Viaje;
-  asientos: string[];
-  pasajeros: DatosPasajero[];
-  comprobante: DatosComprobante;
-  metodoPago: MetodoPago;
-  total: number;
+export interface BorradorContacto {
+  email: string;
+  phone: string;
+  whatsappOptIn: boolean;
+  dataAuthorization: boolean;
 }
+
+export const PASAJERO_VACIO: BorradorPasajero = {
+  documentType: "dni",
+  documentNumber: "",
+  firstNames: "",
+  lastNames: "",
+  birthDate: "",
+  companionName: "",
+  companionRelationship: "",
+};
+
+const CONTACTO_VACIO: BorradorContacto = {
+  email: "",
+  phone: "",
+  whatsappOptIn: false,
+  dataAuthorization: false,
+};
 
 interface PurchaseState {
-  viaje: Viaje | null;
+  viaje: ViajeCompra | null;
   pasajerosCount: number;
-  asientos: string[];
-  datosPasajeros: DatosPasajero[];
-  boleto: Boleto | null;
-  /** Epoch ms en que expira el apartado temporal de asientos. */
-  reservaExpiraEn: number | null;
+  /**
+   * La reserva tal como la devolvió el backend: asientos, vencimiento y precio
+   * congelado. Nunca se recalcula ni se modifica en el cliente.
+   */
+  reserva: ReservationResponse | null;
+  /**
+   * Ya se pidió el cobro a la pasarela. Desde aquí la reserva no se libera
+   * desde el navegador: el usuario puede estar pagando en Yape.
+   */
+  pagoIniciado: boolean;
+  borradores: BorradorPasajero[];
+  contacto: BorradorContacto;
 }
 
 interface PurchaseContextValue extends PurchaseState {
-  iniciar: (viaje: Viaje, pasajerosCount: number) => void;
-  setAsientos: (ids: string[]) => void;
-  setDatosPasajeros: (datos: DatosPasajero[]) => void;
-  confirmarCompra: (comprobante: DatosComprobante, metodoPago: MetodoPago) => void;
-  reiniciar: () => void;
+  iniciar: (viaje: ViajeCompra, pasajerosCount: number) => void;
+  fijarReserva: (reserva: ReservationResponse) => void;
+  /** Libera la reserva actual (si no se inició el pago) y la olvida. */
+  soltarReserva: () => void;
+  /** La reserva venció o ya no existe en el backend: se olvida sin liberar. */
+  olvidarReserva: () => void;
+  marcarPagoIniciado: () => void;
+  setBorradores: (borradores: BorradorPasajero[]) => void;
+  setContacto: (contacto: BorradorContacto) => void;
 }
 
 const ESTADO_INICIAL: PurchaseState = {
   viaje: null,
   pasajerosCount: 1,
-  asientos: [],
-  datosPasajeros: [],
-  boleto: null,
-  reservaExpiraEn: null,
+  reserva: null,
+  pagoIniciado: false,
+  borradores: [],
+  contacto: CONTACTO_VACIO,
 };
-
-// Regla de negocio real (CLAUDE.md): la reserva temporal de un asiento
-// expira a los 10 minutos. Aquí solo se simula la cuenta regresiva en el
-// cliente — sin backend no hay un SELECT ... FOR UPDATE que liberar.
-const DURACION_RESERVA_MS = 10 * 60 * 1000;
 
 const PurchaseContext = createContext<PurchaseContextValue | null>(null);
 
 /**
  * Estado del flujo de compra en memoria (React state), nunca en
- * localStorage: CLAUDE.md prohíbe persistir el estado de la reserva en el
- * navegador, y los datos de los pasajeros son datos personales que tampoco
- * pueden viajar por la URL (Ley 29733). Vive en un Provider montado en
- * app/pasajes/comprar/layout.tsx, así que sobrevive a la navegación entre
- * pasos (misma instancia de layout) pero se pierde si se recarga la
- * página — cada pantalla del flujo debe poder manejar ese caso.
+ * localStorage: la reserva vive en el servidor (CLAUDE.md), y los datos de
+ * los pasajeros son datos personales que no se guardan en el navegador ni
+ * viajan por la URL (Ley 29733). Vive en el layout de /pasajes/comprar, así
+ * que sobrevive a la navegación entre pasos y se pierde al recargar: cada
+ * pantalla maneja ese caso consultando el estado real al backend.
+ *
+ * Qué pasa con una reserva viva (docs/BITACORA.md, 17/10/2026):
+ * - Retroceder dentro del flujo (pago → datos → asientos): se conserva.
+ * - Salir del flujo (volver a resultados, ir a otra sección): se libera, si
+ *   no se inició el pago. Retener asientos que nadie va a pagar los bloquea
+ *   para otros y cuenta contra el tope de 8 por sesión.
+ * - Cerrar la pestaña o recargar: no se envía nada. Un aviso al cerrar no
+ *   llega de forma confiable en móviles, y recargar no es abandonar. La
+ *   reserva vence a su hora y el proceso programado del backend la libera.
  */
 export function usePurchase() {
   const ctx = useContext(PurchaseContext);
@@ -90,53 +118,105 @@ export function usePurchase() {
   return ctx;
 }
 
+function liberarSinEsperar(reservationId: string) {
+  // Si falla (sin red), la reserva vence sola a su hora.
+  liberarReserva(reservationId, { keepalive: true }).catch(() => {});
+}
+
 export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<PurchaseState>(ESTADO_INICIAL);
 
-  const iniciar = useCallback((viaje: Viaje, pasajerosCount: number) => {
+  // Al salir del flujo (se desmonta el layout) se libera lo que siga
+  // retenido. El ref deja leer el estado más reciente desde la limpieza.
+  const estadoRef = useRef(estado);
+  useEffect(() => {
+    estadoRef.current = estado;
+  });
+  useEffect(
+    () => () => {
+      const { reserva, pagoIniciado } = estadoRef.current;
+      if (reserva && !pagoIniciado) liberarSinEsperar(reserva.reservationId);
+    },
+    [],
+  );
+
+  // Liberar es un efecto de red: va fuera del actualizador de setState, que
+  // React puede ejecutar dos veces.
+  const liberarActual = useCallback(() => {
+    const { reserva, pagoIniciado } = estadoRef.current;
+    if (reserva && !pagoIniciado) liberarSinEsperar(reserva.reservationId);
+  }, []);
+
+  const iniciar = useCallback((viaje: ViajeCompra, pasajerosCount: number) => {
+    const actual = estadoRef.current;
+    const mismo =
+      actual.viaje?.viaje.id === viaje.viaje.id && actual.pasajerosCount === pasajerosCount;
+    if (!mismo) liberarActual();
     setEstado((prev) => {
-      if (prev.viaje?.id === viaje.id && prev.pasajerosCount === pasajerosCount) return prev;
+      if (prev.viaje?.viaje.id === viaje.viaje.id && prev.pasajerosCount === pasajerosCount) {
+        return prev;
+      }
       return {
         ...ESTADO_INICIAL,
         viaje,
         pasajerosCount,
-        reservaExpiraEn: Date.now() + DURACION_RESERVA_MS,
+        // Lo escrito se conserva si solo cambió el viaje: no se vuelve a pedir.
+        borradores: prev.borradores,
+        contacto: prev.contacto,
       };
     });
+  }, [liberarActual]);
+
+  const fijarReserva = useCallback((reserva: ReservationResponse) => {
+    setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false }));
   }, []);
 
-  const setAsientos = useCallback((ids: string[]) => {
-    setEstado((prev) => ({ ...prev, asientos: ids }));
+  const soltarReserva = useCallback(() => {
+    liberarActual();
+    estadoRef.current = { ...estadoRef.current, reserva: null };
+    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
+  }, [liberarActual]);
+
+  const olvidarReserva = useCallback(() => {
+    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
   }, []);
 
-  const setDatosPasajeros = useCallback((datos: DatosPasajero[]) => {
-    setEstado((prev) => ({ ...prev, datosPasajeros: datos }));
+  const marcarPagoIniciado = useCallback(() => {
+    // Al instante, sin esperar al render: si el usuario sale justo después de
+    // pagar, la limpieza no debe liberar la reserva.
+    estadoRef.current = { ...estadoRef.current, pagoIniciado: true };
+    setEstado((prev) => ({ ...prev, pagoIniciado: true }));
   }, []);
 
-  const confirmarCompra = useCallback((comprobante: DatosComprobante, metodoPago: MetodoPago) => {
-    setEstado((prev) => {
-      if (!prev.viaje) return prev;
-      const boleto: Boleto = {
-        codigo: `ECH-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
-        emitidoEn: new Date(),
-        viaje: prev.viaje,
-        asientos: prev.asientos,
-        pasajeros: prev.datosPasajeros,
-        comprobante,
-        metodoPago,
-        total: prev.viaje.precio * prev.pasajerosCount,
-      };
-      // La reserva ya se resolvió (compra confirmada): se apaga el
-      // temporizador para que no siga corriendo en la pantalla de confirmación.
-      return { ...prev, boleto, reservaExpiraEn: null };
-    });
+  const setBorradores = useCallback((borradores: BorradorPasajero[]) => {
+    setEstado((prev) => ({ ...prev, borradores }));
   }, []);
 
-  const reiniciar = useCallback(() => setEstado(ESTADO_INICIAL), []);
+  const setContacto = useCallback((contacto: BorradorContacto) => {
+    setEstado((prev) => ({ ...prev, contacto }));
+  }, []);
 
   const value = useMemo<PurchaseContextValue>(
-    () => ({ ...estado, iniciar, setAsientos, setDatosPasajeros, confirmarCompra, reiniciar }),
-    [estado, iniciar, setAsientos, setDatosPasajeros, confirmarCompra, reiniciar]
+    () => ({
+      ...estado,
+      iniciar,
+      fijarReserva,
+      soltarReserva,
+      olvidarReserva,
+      marcarPagoIniciado,
+      setBorradores,
+      setContacto,
+    }),
+    [
+      estado,
+      iniciar,
+      fijarReserva,
+      soltarReserva,
+      olvidarReserva,
+      marcarPagoIniciado,
+      setBorradores,
+      setContacto,
+    ],
   );
 
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;

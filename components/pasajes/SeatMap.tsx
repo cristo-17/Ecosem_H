@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { SteeringWheelIcon } from "@/components/ui/icons";
-import type { Asiento, DistribucionPiso, EstadoAsiento } from "@/lib/mock/asientos";
+import type { Asiento, DistribucionPiso, EstadoAsiento } from "@/lib/asientos";
 
 export interface SeatMapProps {
   distribucion: DistribucionPiso[];

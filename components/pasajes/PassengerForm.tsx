@@ -1,7 +1,25 @@
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import type { DatosPasajero, TipoDocumento } from "@/components/pasajes/PurchaseProvider";
+
+// Formulario y tipos del counter (/panel/venta), que sigue con mock. El flujo
+// web usa PasajeroReservaForm, con la forma del contrato del backend; cuando
+// se integre la venta del counter, el panel pasa a ese y este se borra.
+export type TipoDocumento = "dni" | "ce" | "pasaporte";
+export type TipoComprobante = "boleta" | "factura";
+
+export interface DatosPasajero {
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  nombres: string;
+  correo: string;
+  celular: string;
+  /**
+   * Opcional (docs/prompts/13-tarifario-encomiendas.md). Solo informa qué
+   * escalón de exceso aplicaría (lib/mock/tarifario.ts).
+   */
+  equipajeKg: string;
+}
 import { calcularEscalonEquipaje } from "@/lib/mock/tarifario";
 import { formatPrecio } from "@/lib/format";
 

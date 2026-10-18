@@ -7,24 +7,9 @@
 import type { TipoAsiento, Viaje } from "@/lib/mock/viajes";
 import { hashSemilla, mulberry32 } from "@/lib/random";
 
-export type EstadoAsiento = "libre" | "ocupado" | "reservado";
+import type { Asiento, DistribucionPiso } from "@/lib/asientos";
 
-export interface Asiento {
-  id: string;
-  piso: 1 | 2;
-  fila: number;
-  columna: string;
-  estado: EstadoAsiento;
-}
-
-export interface DistribucionPiso {
-  piso: 1 | 2;
-  nombre: string;
-  filas: number;
-  /** Letras de izquierda a derecha; el pasillo va después del índice indicado. */
-  columnas: string[];
-  pasilloTrasIndice: number;
-}
+export type { Asiento, DistribucionPiso, EstadoAsiento } from "@/lib/asientos";
 
 // Buses de dos pisos con distribución distinta según la clase: económico
 // (2+2 ambos pisos, más asientos), ejecutivo (2+1 en el segundo piso, más

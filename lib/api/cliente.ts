@@ -14,6 +14,7 @@ import {
   retryDelayMs,
   type ErrorBody,
   type ErrorCode,
+  type ErrorDetails,
 } from "@/lib/types/contratos-frontend";
 
 export type TipoFalla = "red" | "tiempo" | "ocupado" | "servidor";
@@ -25,6 +26,8 @@ export class ApiError extends Error {
     readonly codigo: ErrorCode | null = null,
     /** Para que soporte encuentre la petición. No lleva datos personales. */
     readonly correlationId: string | null = null,
+    /** Lo que el backend agrega para actuar: asientos tomados, topes, etc. */
+    readonly detalles: ErrorDetails | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -39,6 +42,12 @@ export interface AvisoReintento {
 }
 
 export interface OpcionesPeticion {
+  metodo?: "GET" | "POST" | "PUT" | "DELETE";
+  /** Se envía como JSON. */
+  cuerpo?: unknown;
+  cabeceras?: Record<string, string>;
+  /** Para liberar una reserva al salir: la petición sobrevive a la navegación. */
+  keepalive?: boolean;
   signal?: AbortSignal;
   /** Se llama antes de cada espera de un 503, para mostrarla en pantalla. */
   onReintento?: (aviso: AvisoReintento) => void;
@@ -58,9 +67,39 @@ function urlServicio(servicio: Servicio): string {
   return `${url.replace(/\/+$/, "")}/functions/v1/${servicio}`;
 }
 
-function cabeceras(): HeadersInit {
+function cabeceras(extra: Record<string, string> = {}, conCuerpo = false): Record<string, string> {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return anonKey ? { apikey: anonKey } : {};
+  return {
+    ...(anonKey ? { apikey: anonKey } : {}),
+    ...(conCuerpo ? { "content-type": "application/json" } : {}),
+    ...extra,
+  };
+}
+
+// Reloj del servidor. Un reloj del teléfono desfasado no puede decidir cuánto
+// le queda a una reserva: si el backend expone `Date` por CORS, se corrige con
+// ella. Hoy no la expone (solo `retry-after` y `x-correlation-id`, D-047), así
+// que el desfase queda en 0 y lo que manda es el estado que el backend
+// devuelve al consultar la reserva (ver useVigenciaReserva).
+let desfaseRelojMs = 0;
+let relojCorregido = false;
+
+function registrarRelojServidor(fecha: string | null, enviadaEn: number, recibidaEn: number) {
+  const servidor = fecha ? Date.parse(fecha) : Number.NaN;
+  if (Number.isNaN(servidor)) return;
+  // `Date` tiene resolución de segundos; el punto medio del viaje de ida y
+  // vuelta es la mejor estimación de cuándo la escribió el servidor.
+  desfaseRelojMs = servidor - (enviadaEn + recibidaEn) / 2;
+  relojCorregido = true;
+}
+
+/** "Ahora" según el servidor, si se pudo medir; si no, el reloj local. */
+export function ahoraServidor(): number {
+  return Date.now() + desfaseRelojMs;
+}
+
+export function relojServidorMedido(): boolean {
+  return relojCorregido;
 }
 
 function esErrorBody(cuerpo: unknown): cuerpo is ErrorBody {
@@ -80,7 +119,10 @@ interface Respuesta {
 }
 
 /** Un solo intento. El tiempo límite cubre también la lectura del cuerpo. */
-async function intentar(url: string, signal?: AbortSignal): Promise<Respuesta> {
+async function intentar(
+  url: string,
+  { metodo = "GET", cuerpo, cabeceras: extra, keepalive, signal }: OpcionesPeticion,
+): Promise<Respuesta> {
   const controlador = new AbortController();
   let agotado = false;
   const temporizador = setTimeout(() => {
@@ -91,15 +133,20 @@ async function intentar(url: string, signal?: AbortSignal): Promise<Respuesta> {
   signal?.addEventListener("abort", cancelar, { once: true });
 
   try {
+    const enviadaEn = Date.now();
     const respuesta = await fetch(url, {
-      headers: cabeceras(),
+      method: metodo,
+      headers: cabeceras(extra, cuerpo !== undefined),
+      body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+      keepalive,
       signal: controlador.signal,
       cache: "no-store",
     });
+    registrarRelojServidor(respuesta.headers.get("date"), enviadaEn, Date.now());
     const texto = await respuesta.text();
-    let cuerpo: unknown = null;
+    let recibido: unknown = null;
     try {
-      cuerpo = texto ? JSON.parse(texto) : null;
+      recibido = texto ? JSON.parse(texto) : null;
     } catch {
       // Una página del gateway en vez de JSON: se trata según el status.
     }
@@ -107,7 +154,7 @@ async function intentar(url: string, signal?: AbortSignal): Promise<Respuesta> {
     return {
       status: respuesta.status,
       ok: respuesta.ok,
-      cuerpo,
+      cuerpo: recibido,
       retryAfterSegundos: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null,
     };
   } catch (error) {
@@ -139,19 +186,22 @@ function esperar(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 /**
- * GET a un servicio. Un 503 se reintenta hasta `RETRY_MAX_ATTEMPTS` veces,
+ * Petición a un servicio. Un 503 se reintenta hasta `RETRY_MAX_ATTEMPTS` veces,
  * esperando lo que diga `retryDelayMs` con el `retryAfterSeconds` del cuerpo
- * (D-044); nunca de inmediato. Si se agotan, falla como "ocupado".
+ * (D-044); nunca de inmediato. Si se agotan, falla como "ocupado". Vale
+ * también para escrituras: el backend responde 503 solo cuando la conexión
+ * con la base nunca se estableció, así que no se hizo nada.
  */
 export async function pedirJson<T>(
   servicio: Servicio,
   ruta: string,
-  { signal, onReintento }: OpcionesPeticion = {},
+  opciones: OpcionesPeticion = {},
 ): Promise<T> {
+  const { signal, onReintento } = opciones;
   const url = `${urlServicio(servicio)}${ruta}`;
 
   for (let reintentos = 0; ; reintentos++) {
-    const respuesta = await intentar(url, signal);
+    const respuesta = await intentar(url, opciones);
     const error = esErrorBody(respuesta.cuerpo) ? respuesta.cuerpo.error : null;
 
     if (respuesta.ok) {
@@ -177,6 +227,7 @@ export async function pedirJson<T>(
         error?.message ?? "El servicio está ocupado.",
         error?.code ?? null,
         error?.correlationId ?? null,
+        error?.details ?? null,
       );
     }
 
@@ -185,6 +236,7 @@ export async function pedirJson<T>(
       error?.message ?? "No pudimos completar la operación.",
       error?.code ?? null,
       error?.correlationId ?? null,
+      error?.details ?? null,
     );
   }
 }

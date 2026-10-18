@@ -1,13 +1,11 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { ClockIcon } from "@/components/ui/icons";
 
 export interface ReservationTimerProps {
-  /** Epoch ms en que expira la reserva temporal. null = no hay reserva activa. */
-  expiraEn: number | null;
-  onExpire: () => void;
+  /** Lo que queda según `expiresAt` del backend (useVigenciaReserva). null = sin reserva. */
+  restanteMs: number | null;
+  /** El contador llegó a cero y se está confirmando con el backend. */
+  verificando?: boolean;
   className?: string;
 }
 
@@ -21,53 +19,33 @@ function formatearRestante(ms: number): string {
 const UMBRAL_CRITICO_MS = 2 * 60 * 1000;
 
 /**
- * Temporizador visible de la reserva temporal de asientos (CLAUDE.md: la
- * reserva expira a los 10 minutos y un proceso programado la libera — aquí
- * solo se simula esa cuenta regresiva en el cliente, sin backend real).
+ * Temporizador visible de la reserva. Solo muestra: el tiempo lo calcula
+ * useVigenciaReserva desde la hora de vencimiento del backend, y que la
+ * reserva venció lo decide el backend, no este contador.
  *
  * Sin role="status"/aria-live propio: un contador que cambia cada segundo
  * anunciaría "expira en 09:58", "09:57"... a cada tick, que es ruido para
- * lectores de pantalla. El único momento que sí necesita anunciarse (la
- * expiración) se comunica aparte, con un toast de error puntual.
+ * lectores de pantalla. La expiración se anuncia aparte, con su pantalla.
  */
-export function ReservationTimer({ expiraEn, onExpire, className }: ReservationTimerProps) {
-  const [ahora, setAhora] = useState(() => Date.now());
-  const yaExpiroRef = useRef(false);
-  const onExpireRef = useRef(onExpire);
-  useEffect(() => {
-    onExpireRef.current = onExpire;
-  });
+export function ReservationTimer({ restanteMs, verificando = false, className }: ReservationTimerProps) {
+  if (restanteMs == null) return null;
 
-  useEffect(() => {
-    if (expiraEn == null) return;
-    yaExpiroRef.current = false;
-    const id = setInterval(() => setAhora(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [expiraEn]);
-
-  useEffect(() => {
-    if (expiraEn == null || yaExpiroRef.current) return;
-    if (ahora >= expiraEn) {
-      yaExpiroRef.current = true;
-      onExpireRef.current();
-    }
-  }, [ahora, expiraEn]);
-
-  if (expiraEn == null) return null;
-
-  const restanteMs = expiraEn - ahora;
   const critico = restanteMs <= UMBRAL_CRITICO_MS;
 
   return (
     <div
       className={cn(
         "flex items-center justify-center gap-2 rounded-field px-3 py-2 text-sm font-semibold",
-        critico ? "bg-warning-fill text-warning-fill-foreground" : "bg-secondary/10 text-secondary",
+        critico ? "bg-warning-fill text-warning-text" : "bg-secondary/10 text-secondary",
         className
       )}
     >
-      <ClockIcon className={critico ? "text-warning-fill-foreground" : "text-secondary"} />
-      <span>Tu reserva expira en {formatearRestante(restanteMs)}</span>
+      <ClockIcon className={critico ? "text-warning-text" : "text-secondary"} />
+      <span>
+        {verificando
+          ? "Confirmando si tu reserva sigue vigente…"
+          : `Tu reserva expira en ${formatearRestante(restanteMs)}`}
+      </span>
     </div>
   );
 }
