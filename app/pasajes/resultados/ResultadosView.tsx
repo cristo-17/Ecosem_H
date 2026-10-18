@@ -15,7 +15,6 @@ import {
   labelTipoAsiento,
   FRANJAS_HORARIAS,
   TIPOS_ASIENTO,
-  type Ciudad,
 } from "@/lib/mock/viajes";
 import { RUTAS } from "@/lib/routes";
 import { formatFechaLarga } from "@/lib/format";
@@ -67,8 +66,8 @@ const OPCIONES_SERVICIO: SelectOption[] = [
 ];
 
 export interface ResultadosViewProps {
-  origen: Ciudad;
-  destino: Ciudad;
+  origen: string;
+  destino: string;
   /** `AAAA-MM-DD`, hora de Perú. */
   fecha: string;
   pasajerosCount: number;
