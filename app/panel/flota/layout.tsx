@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { esSupervisor } from "@/lib/mock/sesion";
-import { obtenerRolDemo } from "@/lib/auth/sesion";
+import { AccesoDenegado } from "@/components/layout/AccesoDenegado";
+import { exigirAcceso } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 /**
@@ -11,8 +10,11 @@ import { RUTAS } from "@/lib/routes";
  * de flota (listado, detalle de unidad).
  */
 export default async function PanelFlotaLayout({ children }: { children: ReactNode }) {
-  if (!esSupervisor(await obtenerRolDemo())) {
-    redirect(RUTAS.panel);
+  // Rol verificado en el servidor (token firmado). Un counter que llega por
+  // URL ve "acceso denegado" y nada de la sección.
+  const acceso = await exigirAcceso("supervisor", RUTAS.panelFlota);
+  if (acceso.tipo === "denegado") {
+    return <AccesoDenegado volverA={RUTAS.panel} etiquetaVolver="Volver al panel" />;
   }
 
   return <>{children}</>;

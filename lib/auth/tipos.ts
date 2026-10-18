@@ -1,27 +1,29 @@
 /**
  * Formas de datos compartidas por las funciones de lib/auth/acciones.ts.
- * Se mantienen separadas del componente de UI que las llena: cuando entre
- * Supabase Auth, estos son los mismos campos que va a pedir la llamada real.
+ * Correo y contraseña con Supabase Auth: el DNI no sirve para iniciar sesión
+ * (D-047), y el registro pide solo lo necesario (Ley 29733).
  */
 
 export interface CredencialesIngreso {
-  /** DNI (8 dígitos) o correo electrónico. */
-  identificador: string;
+  correo: string;
   contrasena: string;
 }
 
 export interface DatosRegistro {
-  nombres: string;
-  apellidos: string;
-  /** "dni" | "ce" | "pasaporte" — mismos valores que OPCIONES_TIPO_DOCUMENTO. */
-  tipoDocumento: string;
-  numeroDocumento: string;
+  /** Solo para saludar. No identifica a nadie ni decide nada. */
+  nombre: string;
   correo: string;
-  celular: string;
   contrasena: string;
+  /** Ruta a la que volver tras confirmar el correo. */
+  siguiente?: string;
 }
 
 export interface ResultadoAuth {
-  /** Ausente = éxito. Con Supabase Auth, mapea desde AuthError.message. */
+  /** Ausente = éxito. Mensaje en español para el usuario. */
   error?: string;
+  /** El registro salió bien pero hay que confirmar el correo antes de entrar. */
+  requiereConfirmacion?: boolean;
 }
+
+export const LARGO_MINIMO_CONTRASENA = 8;
+export const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

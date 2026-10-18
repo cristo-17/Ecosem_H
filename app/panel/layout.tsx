@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { esPersonal, esSupervisor, type RolUsuario } from "@/lib/mock/sesion";
-import { haySesionActiva, obtenerRolDemo } from "@/lib/auth/sesion";
+import { AccesoDenegado } from "@/components/layout/AccesoDenegado";
+import { esSupervisor, type RolUsuario } from "@/lib/auth/roles";
+import { exigirAcceso } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 
 const ETIQUETA_ROL: Record<RolUsuario, string> = {
@@ -13,19 +13,19 @@ const ETIQUETA_ROL: Record<RolUsuario, string> = {
 
 /**
  * Panel interno: venta en counter, arqueo de caja y manifiesto SUTRAN
- * (docs/prompts/08, 09). El rol ya no es una constante de mano (`ROL_MOCK`)
- * sino una cookie de servidor (`obtenerRolDemo()`, D-040) que el selector de
- * `docs/prompts/16-navbar-por-rol.md` puede cambiar sin editar código.
+ * (docs/prompts/08, 09).
  *
- * La comprobación de acceso es de interfaz nomás — corre en un Server
- * Component antes de renderizar nada, pero sin RLS real detrás todavía. La
- * verificación real de acceso al panel va a vivir server-side con RLS.
+ * El rol sale del token de Supabase Auth verificado en el servidor
+ * (`exigirAcceso`, lib/auth/sesion.ts): sin sesión, al ingreso; con sesión de
+ * pasajero, "acceso denegado" y nada del panel se renderiza. Editar cookies o
+ * el HTML en el navegador no cambia el rol: rompe la firma del token. Los
+ * datos reales del panel los entregan los servicios, que vuelven a verificar
+ * el token y que el personal siga activo en la base (D-015 del backend).
  */
 export default async function PanelLayout({ children }: { children: ReactNode }) {
-  const rol = await obtenerRolDemo();
-  if (!(await haySesionActiva()) || !esPersonal(rol)) {
-    redirect(RUTAS.inicio);
-  }
+  const acceso = await exigirAcceso("personal", RUTAS.panel);
+  if (acceso.tipo === "denegado") return <AccesoDenegado />;
+  const { rol } = acceso.sesion;
 
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col">

@@ -4,7 +4,7 @@ import Script from "next/script";
 import { ShellPublico } from "@/components/layout/ShellPublico";
 import { SelectorRolDemo } from "@/components/layout/SelectorRolDemo";
 import { ToastProvider } from "@/components/ui/Toast";
-import { haySesionActiva, obtenerRolDemo } from "@/lib/auth/sesion";
+import { obtenerSesion } from "@/lib/auth/sesion";
 import "./globals.css";
 
 // latin-ext asegura tildes y ñ. IBM Plex Sans no es variable font en Google
@@ -21,8 +21,12 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const conSesion = await haySesionActiva();
-  const rol = await obtenerRolDemo();
+  // Sesión verificada en el servidor (token firmado). Lo que se muestra con
+  // ella (menú de personal, "Mi perfil") es comodidad visual: cada sección
+  // protegida vuelve a exigir el rol en su propio layout.
+  const sesion = await obtenerSesion();
+  const conSesion = sesion !== null;
+  const rol = sesion?.rol ?? "pasajero";
 
   return (
     <html lang="es" className={`${ibmPlexSans.variable} antialiased`}>
@@ -69,11 +73,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </ShellPublico>
         </ToastProvider>
         {/*
-          Solo development (docs/prompts/16-navbar-por-rol.md): este `if`
-          corre en un Server Component, así que en `next build` de
-          producción nunca es verdadero y el componente (y su Server
-          Action) quedan fuera del árbol — no es un `hidden` de CSS.
-          Verificado con `npm run build` + grep sobre `.next/`.
+          Solo development: este `if` corre en un Server Component, así que
+          en `next build` de producción nunca es verdadero y el selector (y
+          su Server Action de cuentas de prueba) quedan fuera del build — no
+          es un `hidden` de CSS. Verificado con `npm run build` + grep sobre
+          `.next/` (docs/BITACORA.md).
         */}
         {process.env.NODE_ENV === "development" && (
           <SelectorRolDemo estadoActual={conSesion ? rol : "sin-sesion"} />

@@ -279,7 +279,7 @@ export function ResultadosView({
       </div>
 
       {seleccionadoId && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-navy/10 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-[var(--alto-barra-dev,0px)] z-20 border-t border-navy/10 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto max-w-3xl">
             <Button
               className="w-full"

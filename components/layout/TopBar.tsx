@@ -10,8 +10,9 @@ import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
 import { cerrarSesion } from "@/lib/auth/acciones";
+import { olvidarSesionCompra } from "@/lib/api/compra";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
-import { esPersonal, type RolUsuario } from "@/lib/mock/sesion";
+import { esPersonal, type RolUsuario } from "@/lib/auth/roles";
 import { PanelMenu, enlacesPanel } from "@/components/layout/PanelMenu";
 
 const FOCUSABLE_SELECTOR =
@@ -102,7 +103,11 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
   async function handleCerrarSesion() {
     closeMenu();
     await cerrarSesion();
+    // En un dispositivo compartido, quien siga en esta pestaña no debe poder
+    // consultar la compra de la persona anterior.
+    olvidarSesionCompra();
     router.push(RUTAS.inicio);
+    router.refresh();
   }
 
   return (

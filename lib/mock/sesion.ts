@@ -1,10 +1,9 @@
 import { maskDocumento } from "@/lib/format";
 
 /**
- * Datos de perfil simulados: todavía no hay backend de autenticación (ver
- * docs/prompts/07-autenticacion.md). Si hay sesión o no ya lo decide una
- * cookie de servidor (lib/auth/sesion.ts) en vez de una constante fija —
- * esto solo cubre qué mostrar en pantalla mientras no exista Supabase Auth.
+ * Nombre de personal simulado para las pantallas del panel que siguen con
+ * mock (alertas, precios) y las encomiendas mock del perfil. La sesión y el
+ * rol reales salen de Supabase Auth (lib/auth/sesion.ts, lib/auth/roles.ts).
  */
 export interface UsuarioSesion {
   nombre: string;
@@ -20,31 +19,3 @@ export const USUARIO_MOCK: UsuarioSesion = {
   nombre: "Carlos Mendoza Ruiz",
   documentoEnmascarado: maskDocumento(DOCUMENTO_MOCK),
 };
-
-/**
- * Rol simulado (docs/prompts/08-panel-counter.md, reutilizado por
- * 09-manifiesto-sutran.md): el panel de counter y el manifiesto son para
- * personal, no para pasajeros. Como todavía no hay un rol real por usuario,
- * el valor actual vive en una cookie de servidor
- * (`lib/auth/sesion.ts` → `obtenerRolDemo()`), no en una constante de mano
- * como al principio (D-016) — así el selector de rol de
- * `docs/prompts/16-navbar-por-rol.md` puede cambiarlo sin editar código ni
- * reiniciar el server. La verificación real de acceso va a vivir
- * server-side con RLS cuando exista backend; esto sigue siendo solo la
- * interfaz, no una barrera de seguridad.
- */
-export type RolUsuario = "pasajero" | "counter" | "supervisor";
-
-export function esPersonal(rol: RolUsuario): boolean {
-  return rol !== "pasajero";
-}
-
-/**
- * El motor de precios (docs/prompts/11-motor-precios.md) es solo para
- * supervisor — un counter no debería poder cambiar tarifas. Es la primera
- * pantalla del panel con un requisito de rol más estricto que "es
- * personal"; hasta ahora alcanzaba con esPersonal().
- */
-export function esSupervisor(rol: RolUsuario): boolean {
-  return rol === "supervisor";
-}

@@ -14,6 +14,7 @@ import { usePurchase } from "@/components/pasajes/PurchaseProvider";
 import {
   CheckIcon,
   ClockIcon,
+  DownloadIcon,
   ExclamationIcon,
   InfoIcon,
 } from "@/components/ui/icons";
@@ -26,8 +27,11 @@ import {
   obtenerBoletos,
   type MensajeError,
 } from "@/lib/api/compra";
+import { vincularComprasDeEstaPestana } from "@/lib/api/cuenta";
 import { etiquetaAsiento } from "@/lib/asientos";
 import { formatFechaLarga, formatHora12, formatPrecio, maskDocumento } from "@/lib/format";
+import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { descargarBoletosCompraPdf } from "@/lib/pdf/boleto";
 import { RUTAS } from "@/lib/routes";
 import { useIsMounted } from "@/lib/useIsMounted";
 
@@ -64,6 +68,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
   const [estado, setEstado] = useState<Estado>({ tipo: "consultando" });
   const [intento, setIntento] = useState(0);
   const [ahora, setAhora] = useState(() => ahoraServidor());
+  const [generandoPdf, setGenerandoPdf] = useState(false);
   // sessionStorage no existe en el servidor: se lee recién montado en el
   // cliente, para no romper la hidratación.
   const montado = useIsMounted();
@@ -81,6 +86,9 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
         if (!vigente) return;
         if (status === "purchased") {
           setEstado({ tipo: "comprada", boletos: null });
+          // Con la sesión iniciada, la compra pasa a la cuenta (D-048). Sin
+          // sesión no hace nada. Nunca bloquea mostrar los boletos.
+          vincularComprasDeEstaPestana();
           const boletos = await obtenerBoletos(reservationId).catch(() => null);
           if (vigente) setEstado({ tipo: "comprada", boletos });
           return;
@@ -198,6 +206,23 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
 
   // Comprada: lo dijo el backend.
   const { boletos } = estado;
+
+  async function descargarPdf() {
+    if (!boletos) return;
+    // Terminal y tipo de servicio no vienen en los boletos: se agregan si esta
+    // pestaña todavía tiene el viaje elegido.
+    const elegido =
+      purchase.viaje?.viaje.id === boletos.tickets[0]?.trip.tripId ? purchase.viaje : null;
+    setGenerandoPdf(true);
+    try {
+      await descargarBoletosCompraPdf(boletos, {
+        terminalOrigen: elegido?.terminalOrigen,
+        tipoServicio: elegido ? labelTipoAsiento(elegido.viaje.serviceType) : undefined,
+      });
+    } finally {
+      setGenerandoPdf(false);
+    }
+  }
   const total =
     purchase.reserva?.reservationId === reservationId ? purchase.reserva.totalAmount : null;
   const viaje = boletos?.tickets[0]?.trip;
@@ -293,8 +318,14 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
         </>
       )}
 
-      <div className="mt-6 flex justify-center">
-        <Button variant="terciario" onClick={() => router.push(RUTAS.inicio)}>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        {boletos && (
+          <Button onClick={descargarPdf} disabled={generandoPdf} className="w-full sm:w-auto">
+            <DownloadIcon className="!text-white" />
+            {generandoPdf ? "Generando..." : "Descargar boletos (PDF)"}
+          </Button>
+        )}
+        <Button variant="terciario" onClick={() => router.push(RUTAS.inicio)} className="w-full sm:w-auto">
           Volver al inicio
         </Button>
       </div>

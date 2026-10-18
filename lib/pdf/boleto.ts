@@ -1,7 +1,9 @@
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, StandardFonts, type PDFFont, type PDFImage } from "pdf-lib";
 import QRCode from "qrcode";
 import { descargarArchivo } from "@/lib/descargarArchivo";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
+import type { DocumentKind, TicketsResponse } from "@/lib/types/contratos-frontend";
+import { etiquetaAsiento } from "@/lib/asientos";
 import { firmarCodigo } from "@/lib/firma";
 import {
   ANCHO_A4,
@@ -22,7 +24,14 @@ import {
 
 export interface PasajeroBoletoPdf {
   nombre: string;
-  documentoEnmascarado: string;
+  /**
+   * El documento tal como se imprime. En el boleto de una compra real va
+   * completo: el artículo 3 de la RS 156-2003/SUNAT lo exige en el boleto de
+   * viaje. Los boletos mock del panel y de Mis viajes lo traen enmascarado.
+   */
+  documento: string;
+  /** "DNI", "C.E.", "Pasaporte". Sin él se imprime "Doc.". */
+  tipoDocumento?: string;
 }
 
 export interface BoletoPdfData {
@@ -42,6 +51,9 @@ export interface BoletoPdfData {
     | { tipo: "factura"; ruc: string; razonSocial: string };
 }
 
+// Solo para los boletos mock (panel de venta, Mis viajes). Los de una compra
+// real llevan el QR que firma el backend, tal cual (generarBoletosCompraPdf).
+//
 // Aislado en su propia función (pedido explícito del prompt 03). El
 // contenido ahora sí lleva el identificador firmado que pide CLAUDE.md
 // (regla 4): "codigo|firma", firma = HMAC del código (lib/firma.ts, clave
@@ -55,20 +67,50 @@ export async function generarContenidoQr(codigo: string): Promise<string> {
 const MARGEN = 50;
 const ANCHO_CONTENIDO = ANCHO_A4 - MARGEN * 2;
 
-/** Construye el PDF de una página del boleto. No dispara la descarga. */
-export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array> {
+/** Lo que va en una página de boleto, ya listo para dibujar. */
+interface PaginaBoleto {
+  codigo: string;
+  origen: string;
+  destino: string;
+  /** Línea de terminales bajo la ruta. null si no se conoce. */
+  terminales: string | null;
+  horaSalida: Date;
+  /** "Ejecutivo · Asiento(s) 3A". */
+  lineaAsientos: string;
+  pasajeros: PasajeroBoletoPdf[];
+  etiquetaMonto: string;
+  monto: string;
+  comprobante: string;
+  detalleComprobante: string | null;
+  /** Se codifica tal cual en el QR. */
+  contenidoQr: string;
+  /** Texto bajo el QR, para buscar el boleto si el QR no lee. */
+  respaldoQr: string;
+}
+
+interface Recursos {
+  regular: PDFFont;
+  bold: PDFFont;
+  marca: PDFImage;
+  wordmark: PDFImage;
+}
+
+async function crearDocumento(titulo: string): Promise<{ pdfDoc: PDFDocument; recursos: Recursos }> {
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.setTitle(`Boleto ${datos.codigo}`);
+  pdfDoc.setTitle(titulo);
   pdfDoc.setSubject(NOTA_FUENTE);
-
-  const page = pdfDoc.addPage([ANCHO_A4, ALTO_A4]);
-  const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-  const [marca, wordmark] = await Promise.all([
+  const [regular, bold, marca, wordmark] = await Promise.all([
+    pdfDoc.embedFont(StandardFonts.Helvetica),
+    pdfDoc.embedFont(StandardFonts.HelveticaBold),
     cargarImagen(pdfDoc, "/ecosemh-mark.png"),
     cargarImagen(pdfDoc, "/ecosemh-wordmark.png"),
   ]);
+  return { pdfDoc, recursos: { regular, bold, marca, wordmark } };
+}
+
+async function dibujarPagina(pdfDoc: PDFDocument, recursos: Recursos, datos: PaginaBoleto) {
+  const page = pdfDoc.addPage([ANCHO_A4, ALTO_A4]);
+  const { regular, bold, marca, wordmark } = recursos;
 
   const ctx: Contexto = {
     page,
@@ -119,16 +161,17 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
   dibujarEncabezadoSeccion(ctx, "Datos del viaje");
   dibujarTexto(ctx, `${datos.origen} - ${datos.destino}`, { tamano: 14, negrita: true });
   ctx.y -= 16;
-  dibujarTexto(ctx, `${datos.terminalOrigen} - ${datos.terminalDestino}`, {
-    tamano: 9,
-    color: COLOR_TEXT_SECONDARY,
-  });
-  ctx.y -= 20;
+  if (datos.terminales) {
+    dibujarTexto(ctx, datos.terminales, { tamano: 9, color: COLOR_TEXT_SECONDARY });
+    ctx.y -= 20;
+  } else {
+    ctx.y -= 4;
+  }
   dibujarTexto(ctx, `${formatFechaLarga(datos.horaSalida)}, ${formatHora12(datos.horaSalida)}`, {
     tamano: 11,
   });
   ctx.y -= 18;
-  dibujarTexto(ctx, `${datos.tipoServicio} · Asiento(s) ${datos.asientos.join(", ")}`, { tamano: 11 });
+  dibujarTexto(ctx, datos.lineaAsientos, { tamano: 11 });
   ctx.y -= 18;
   const textoPasajerosCount =
     datos.pasajeros.length === 1 ? "1 pasajero" : `${datos.pasajeros.length} pasajeros`;
@@ -139,7 +182,7 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
   dibujarEncabezadoSeccion(ctx, "Pasajero(s)");
   datos.pasajeros.forEach((pasajero, indice) => {
     dibujarTexto(ctx, `${indice + 1}. ${pasajero.nombre}`, { tamano: 10.5, negrita: true });
-    dibujarTextoDerecha(ctx, `Doc. ${pasajero.documentoEnmascarado}`, {
+    dibujarTextoDerecha(ctx, `${pasajero.tipoDocumento ?? "Doc."} ${pasajero.documento}`, {
       tamano: 10,
       color: COLOR_TEXT_SECONDARY,
     });
@@ -149,28 +192,21 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
 
   // --- Pago ---
   dibujarEncabezadoSeccion(ctx, "Pago");
-  dibujarTexto(ctx, "Total pagado", { tamano: 10, color: COLOR_TEXT_SECONDARY });
-  dibujarTextoDerecha(ctx, formatPrecio(datos.totalSoles), { tamano: 16, negrita: true });
+  dibujarTexto(ctx, datos.etiquetaMonto, { tamano: 10, color: COLOR_TEXT_SECONDARY });
+  dibujarTextoDerecha(ctx, datos.monto, { tamano: 16, negrita: true });
   ctx.y -= 20;
   dibujarTexto(ctx, "Comprobante", { tamano: 10, color: COLOR_TEXT_SECONDARY });
-  dibujarTextoDerecha(ctx, datos.comprobante.tipo === "factura" ? "Factura" : "Boleta", {
-    tamano: 10,
-    negrita: true,
-  });
+  dibujarTextoDerecha(ctx, datos.comprobante, { tamano: 10, negrita: true });
   ctx.y -= 16;
-  if (datos.comprobante.tipo === "factura") {
-    dibujarTextoDerecha(ctx, `RUC ${datos.comprobante.ruc} · ${datos.comprobante.razonSocial}`, {
-      tamano: 9,
-      color: COLOR_TEXT_SECONDARY,
-    });
+  if (datos.detalleComprobante) {
+    dibujarTextoDerecha(ctx, datos.detalleComprobante, { tamano: 9, color: COLOR_TEXT_SECONDARY });
     ctx.y -= 16;
   }
   ctx.y -= 14;
 
-  // --- Código QR: mismo dato del código, en formato escaneable ---
+  // --- Código QR ---
   const tamanoQr = 130;
-  const contenidoQr = await generarContenidoQr(datos.codigo);
-  const dataUrlQr = await QRCode.toDataURL(contenidoQr, {
+  const dataUrlQr = await QRCode.toDataURL(datos.contenidoQr, {
     margin: 1,
     width: tamanoQr,
     color: { dark: "#10233F", light: "#FFFFFF" },
@@ -204,7 +240,7 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
   });
   ctx.y -= tamanoQr + 16;
   // Respaldo en texto si el QR no lee.
-  dibujarTextoCentrado(ctx, datos.codigo, { tamano: 12, negrita: true });
+  dibujarTextoCentrado(ctx, datos.respaldoQr, { tamano: 12, negrita: true });
   ctx.y -= 30;
 
   // --- Pie ---
@@ -224,11 +260,109 @@ export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array
     tamano: 8,
     color: COLOR_TEXT_SECONDARY,
   });
+}
 
+/** Boleto mock de una página (panel de venta, Mis viajes). No dispara la descarga. */
+export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array> {
+  const { pdfDoc, recursos } = await crearDocumento(`Boleto ${datos.codigo}`);
+  await dibujarPagina(pdfDoc, recursos, {
+    codigo: datos.codigo,
+    origen: datos.origen,
+    destino: datos.destino,
+    terminales: `${datos.terminalOrigen} - ${datos.terminalDestino}`,
+    horaSalida: datos.horaSalida,
+    lineaAsientos: `${datos.tipoServicio} · Asiento(s) ${datos.asientos.join(", ")}`,
+    pasajeros: datos.pasajeros,
+    etiquetaMonto: "Total pagado",
+    monto: formatPrecio(datos.totalSoles),
+    comprobante: datos.comprobante.tipo === "factura" ? "Factura" : "Boleta",
+    detalleComprobante:
+      datos.comprobante.tipo === "factura"
+        ? `RUC ${datos.comprobante.ruc} · ${datos.comprobante.razonSocial}`
+        : null,
+    contenidoQr: await generarContenidoQr(datos.codigo),
+    respaldoQr: datos.codigo,
+  });
   return pdfDoc.save();
 }
 
 export async function descargarBoletoPdf(datos: BoletoPdfData): Promise<void> {
   const bytes = await generarBoletoPdf(datos);
   descargarArchivo(`boleto-${datos.codigo}.pdf`, bytes, "application/pdf");
+}
+
+const ESTADO_COMPROBANTE: Record<string, string> = {
+  pending: "En emisión",
+  issued: "Emitido",
+  failed: "En revisión",
+  voided: "Anulado",
+};
+
+const TIPO_DOCUMENTO: Record<DocumentKind, string> = {
+  dni: "DNI",
+  carne_extranjeria: "C.E.",
+  pasaporte: "Pasaporte",
+};
+
+export interface BoletosCompraPdfExtra {
+  /** Del viaje elegido, si esta pestaña lo conoce: la API de boletos no los trae. */
+  terminalOrigen?: string;
+  tipoServicio?: string;
+}
+
+/**
+ * Los boletos de una compra real: una página por pasajero, cada una con el
+ * QR que firmó el backend para ese asiento, sin tocar su contenido. La app de
+ * embarque lo valida sin conexión con la clave publicada (regla 4).
+ *
+ * El PDF es la representación del boleto de viaje (RS 156-2003/SUNAT), no
+ * una copia de cortesía: el artículo 3 exige el documento completo del
+ * pasajero, así que va sin enmascarar. Lo que protege los datos es el diseño:
+ * una página por pasajero, cada una solo con su propio documento. El
+ * enmascarado queda para las listas en pantalla y en el panel.
+ */
+export async function generarBoletosCompraPdf(
+  { purchaseCode, tickets }: TicketsResponse,
+  extra: BoletosCompraPdfExtra = {},
+): Promise<Uint8Array> {
+  const { pdfDoc, recursos } = await crearDocumento(`Boletos ${purchaseCode}`);
+  for (const ticket of tickets) {
+    const asiento = etiquetaAsiento(ticket.seat);
+    const { series, number, status } = ticket.receipt;
+    await dibujarPagina(pdfDoc, recursos, {
+      codigo: purchaseCode,
+      origen: ticket.trip.origin,
+      destino: ticket.trip.destination,
+      terminales: extra.terminalOrigen ? `Sale de ${extra.terminalOrigen}` : null,
+      horaSalida: new Date(ticket.trip.departsAt),
+      lineaAsientos: `${extra.tipoServicio ? `${extra.tipoServicio} · ` : ""}Asiento ${asiento}`,
+      pasajeros: ticket.passenger
+        ? [
+            {
+              nombre: `${ticket.passenger.firstNames} ${ticket.passenger.lastNames}`,
+              documento: ticket.passenger.documentNumber,
+              tipoDocumento: TIPO_DOCUMENTO[ticket.passenger.documentType],
+            },
+          ]
+        : [],
+      // El importe de este boleto tal como lo devuelve el backend; aquí no se
+      // suma ni se reparte nada.
+      etiquetaMonto: "Importe de este boleto",
+      monto: formatPrecio(Number(ticket.amount)),
+      comprobante: "Boleto de viaje",
+      detalleComprobante:
+        series && number ? `${series}-${number}` : (ESTADO_COMPROBANTE[status] ?? status),
+      contenidoQr: ticket.qr,
+      respaldoQr: `${purchaseCode} · ${asiento}`,
+    });
+  }
+  return pdfDoc.save();
+}
+
+export async function descargarBoletosCompraPdf(
+  boletos: TicketsResponse,
+  extra: BoletosCompraPdfExtra = {},
+): Promise<void> {
+  const bytes = await generarBoletosCompraPdf(boletos, extra);
+  descargarArchivo(`boletos-${boletos.purchaseCode}.pdf`, bytes, "application/pdf");
 }

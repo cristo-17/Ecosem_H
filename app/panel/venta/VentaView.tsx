@@ -201,7 +201,7 @@ export function VentaView() {
       asientos: asientosSeleccionados.map(etiquetaAsiento),
       pasajeros: pasajeros.map((pasajero) => ({
         nombre: pasajero.nombres,
-        documentoEnmascarado: maskDocumento(pasajero.numeroDocumento),
+        documento: maskDocumento(pasajero.numeroDocumento),
       })),
       totalSoles: viaje.precio * pasajerosCount,
       comprobante:

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { RUTAS } from "@/lib/routes";
-import { esSupervisor, type RolUsuario } from "@/lib/mock/sesion";
+import { esSupervisor, type RolUsuario } from "@/lib/auth/roles";
 
 interface EnlacePanel {
   href: string;
