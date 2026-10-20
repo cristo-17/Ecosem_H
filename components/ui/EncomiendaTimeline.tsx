@@ -1,47 +1,51 @@
 import { cn } from "@/lib/cn";
 import { formatFechaLarga, formatHora12 } from "@/lib/format";
 import { Badge, type BadgeStatus } from "@/components/ui/Badge";
+import type { ParcelStatus, ParcelTrackingResponse } from "@/lib/types/contratos-frontend";
 
-// Cuatro estados fijos del ciclo de vida de una encomienda (ver CLAUDE.md).
-// Igual que Stepper con los 4 pasos de compra: nunca cambiar el número, el
-// orden ni las etiquetas.
+// Los cinco estados del ciclo de vida de una encomienda, con las claves del
+// backend (D-031 del backend): `en_destino` es que llegó a la agencia de
+// destino; `entregada`, que se le entregó al destinatario con su documento
+// verificado. `cancelada` no tiene lugar fijo: corta la línea donde estaba.
 const ETAPAS = [
   { key: "registrada", label: "Encomienda registrada" },
   { key: "alistando", label: "Alistando encomienda" },
-  { key: "en-camino", label: "Encomienda en camino" },
-  { key: "despachada", label: "Encomienda despachada" },
-] as const;
+  { key: "en_camino", label: "Encomienda en camino" },
+  { key: "en_destino", label: "En la agencia de destino" },
+  { key: "entregada", label: "Entregada al destinatario" },
+] as const satisfies ReadonlyArray<{ key: ParcelStatus; label: string }>;
 
-export type EstadoEncomienda = (typeof ETAPAS)[number]["key"];
-
-export interface EventoEncomienda {
-  estado: EstadoEncomienda;
-  terminal: string;
-  fecha: Date;
+/** Placa de estado (Badge) de una encomienda. */
+export function badgeDeEncomienda(estado: ParcelStatus): BadgeStatus {
+  switch (estado) {
+    case "en_camino":
+      return "en-ruta";
+    case "entregada":
+      return "completado";
+    case "cancelada":
+      return "cancelado";
+    default:
+      // Registrada, alistando o esperando que la recojan.
+      return "pendiente";
+  }
 }
 
 export interface EncomiendaTimelineProps {
-  /** Etapa actual del ciclo de vida fijo (posición en la línea de tiempo). */
-  etapaActual: EstadoEncomienda;
-  /** Un evento por cada etapa ya alcanzada, en cualquier orden. */
-  eventos: EventoEncomienda[];
-  /**
-   * Estado general de la encomienda para el Badge junto al punto actual.
-   * Vocabulario aparte de EstadoEncomienda: Badge es la placa compartida con
-   * pasajes (incluye "cancelado", que no tiene lugar fijo en esta línea de
-   * tiempo de 4 pasos).
-   */
-  estadoBadge: BadgeStatus;
+  estado: ParcelStatus;
+  /** Tal como los devuelve el backend: estado, hora con zona y terminal. */
+  eventos: ParcelTrackingResponse["events"];
   className?: string;
 }
 
-export function EncomiendaTimeline({
-  etapaActual,
-  eventos,
-  estadoBadge,
-  className,
-}: EncomiendaTimelineProps) {
-  const indiceActual = ETAPAS.findIndex((etapa) => etapa.key === etapaActual);
+export function EncomiendaTimeline({ estado, eventos, className }: EncomiendaTimelineProps) {
+  const ultimo = (clave: ParcelStatus) => eventos.filter((e) => e.status === clave).at(-1);
+  // Cancelada: la etapa actual es la última que alcanzó antes de cancelarse.
+  const alcanzadas = ETAPAS.map((etapa, index) => (ultimo(etapa.key) ? index : -1));
+  const indiceActual =
+    estado === "cancelada"
+      ? Math.max(0, ...alcanzadas)
+      : ETAPAS.findIndex((etapa) => etapa.key === estado);
+  const cancelacion = estado === "cancelada" ? ultimo("cancelada") : undefined;
 
   return (
     <ol aria-label="Estado de la encomienda" className={cn("flex flex-col", className)}>
@@ -49,7 +53,7 @@ export function EncomiendaTimeline({
         const esCumplido = index < indiceActual;
         const esActual = index === indiceActual;
         const esUltimo = index === ETAPAS.length - 1;
-        const evento = eventos.find((e) => e.estado === etapa.key);
+        const evento = ultimo(etapa.key);
 
         return (
           <li
@@ -95,17 +99,26 @@ export function EncomiendaTimeline({
                 >
                   {etapa.label}
                 </p>
-                {esActual && <Badge status={estadoBadge} />}
+                {esActual && <Badge status={badgeDeEncomienda(estado)} />}
               </div>
-              {evento && (
-                <p className="mt-0.5 text-xs text-text-secondary">
-                  {evento.terminal} · {formatFechaLarga(evento.fecha)}, {formatHora12(evento.fecha)}
-                </p>
+              {evento && <DetalleEvento terminal={evento.terminal} at={evento.at} />}
+              {esActual && cancelacion && (
+                <DetalleEvento prefijo="Cancelada en" terminal={cancelacion.terminal} at={cancelacion.at} />
               )}
             </div>
           </li>
         );
       })}
     </ol>
+  );
+}
+
+function DetalleEvento({ prefijo, terminal, at }: { prefijo?: string; terminal: string; at: string }) {
+  const fecha = new Date(at);
+  return (
+    <p className="mt-0.5 text-xs text-text-secondary">
+      {prefijo ? `${prefijo} ` : ""}
+      {terminal} · {formatFechaLarga(fecha)}, {formatHora12(fecha)}
+    </p>
   );
 }

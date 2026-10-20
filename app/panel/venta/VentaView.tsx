@@ -1,273 +1,369 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Select } from "@/components/ui/Select";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Select, type SelectOption } from "@/components/ui/Select";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { TripCard } from "@/components/ui/TripCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonShape } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
 import { SeatMap } from "@/components/pasajes/SeatMap";
 import {
-  PassengerForm,
-  type DatosPasajero,
-  type ErroresPasajero,
-  type TipoComprobante,
-} from "@/components/pasajes/PassengerForm";
+  PasajeroReservaForm,
+  validarPasajeroReserva,
+  type ErroresPasajeroReserva,
+} from "@/components/pasajes/PasajeroReservaForm";
+import { PASAJERO_VACIO, type BorradorPasajero } from "@/components/pasajes/PurchaseProvider";
 import { PassengerStepper } from "@/components/home/PassengerStepper";
-import { CheckIcon, SearchOffIcon, TicketIcon } from "@/components/ui/icons";
+import { CheckIcon, ClockIcon, ExclamationIcon, SearchOffIcon } from "@/components/ui/icons";
+import { ApiError } from "@/lib/api/cliente";
+import { esSesionVencida } from "@/lib/api/cuenta";
+import { obtenerPlano, type MensajeError } from "@/lib/api/compra";
 import {
-  OPCIONES_CIUDAD,
+  arqueoTurnoActual,
+  esSinTurno,
+  leerMonto,
+  mensajeCaja,
+  venderEnEfectivo,
+  ventaPudoRegistrarse,
+  type VentaEfectivo,
+} from "@/lib/api/caja";
+import {
   buscarViajes,
-  labelTipoAsiento,
-  terminalDe,
-  type Ciudad,
-  type Viaje,
-} from "@/lib/mock/viajes";
-import { distribucionBus, generarAsientos, type Asiento } from "@/lib/mock/asientos";
-import { OPCIONES_MEDIO_PAGO, type MedioPago } from "@/lib/mock/caja";
-import { descargarBoletoPdf, type BoletoPdfData } from "@/lib/pdf/boleto";
-import { maskDocumento, formatPrecio, formatHora12, formatDuracion } from "@/lib/format";
+  ciudadesConRuta,
+  fechaParaBusqueda,
+  obtenerCatalogo,
+  type CiudadesConRuta,
+  type ViajeEncontrado,
+} from "@/lib/api/ventas";
+import { etiquetaAsiento, planoDesdeApi, type Asiento, type DistribucionPiso } from "@/lib/asientos";
+import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
+import { RUTAS } from "@/lib/routes";
 
-type Paso = "buscar" | "resultados" | "asientos" | "datos" | "confirmado";
+const MARCA = "Ecosem H";
 
-const OPCIONES_COMPROBANTE = [
-  { value: "boleta", label: "Boleta" },
-  { value: "factura", label: "Factura" },
-];
+type Turno =
+  | { tipo: "cargando" }
+  | { tipo: "abierto" }
+  | { tipo: "sin-turno" }
+  | { tipo: "sesion-vencida" }
+  | { tipo: "error"; mensaje: MensajeError };
 
-const PASAJERO_VACIO: DatosPasajero = {
-  tipoDocumento: "dni",
-  numeroDocumento: "",
-  nombres: "",
-  correo: "",
-  celular: "",
-  equipajeKg: "",
-};
+type Paso =
+  | { tipo: "buscar" }
+  | { tipo: "resultados"; carga: "cargando" | "listo" | "error"; viajes: ViajeEncontrado[]; existeRuta: boolean }
+  | { tipo: "asientos" }
+  | { tipo: "datos" }
+  | { tipo: "incierta" }
+  | { tipo: "confirmado"; venta: VentaEfectivo; recibido: number };
 
-const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+type Plano =
+  | { tipo: "cargando" }
+  | { tipo: "error" }
+  | { tipo: "listo"; distribucion: DistribucionPiso[]; asientos: Asiento[] };
 
-function validarPasajero(datos: DatosPasajero): ErroresPasajero {
-  const errores: ErroresPasajero = {};
-
-  if (!datos.numeroDocumento) {
-    errores.numeroDocumento = "Este campo es obligatorio";
-  } else if (datos.tipoDocumento === "dni" && !/^\d{8}$/.test(datos.numeroDocumento)) {
-    errores.numeroDocumento = "El DNI debe tener 8 dígitos";
-  }
-
-  if (!datos.nombres) errores.nombres = "Este campo es obligatorio";
-
-  if (!datos.correo) {
-    errores.correo = "Este campo es obligatorio";
-  } else if (!REGEX_CORREO.test(datos.correo)) {
-    errores.correo = "Ingrese un correo electrónico válido";
-  }
-
-  if (!datos.celular) {
-    errores.celular = "Este campo es obligatorio";
-  } else if (!/^\d{9}$/.test(datos.celular)) {
-    errores.celular = "Debe contener exactamente 9 dígitos";
-  }
-
-  return errores;
-}
-
-function generarCodigoBoleto(): string {
-  return `ECH-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
-}
-
-function etiquetaAsiento(id: string): string {
-  return id.replace(/^P\d-/, "");
-}
-
-interface ErroresBusqueda {
-  origen?: string;
-  destino?: string;
-  fecha?: string;
-}
-
-interface ErroresPago {
+interface ErroresCobro {
+  recibido?: string;
+  autorizacion?: string;
   ruc?: string;
-  razonSocial?: string;
-  medioPago?: string;
+  nombre?: string;
 }
 
+const sinErrores = (errores: object) => Object.keys(errores).length === 0;
+const aOpciones = (ciudades: string[]): SelectOption[] => ciudades.map((c) => ({ value: c, label: c }));
 const hoy = new Date();
 
+/**
+ * Venta presencial con cobro en efectivo contra svc-ventas.
+ *
+ * No hay reserva previa ni temporizador: el asiento, el cobro y la compra se
+ * confirman en una sola transacción del backend (`POST /v1/caja/ventas`), que
+ * además bloquea el turno del operador para que la venta entre a su arqueo.
+ * Por eso no se envía nada hasta "Cobrar y vender", y si alguien toma el
+ * asiento mientras tanto la venta se rechaza entera.
+ */
 export function VentaView() {
-  const [paso, setPaso] = useState<Paso>("buscar");
+  const router = useRouter();
+  const { showToast } = useToast();
 
-  // Paso 1: búsqueda
+  const [turno, setTurno] = useState<Turno>({ tipo: "cargando" });
+  const [intentoTurno, setIntentoTurno] = useState(0);
+  const [ciudades, setCiudades] = useState<CiudadesConRuta | null>(null);
+
+  const [paso, setPaso] = useState<Paso>({ tipo: "buscar" });
   const [origen, setOrigen] = useState<string | null>(null);
   const [destino, setDestino] = useState<string | null>(null);
   const [fecha, setFecha] = useState<Date | null>(null);
   const [pasajerosCount, setPasajerosCount] = useState(1);
-  const [erroresBusqueda, setErroresBusqueda] = useState<ErroresBusqueda>({});
-  const [resultados, setResultados] = useState<Viaje[]>([]);
+  const [erroresBusqueda, setErroresBusqueda] = useState<{ origen?: string; destino?: string; fecha?: string }>({});
 
-  // Paso 2/3: viaje + asientos
-  const [viaje, setViaje] = useState<Viaje | null>(null);
-  const [asientosSeleccionados, setAsientosSeleccionados] = useState<string[]>([]);
+  const [viaje, setViaje] = useState<ViajeEncontrado | null>(null);
+  const [plano, setPlano] = useState<Plano>({ tipo: "cargando" });
+  const [intentoPlano, setIntentoPlano] = useState(0);
+  const [seleccionados, setSeleccionados] = useState<string[]>([]);
 
-  // Paso 4: datos, comprobante y pago
-  const [pasajeros, setPasajeros] = useState<DatosPasajero[]>([]);
-  const [erroresPasajeros, setErroresPasajeros] = useState<ErroresPasajero[]>([]);
-  const [tipoComprobante, setTipoComprobante] = useState<TipoComprobante>("boleta");
+  const [borradores, setBorradores] = useState<BorradorPasajero[]>([]);
+  const [erroresPasajeros, setErroresPasajeros] = useState<ErroresPasajeroReserva[]>([]);
+  const [autorizacion, setAutorizacion] = useState(false);
+  const [sustentarGasto, setSustentarGasto] = useState(false);
   const [ruc, setRuc] = useState("");
-  const [razonSocial, setRazonSocial] = useState("");
-  const [medioPago, setMedioPago] = useState<MedioPago | null>(null);
-  const [erroresPago, setErroresPago] = useState<ErroresPago>({});
-  const [procesando, setProcesando] = useState(false);
+  const [nombreRuc, setNombreRuc] = useState("");
+  const [recibido, setRecibido] = useState("");
+  const [erroresCobro, setErroresCobro] = useState<ErroresCobro>({});
+  const [vendiendo, setVendiendo] = useState(false);
+  const vendiendoRef = useRef(false);
 
-  // Paso 5: confirmación
-  const [codigo, setCodigo] = useState("");
-  const [boletoPdf, setBoletoPdf] = useState<BoletoPdfData | null>(null);
+  // Sin turno abierto el backend rechaza el cobro: se avisa antes de empezar.
+  useEffect(() => {
+    const controlador = new AbortController();
+    arqueoTurnoActual({ signal: controlador.signal }).then(
+      () => !controlador.signal.aborted && setTurno({ tipo: "abierto" }),
+      (error: unknown) => {
+        if (controlador.signal.aborted) return;
+        if (esSinTurno(error)) setTurno({ tipo: "sin-turno" });
+        else if (esSesionVencida(error)) setTurno({ tipo: "sesion-vencida" });
+        else setTurno({ tipo: "error", mensaje: mensajeCaja(error) });
+      },
+    );
+    return () => controlador.abort();
+  }, [intentoTurno]);
 
-  const opcionesDestino = OPCIONES_CIUDAD.filter((opcion) => opcion.value !== origen);
-  const distribucion = useMemo(() => (viaje ? distribucionBus(viaje.tipoAsiento) : []), [viaje]);
-  const asientosViaje = useMemo(() => (viaje ? generarAsientos(viaje) : []), [viaje]);
+  useEffect(() => {
+    obtenerCatalogo().then(
+      (catalogo) => setCiudades(ciudadesConRuta(catalogo)),
+      () => setCiudades(null),
+    );
+  }, []);
 
-  function buscar(event: FormEvent) {
+  // El plano se pide al entrar a asientos y de nuevo tras un asiento tomado.
+  useEffect(() => {
+    if (paso.tipo !== "asientos" || !viaje) return;
+    const controlador = new AbortController();
+    obtenerPlano(viaje.viaje.id, { signal: controlador.signal }).then(
+      ({ seats }) => !controlador.signal.aborted && setPlano({ tipo: "listo", ...planoDesdeApi(seats) }),
+      () => !controlador.signal.aborted && setPlano({ tipo: "error" }),
+    );
+    return () => controlador.abort();
+  }, [paso.tipo, viaje, intentoPlano]);
+
+  const opcionesDestino = aOpciones((origen && ciudades?.destinosDesde[origen]) || []);
+
+  async function buscar(event: FormEvent) {
     event.preventDefault();
-
-    const errores: ErroresBusqueda = {};
-    if (!origen) errores.origen = "Elige una agencia de origen";
-    if (!destino) errores.destino = "Elige un destino";
-    if (origen && destino && origen === destino) {
-      errores.destino = "El destino debe ser distinto al origen";
-    }
+    const errores: typeof erroresBusqueda = {};
+    if (!origen) errores.origen = "Elige el origen";
+    if (!destino) errores.destino = "Elige el destino";
     if (!fecha) errores.fecha = "Elige una fecha";
-
     setErroresBusqueda(errores);
-    if (Object.keys(errores).length > 0) return;
+    if (!sinErrores(errores) || !origen || !destino || !fecha) return;
 
-    setResultados(buscarViajes(origen as Ciudad, destino as Ciudad));
-    setPaso("resultados");
+    setPaso({ tipo: "resultados", carga: "cargando", viajes: [], existeRuta: true });
+    try {
+      const resultado = await buscarViajes(origen, destino, fechaParaBusqueda(fecha));
+      setPaso({ tipo: "resultados", carga: "listo", ...resultado });
+    } catch {
+      setPaso({ tipo: "resultados", carga: "error", viajes: [], existeRuta: true });
+    }
   }
 
-  function elegirViaje(viajeElegido: Viaje) {
-    setViaje(viajeElegido);
-    setAsientosSeleccionados([]);
-    setPasajeros(Array.from({ length: pasajerosCount }, () => PASAJERO_VACIO));
-    setErroresPasajeros([]);
-    setPaso("asientos");
+  function elegirViaje(elegido: ViajeEncontrado) {
+    setViaje(elegido);
+    setSeleccionados([]);
+    setPlano({ tipo: "cargando" });
+    setPaso({ tipo: "asientos" });
   }
 
   function alternarAsiento(asiento: Asiento) {
-    const yaElegido = asientosSeleccionados.includes(asiento.id);
-    if (yaElegido) {
-      setAsientosSeleccionados((prev) => prev.filter((id) => id !== asiento.id));
+    if (seleccionados.includes(asiento.id)) {
+      setSeleccionados((prev) => prev.filter((id) => id !== asiento.id));
       return;
     }
-    if (asiento.estado !== "libre") return;
-    if (asientosSeleccionados.length >= pasajerosCount) return;
-    setAsientosSeleccionados((prev) => [...prev, asiento.id]);
+    if (asiento.estado !== "libre" || seleccionados.length >= pasajerosCount) return;
+    setSeleccionados((prev) => [...prev, asiento.id]);
   }
 
-  function actualizarPasajero(indice: number, valor: DatosPasajero) {
-    setPasajeros((prev) => prev.map((p, i) => (i === indice ? valor : p)));
+  function irADatos() {
+    // Lo ya escrito se conserva si se vuelve a cambiar de asiento.
+    setBorradores((prev) => seleccionados.map((_, i) => prev[i] ?? PASAJERO_VACIO));
+    setErroresPasajeros([]);
+    setPaso({ tipo: "datos" });
   }
 
-  async function confirmarVenta() {
-    if (!viaje) return;
+  function volverAlPlano() {
+    setPlano({ tipo: "cargando" });
+    setIntentoPlano((v) => v + 1);
+    setPaso({ tipo: "asientos" });
+  }
 
-    const nuevosErroresPasajeros = pasajeros.map(validarPasajero);
-    const nuevosErroresPago: ErroresPago = {};
-    if (tipoComprobante === "factura") {
-      if (!ruc) nuevosErroresPago.ruc = "Este campo es obligatorio";
-      else if (!/^\d{11}$/.test(ruc)) nuevosErroresPago.ruc = "El RUC debe tener 11 dígitos";
-      if (!razonSocial) nuevosErroresPago.razonSocial = "Este campo es obligatorio";
+  const precioAsiento = viaje?.viaje.unitPrice != null ? Number(viaje.viaje.unitPrice) : null;
+  const totalEstimado = precioAsiento !== null ? precioAsiento * seleccionados.length : null;
+  const montoRecibido = leerMonto(recibido);
+
+  async function cobrar(event: FormEvent) {
+    event.preventDefault();
+    if (vendiendoRef.current || !viaje) return;
+    const salida = new Date(viaje.viaje.departsAt);
+
+    const nuevosPasajeros = borradores.map((p) => validarPasajeroReserva(p, salida));
+    const nuevosCobro: ErroresCobro = {};
+    if (montoRecibido === null) nuevosCobro.recibido = "Escribe el efectivo que recibiste, por ejemplo 50";
+    else if (totalEstimado !== null && montoRecibido < totalEstimado)
+      nuevosCobro.recibido = `No alcanza: el total es ${formatPrecio(totalEstimado)}`;
+    if (!autorizacion) nuevosCobro.autorizacion = "El pasajero tiene que autorizar el registro de sus datos";
+    if (sustentarGasto) {
+      if (!/^\d{11}$/.test(ruc.trim())) nuevosCobro.ruc = "El RUC debe tener 11 dígitos";
+      if (!nombreRuc.trim()) nuevosCobro.nombre = "Este campo es obligatorio";
+      else if (nombreRuc.trim().length > 120) nuevosCobro.nombre = "Máximo 120 caracteres";
     }
-    if (!medioPago) nuevosErroresPago.medioPago = "Elige un medio de pago";
+    setErroresPasajeros(nuevosPasajeros);
+    setErroresCobro(nuevosCobro);
+    if (!nuevosPasajeros.every(sinErrores) || !sinErrores(nuevosCobro) || montoRecibido === null) return;
 
-    setErroresPasajeros(nuevosErroresPasajeros);
-    setErroresPago(nuevosErroresPago);
-    const hayErrorPasajeros = nuevosErroresPasajeros.some((error) => Object.keys(error).length > 0);
-    if (hayErrorPasajeros || Object.keys(nuevosErroresPago).length > 0 || !medioPago) return;
-
-    const nuevoCodigo = generarCodigoBoleto();
-    const datosPdf: BoletoPdfData = {
-      codigo: nuevoCodigo,
-      emitidoEn: new Date(),
-      origen: viaje.origen,
-      destino: viaje.destino,
-      terminalOrigen: viaje.terminalOrigen,
-      terminalDestino: terminalDe(viaje.destino),
-      horaSalida: viaje.horaSalida,
-      tipoServicio: labelTipoAsiento(viaje.tipoAsiento),
-      asientos: asientosSeleccionados.map(etiquetaAsiento),
-      pasajeros: pasajeros.map((pasajero) => ({
-        nombre: pasajero.nombres,
-        documento: maskDocumento(pasajero.numeroDocumento),
-      })),
-      totalSoles: viaje.precio * pasajerosCount,
-      comprobante:
-        tipoComprobante === "factura" ? { tipo: "factura", ruc, razonSocial } : { tipo: "boleta" },
-    };
-
-    setProcesando(true);
+    vendiendoRef.current = true;
+    setVendiendo(true);
     try {
-      // Mismo generador que la venta web (lib/pdf/boleto.ts): un solo PDF,
-      // no dos implementaciones distintas para el mismo boleto.
-      await descargarBoletoPdf(datosPdf);
-      setCodigo(nuevoCodigo);
-      setBoletoPdf(datosPdf);
-      setPaso("confirmado");
+      const venta = await venderEnEfectivo({
+        tripId: viaje.viaje.id,
+        seats: seleccionados,
+        cashReceived: montoRecibido,
+        passengers: seleccionados.map((seat, i) => {
+          const p = borradores[i];
+          const conAcompanante = p.companionName.trim() || p.companionRelationship.trim();
+          return {
+            seat,
+            documentType: p.documentType,
+            documentNumber: p.documentNumber.trim(),
+            firstNames: p.firstNames.trim(),
+            lastNames: p.lastNames.trim(),
+            birthDate: p.birthDate,
+            companion: conAcompanante
+              ? { name: p.companionName.trim(), relationship: p.companionRelationship.trim() }
+              : null,
+          };
+        }),
+        dataAuthorization: true,
+        billTo: sustentarGasto ? { ruc: ruc.trim(), name: nombreRuc.trim() } : null,
+      });
+      setPaso({ tipo: "confirmado", venta, recibido: montoRecibido });
+    } catch (error) {
+      if (ventaPudoRegistrarse(error)) {
+        // No se sabe si se vendió. Volver a enviar podría cobrar dos veces.
+        setPaso({ tipo: "incierta" });
+      } else if (esSinTurno(error)) {
+        setTurno({ tipo: "sin-turno" });
+      } else if (esSesionVencida(error)) {
+        setTurno({ tipo: "sesion-vencida" });
+      } else {
+        const mensaje = mensajeCaja(error);
+        showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
+        if (error instanceof ApiError && error.codigo === "SEAT_UNAVAILABLE") {
+          const tomados = error.detalles?.unavailableSeats ?? [];
+          setSeleccionados((prev) => prev.filter((s) => !tomados.includes(s)));
+          volverAlPlano();
+        }
+      }
     } finally {
-      setProcesando(false);
+      vendiendoRef.current = false;
+      setVendiendo(false);
     }
   }
 
   function nuevaVenta() {
-    setPaso("buscar");
-    setOrigen(null);
-    setDestino(null);
-    setFecha(null);
-    setPasajerosCount(1);
-    setErroresBusqueda({});
-    setResultados([]);
+    setPaso({ tipo: "buscar" });
     setViaje(null);
-    setAsientosSeleccionados([]);
-    setPasajeros([]);
+    setSeleccionados([]);
+    setBorradores([]);
     setErroresPasajeros([]);
-    setTipoComprobante("boleta");
+    setAutorizacion(false);
+    setSustentarGasto(false);
     setRuc("");
-    setRazonSocial("");
-    setMedioPago(null);
-    setErroresPago({});
-    setCodigo("");
-    setBoletoPdf(null);
+    setNombreRuc("");
+    setRecibido("");
+    setErroresCobro({});
   }
 
-  const listoParaContinuarAsientos = asientosSeleccionados.length === pasajerosCount;
-  const total = viaje ? viaje.precio * pasajerosCount : 0;
+  const encabezado = (
+    <div>
+      <h1 className="text-xl font-semibold text-navy sm:text-2xl">Venta en counter</h1>
+      <p className="mt-1 text-sm text-navy/70">
+        Busca el viaje, elige asientos y cobra en efectivo. La venta entra al arqueo de tu turno.
+      </p>
+    </div>
+  );
+
+  if (turno.tipo !== "abierto") {
+    return (
+      <div className="flex flex-col gap-6">
+        {encabezado}
+        {turno.tipo === "cargando" && (
+          <div role="status" aria-label="Verificando tu turno">
+            <SkeletonShape variant="card" />
+          </div>
+        )}
+        {turno.tipo === "sin-turno" && (
+          <EmptyState
+            icon={<ClockIcon className="!size-12 !text-navy/40" />}
+            title="Abre tu turno para vender"
+            description="Cada cobro en efectivo entra al arqueo de un turno. Ábrelo en Caja y vuelve aquí."
+            actionLabel="Ir a Caja"
+            onAction={() => router.push(RUTAS.panelCaja)}
+          />
+        )}
+        {turno.tipo === "sesion-vencida" && (
+          <EmptyState
+            icon={<ExclamationIcon className="!size-12 !text-primary" />}
+            title="Tu sesión terminó"
+            description="Vuelve a ingresar para seguir vendiendo."
+            actionLabel="Ingresar"
+            onAction={() =>
+              router.push(
+                `${RUTAS.ingresar}?${new URLSearchParams({ siguiente: RUTAS.panelVenta, motivo: "sesion-vencida" })}`,
+              )
+            }
+          />
+        )}
+        {turno.tipo === "error" && (
+          <EmptyState
+            icon={<ExclamationIcon className="!size-12 !text-primary" />}
+            title={turno.mensaje.titulo}
+            description={turno.mensaje.descripcion}
+            actionLabel="Reintentar"
+            onAction={() => {
+              setTurno({ tipo: "cargando" });
+              setIntentoTurno((v) => v + 1);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-navy sm:text-2xl">Venta en counter</h1>
-        <p className="mt-1 text-sm text-navy/70">
-          Busca el viaje, elige asiento y cobra un pasaje presencial. Genera el mismo boleto en PDF
-          que la venta web.
-        </p>
-      </div>
+      {encabezado}
 
-      {paso === "buscar" && (
+      {paso.tipo === "buscar" && (
         <form onSubmit={buscar} noValidate>
           <Card className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Select
                 label="Origen"
-                options={OPCIONES_CIUDAD}
+                options={aOpciones(ciudades?.origenes ?? [])}
                 value={origen}
                 onChange={(valor) => {
                   setOrigen(valor);
-                  if (destino === valor) setDestino(null);
+                  if (destino && !ciudades?.destinosDesde[valor]?.includes(destino)) setDestino(null);
                 }}
-                placeholder="Ciudad"
+                placeholder={ciudades ? "Ciudad" : "Cargando…"}
+                disabled={!ciudades}
                 errorText={erroresBusqueda.origen}
               />
               <Select
@@ -276,10 +372,10 @@ export function VentaView() {
                 value={destino}
                 onChange={setDestino}
                 placeholder="Ciudad"
+                disabled={!ciudades}
                 errorText={erroresBusqueda.destino}
               />
             </div>
-
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <DatePicker
                 label="Fecha de viaje"
@@ -290,7 +386,6 @@ export function VentaView() {
               />
               <PassengerStepper value={pasajerosCount} onChange={setPasajerosCount} />
             </div>
-
             <Button type="submit" className="self-start">
               Buscar
             </Button>
@@ -298,69 +393,111 @@ export function VentaView() {
         </form>
       )}
 
-      {paso === "resultados" && (
+      {paso.tipo === "resultados" && (
         <div className="flex flex-col gap-4">
-          <Button variant="terciario" className="self-start" onClick={() => setPaso("buscar")}>
+          <Button variant="terciario" className="self-start" onClick={() => setPaso({ tipo: "buscar" })}>
             ← Modificar búsqueda
           </Button>
-
-          {resultados.length === 0 ? (
+          {paso.carga === "cargando" && (
+            <div role="status" aria-label="Buscando viajes" className="flex flex-col gap-4">
+              <SkeletonShape variant="card" />
+              <SkeletonShape variant="card" />
+            </div>
+          )}
+          {paso.carga === "error" && (
+            <EmptyState
+              icon={<ExclamationIcon className="!size-12 !text-primary" />}
+              title="No pudimos buscar los viajes"
+              description="Revisa la conexión e intenta nuevamente."
+              actionLabel="Modificar búsqueda"
+              onAction={() => setPaso({ tipo: "buscar" })}
+            />
+          )}
+          {paso.carga === "listo" && paso.viajes.length === 0 && (
             <EmptyState
               icon={<SearchOffIcon />}
-              title="No hay viajes para esta ruta"
-              description="Prueba con otro origen o destino."
+              title={paso.existeRuta ? "No hay salidas ese día" : "No hay una ruta entre esas ciudades"}
+              description="Prueba con otra fecha, origen o destino."
               actionLabel="Modificar búsqueda"
-              onAction={() => setPaso("buscar")}
+              onAction={() => setPaso({ tipo: "buscar" })}
             />
-          ) : (
-            resultados.map((viajeResultado) => (
-              <TripCard
-                key={viajeResultado.id}
-                marca={viajeResultado.marca}
-                terminalOrigen={viajeResultado.terminalOrigen}
-                destino={viajeResultado.destino}
-                horaSalida={viajeResultado.horaSalida}
-                horaLlegada={viajeResultado.horaLlegada}
-                duracionMinutos={viajeResultado.duracionMinutos}
-                asientosDisponibles={viajeResultado.asientosDisponibles}
-                tipoAsiento={labelTipoAsiento(viajeResultado.tipoAsiento)}
-                precio={viajeResultado.precio}
-                selected={viaje?.id === viajeResultado.id}
-                onSeleccionar={() => elegirViaje(viajeResultado)}
-              />
-            ))
           )}
+          {paso.carga === "listo" &&
+            paso.viajes.map((encontrado) => {
+              const salida = new Date(encontrado.viaje.departsAt);
+              const llegada = encontrado.viaje.arrivesAt ? new Date(encontrado.viaje.arrivesAt) : null;
+              return (
+                <TripCard
+                  key={encontrado.viaje.id}
+                  marca={MARCA}
+                  terminalOrigen={encontrado.terminalOrigen}
+                  destino={destino ?? ""}
+                  horaSalida={salida}
+                  horaLlegada={llegada}
+                  duracionMinutos={
+                    llegada ? Math.round((llegada.getTime() - salida.getTime()) / 60_000) : null
+                  }
+                  llegadaAproximada={encontrado.viaje.arrivalProvisional}
+                  asientosDisponibles={encontrado.viaje.availableSeats}
+                  tipoAsiento={labelTipoAsiento(encontrado.viaje.serviceType)}
+                  precio={encontrado.viaje.unitPrice !== null ? Number(encontrado.viaje.unitPrice) : null}
+                  selected={viaje?.viaje.id === encontrado.viaje.id}
+                  onSeleccionar={() => elegirViaje(encontrado)}
+                />
+              );
+            })}
         </div>
       )}
 
-      {paso === "asientos" && viaje && (
+      {paso.tipo === "asientos" && viaje && (
         <div className="flex flex-col gap-4">
-          <Button variant="terciario" className="self-start" onClick={() => setPaso("resultados")}>
-            ← Cambiar viaje
+          <Button
+            variant="terciario"
+            className="self-start"
+            onClick={() => setPaso({ tipo: "buscar" })}
+          >
+            ← Nueva búsqueda
           </Button>
-
           <p className="text-sm text-navy/70">
-            {viaje.origen} → {viaje.destino} · {formatHora12(viaje.horaSalida)} ·{" "}
-            {formatDuracion(viaje.duracionMinutos)} · Elige{" "}
-            {pasajerosCount === 1 ? "1 asiento" : `${pasajerosCount} asientos`} (
-            {asientosSeleccionados.length}/{pasajerosCount})
+            {viaje.terminalOrigen} → {destino} · {formatFechaLarga(new Date(viaje.viaje.departsAt))} ·{" "}
+            {formatHora12(new Date(viaje.viaje.departsAt))} · Elige{" "}
+            {pasajerosCount === 1 ? "1 asiento" : `${pasajerosCount} asientos`} ({seleccionados.length}/
+            {pasajerosCount})
           </p>
 
-          <SeatMap
-            distribucion={distribucion}
-            asientos={asientosViaje}
-            seleccionados={asientosSeleccionados}
-            onToggle={alternarAsiento}
-          />
+          {plano.tipo === "cargando" && (
+            <div role="status" aria-label="Cargando plano de asientos">
+              <SkeletonShape variant="card" />
+            </div>
+          )}
+          {plano.tipo === "error" && (
+            <EmptyState
+              icon={<ExclamationIcon className="!size-12 !text-primary" />}
+              title="No pudimos cargar el plano"
+              description="Revisa la conexión e intenta nuevamente."
+              actionLabel="Reintentar"
+              onAction={volverAlPlano}
+            />
+          )}
+          {plano.tipo === "listo" && (
+            <SeatMap
+              distribucion={plano.distribucion}
+              asientos={plano.asientos}
+              seleccionados={seleccionados}
+              onToggle={alternarAsiento}
+            />
+          )}
 
           <div className="flex items-center justify-between rounded-modal bg-white p-4 shadow-low">
             <div>
-              <p className="text-xs text-navy/60">Total</p>
-              <p className="text-lg font-bold text-navy">{formatPrecio(total)}</p>
+              <p className="text-xs text-navy/60">Total a precio de ahora</p>
+              <p className="text-lg font-bold text-navy">
+                {totalEstimado !== null ? formatPrecio(totalEstimado) : "Sin tarifa"}
+              </p>
             </div>
             <Button
-              disabled={!listoParaContinuarAsientos}
-              onClick={() => setPaso("datos")}
+              disabled={seleccionados.length !== pasajerosCount || precioAsiento === null}
+              onClick={irADatos}
               className="min-w-40"
             >
               Continuar
@@ -369,91 +506,150 @@ export function VentaView() {
         </div>
       )}
 
-      {paso === "datos" && viaje && (
-        <div className="flex flex-col gap-4">
-          <Button variant="terciario" className="self-start" onClick={() => setPaso("asientos")}>
+      {paso.tipo === "datos" && viaje && (
+        <form onSubmit={cobrar} noValidate className="flex flex-col gap-4">
+          <Button variant="terciario" type="button" className="self-start" onClick={volverAlPlano}>
             ← Cambiar asientos
           </Button>
 
-          {pasajeros.map((pasajero, indice) => (
-            <PassengerForm
-              key={asientosSeleccionados[indice]}
+          {seleccionados.map((seat, indice) => (
+            <PasajeroReservaForm
+              key={seat}
               indice={indice}
-              asientoId={asientosSeleccionados[indice]}
-              valor={pasajero}
+              asiento={seat}
+              valor={borradores[indice] ?? PASAJERO_VACIO}
               errores={erroresPasajeros[indice]}
-              onChange={(valor) => actualizarPasajero(indice, valor)}
+              salida={new Date(viaje.viaje.departsAt)}
+              onChange={(valor) =>
+                setBorradores((prev) => prev.map((p, i) => (i === indice ? valor : p)))
+              }
             />
           ))}
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-base font-semibold text-navy">Comprobante</h2>
-            <Select
-              label="Tipo de comprobante"
-              options={OPCIONES_COMPROBANTE}
-              value={tipoComprobante}
-              onChange={(valor) => setTipoComprobante(valor as TipoComprobante)}
+            <Checkbox
+              label={
+                <>
+                  Cada pasajero me autorizó a registrar sus datos personales para este viaje,
+                  conforme a la Ley 29733 y la{" "}
+                  <Link href={RUTAS.privacidad} className="font-medium text-secondary underline">
+                    Política de privacidad
+                  </Link>
+                  .
+                </>
+              }
+              checked={autorizacion}
+              onChange={(evento) => setAutorizacion(evento.target.checked)}
+              errorText={erroresCobro.autorizacion}
             />
-            {tipoComprobante === "factura" && (
+            <Checkbox
+              label="El boleto sustenta el gasto de una empresa o persona con RUC"
+              checked={sustentarGasto}
+              onChange={(evento) => setSustentarGasto(evento.target.checked)}
+            />
+            {sustentarGasto && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Input
                   label="RUC"
                   inputMode="numeric"
                   value={ruc}
                   onChange={(evento) => setRuc(evento.target.value)}
-                  errorText={erroresPago.ruc}
+                  errorText={erroresCobro.ruc}
                 />
                 <Input
-                  label="Razón social"
-                  value={razonSocial}
-                  onChange={(evento) => setRazonSocial(evento.target.value)}
-                  errorText={erroresPago.razonSocial}
+                  label="Razón social o nombre"
+                  value={nombreRuc}
+                  onChange={(evento) => setNombreRuc(evento.target.value)}
+                  errorText={erroresCobro.nombre}
                 />
               </div>
             )}
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-base font-semibold text-navy">Medio de pago</h2>
-            <Select
-              label="Medio de pago"
-              options={OPCIONES_MEDIO_PAGO}
-              value={medioPago}
-              onChange={(valor) => setMedioPago(valor as MedioPago)}
-              placeholder="Elige un medio de pago"
-              errorText={erroresPago.medioPago}
+            <div>
+              <h2 className="text-base font-semibold text-navy">Cobro en efectivo</h2>
+              <p className="text-sm text-navy/70">
+                El total se fija al vender. Si la tarifa cambió desde que buscaste, el sistema te
+                dirá el total nuevo y no vende nada hasta que alcance.
+              </p>
+            </div>
+            <Input
+              label="Efectivo recibido (S/)"
+              inputMode="decimal"
+              autoComplete="off"
+              value={recibido}
+              onChange={(evento) => setRecibido(evento.target.value)}
+              helperText={
+                montoRecibido !== null && totalEstimado !== null && montoRecibido >= totalEstimado
+                  ? `Vuelto aproximado: ${formatPrecio(montoRecibido - totalEstimado)}`
+                  : undefined
+              }
+              errorText={erroresCobro.recibido}
             />
           </Card>
 
           <div className="flex items-center justify-between rounded-modal bg-white p-4 shadow-low">
             <div>
-              <p className="text-xs text-navy/60">Total a cobrar</p>
-              <p className="text-lg font-bold text-navy">{formatPrecio(total)}</p>
+              <p className="text-xs text-navy/60">Total a precio de ahora</p>
+              <p className="text-lg font-bold text-navy">
+                {totalEstimado !== null ? formatPrecio(totalEstimado) : "Sin tarifa"}
+              </p>
             </div>
-            <Button isLoading={procesando} onClick={confirmarVenta} className="min-w-40">
-              Confirmar venta
+            <Button type="submit" isLoading={vendiendo} className="min-w-40">
+              Cobrar y vender
             </Button>
           </div>
-        </div>
+        </form>
       )}
 
-      {paso === "confirmado" && boletoPdf && (
+      {paso.tipo === "incierta" && (
+        <EmptyState
+          icon={<ExclamationIcon className="!size-12 !text-primary" />}
+          title="No sabemos si la venta se registró"
+          description="Se cortó la conexión después de enviarla. No cobres de nuevo: revisa en Caja si el número de movimientos subió, o mira el plano: si los asientos figuran vendidos, la venta se hizo."
+          actionLabel="Revisar en Caja"
+          onAction={() => router.push(RUTAS.panelCaja)}
+          footer={
+            <Button variant="terciario" onClick={volverAlPlano}>
+              Ver el plano del viaje
+            </Button>
+          }
+        />
+      )}
+
+      {paso.tipo === "confirmado" && (
         <Card className="flex flex-col items-center gap-3 py-10 text-center">
           <span className="flex size-14 items-center justify-center rounded-full bg-success-fill">
             <CheckIcon className="!size-6 text-success-text" />
           </span>
           <h2 className="text-xl font-semibold text-navy">Venta registrada</h2>
-          <p className="max-w-sm text-sm text-navy/70">
-            Código <span className="font-semibold text-navy">{codigo}</span>. El PDF del boleto se
-            descargó automáticamente.
+          <p className="text-sm text-navy/70">
+            Código de compra{" "}
+            <span className="font-semibold text-navy">{paso.venta.purchaseCode}</span> · Asientos{" "}
+            {paso.venta.seats.map(etiquetaAsiento).join(", ")}
           </p>
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-            <Button variant="secundario" onClick={() => descargarBoletoPdf(boletoPdf)}>
-              <TicketIcon />
-              Volver a descargar PDF
-            </Button>
-            <Button onClick={nuevaVenta}>Nueva venta</Button>
-          </div>
+          <dl className="mt-2 grid w-full max-w-sm grid-cols-3 gap-2 text-sm">
+            <div>
+              <dt className="text-xs text-navy/60">Total</dt>
+              <dd className="font-semibold text-navy">{formatPrecio(Number(paso.venta.totalAmount))}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-navy/60">Recibido</dt>
+              <dd className="font-semibold text-navy">{formatPrecio(paso.recibido)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-navy/60">Vuelto</dt>
+              <dd className="text-lg font-bold text-navy">{formatPrecio(Number(paso.venta.change))}</dd>
+            </div>
+          </dl>
+          <p className="max-w-sm text-xs text-navy/60">
+            El cobro ya está en el arqueo de tu turno. La impresión del boleto con QR desde el panel
+            todavía no está disponible: entrega al pasajero el código de compra.
+          </p>
+          <Button onClick={nuevaVenta} className="mt-2">
+            Nueva venta
+          </Button>
         </Card>
       )}
     </div>

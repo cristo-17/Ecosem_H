@@ -27,6 +27,7 @@ export const RUTAS = {
   panelViajes: "/panel/viajes",
   panelVenta: "/panel/venta",
   panelCaja: "/panel/caja",
+  panelEncomiendas: "/panel/encomiendas",
   panelPrecios: "/panel/precios",
   panelFlota: "/panel/flota",
   panelConductores: "/panel/conductores",

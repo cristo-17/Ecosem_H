@@ -60,6 +60,12 @@ export default async function PanelLayout({ children }: { children: ReactNode })
             >
               Caja
             </Link>
+            <Link
+              href={RUTAS.panelEncomiendas}
+              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Encomiendas
+            </Link>
             {/* Solo supervisor: el layout de /panel/precios repite este
                 mismo chequeo por si alguien llega por URL directa, pero acá
                 además evita mostrarle el enlace a quien no puede entrar. */}

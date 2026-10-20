@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
+import { BoxIcon, TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
 import { esSupervisor } from "@/lib/auth/roles";
 import { obtenerSesion } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
@@ -58,10 +58,29 @@ export default async function PanelIndexPage() {
           <div>
             <h2 className="text-base font-semibold text-navy">Arqueo de caja</h2>
             <p className="mt-1 text-sm text-navy/70">
-              Revisa el resumen de ventas de un turno por medio de pago y ciérralo.
+              Abre tu turno, revisa lo cobrado por medio de pago y ciérralo con tu conteo.
             </p>
           </div>
           <span className="mt-auto text-sm font-semibold text-secondary">Ir a Caja →</span>
+        </Card>
+      </Link>
+
+      <Link
+        href={RUTAS.panelEncomiendas}
+        className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      >
+        <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+          <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <BoxIcon />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-navy">Encomiendas</h2>
+            <p className="mt-1 text-sm text-navy/70">
+              Registra y cobra con la tarifa vigente, avanza su estado y entrégala con el documento
+              de quien recoge.
+            </p>
+          </div>
+          <span className="mt-auto text-sm font-semibold text-primary">Ir a Encomiendas →</span>
         </Card>
       </Link>
 

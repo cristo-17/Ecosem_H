@@ -1,36 +1,172 @@
 "use client";
 
-import { useState } from "react";
-import { Select } from "@/components/ui/Select";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { Select, type SelectOption } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CheckIcon, ClockIcon } from "@/components/ui/icons";
-import { OPCIONES_CIUDAD, type Ciudad } from "@/lib/mock/viajes";
-import { TURNOS, USUARIOS_COUNTER, buscarArqueo, resumirArqueo, labelMedioPago } from "@/lib/mock/caja";
-import { formatPrecio, formatHora12 } from "@/lib/format";
+import { SkeletonShape } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
+import { CheckIcon, ClockIcon, ExclamationIcon } from "@/components/ui/icons";
+import {
+  ETIQUETA_MEDIO,
+  abrirTurno,
+  arqueoTurnoActual,
+  cerrarTurno,
+  esSinTurno,
+  leerMonto,
+  mensajeCaja,
+  type ArqueoTurno,
+  type CierreTurno,
+} from "@/lib/api/caja";
+import { esSesionVencida } from "@/lib/api/cuenta";
+import { obtenerCatalogo } from "@/lib/api/ventas";
+import type { MensajeError } from "@/lib/api/compra";
+import { formatFechaCorta, formatHora12, formatPrecio } from "@/lib/format";
+import { RUTAS } from "@/lib/routes";
 
-export function CajaView() {
-  const [agencia, setAgencia] = useState("Lima");
-  const [turno, setTurno] = useState(TURNOS[0].value);
-  const [usuario, setUsuario] = useState(USUARIOS_COUNTER[0].value);
-  const [cerrado, setCerrado] = useState(false);
+type Estado =
+  | { tipo: "cargando" }
+  | { tipo: "sesion-vencida" }
+  | { tipo: "error"; mensaje: MensajeError }
+  | { tipo: "sin-turno"; cierre: CierreTurno | null }
+  | { tipo: "abierto"; arqueo: ArqueoTurno };
+
+export interface CajaViewProps {
+  /** Un supervisor no tiene agencia propia: elige en cuál abre. Un counter abre en la suya. */
+  eligeAgencia: boolean;
+}
+
+/**
+ * Arqueo del turno abierto de quien inició sesión. No hay selector de agencia,
+ * turno ni usuario: svc-ventas devuelve solo el turno del operador, y la base
+ * (RLS por operador) no deja leer movimientos de otro aunque se pidan.
+ *
+ * Toda venta en efectivo del panel entra aquí porque la misma transacción que
+ * vende registra el movimiento de caja en el turno del operador.
+ */
+export function CajaView({ eligeAgencia }: CajaViewProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [estado, setEstado] = useState<Estado>({ tipo: "cargando" });
+  const [intento, setIntento] = useState(0);
+  const [agencias, setAgencias] = useState<SelectOption[]>([]);
+  const [agencia, setAgencia] = useState<string | null>(null);
+  const [errorAgencia, setErrorAgencia] = useState<string | undefined>();
+  const [abriendo, setAbriendo] = useState(false);
+
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [contado, setContado] = useState("");
+  const [nota, setNota] = useState("");
+  const [errorContado, setErrorContado] = useState<string | undefined>();
+  const [cerrando, setCerrando] = useState(false);
+  const operandoRef = useRef(false);
 
-  const transacciones = buscarArqueo(agencia as Ciudad, turno, usuario);
-  const resumen = resumirArqueo(transacciones);
+  useEffect(() => {
+    const controlador = new AbortController();
+    arqueoTurnoActual({ signal: controlador.signal }).then(
+      (arqueo) => {
+        if (!controlador.signal.aborted) setEstado({ tipo: "abierto", arqueo });
+      },
+      (error: unknown) => {
+        if (controlador.signal.aborted) return;
+        if (esSinTurno(error)) {
+          setEstado((previo) => ({
+            tipo: "sin-turno",
+            cierre: previo.tipo === "sin-turno" ? previo.cierre : null,
+          }));
+        } else if (esSesionVencida(error)) {
+          setEstado({ tipo: "sesion-vencida" });
+        } else {
+          setEstado({ tipo: "error", mensaje: mensajeCaja(error) });
+        }
+      },
+    );
+    return () => controlador.abort();
+  }, [intento]);
 
-  function cambiarSeleccion<T>(actualizar: (valor: T) => void) {
-    return (valor: T) => {
-      actualizar(valor);
-      setCerrado(false);
-    };
+  // Nombres de agencia: el arqueo trae el código. Sin catálogo se muestra el código.
+  useEffect(() => {
+    obtenerCatalogo().then(
+      ({ terminals }) =>
+        setAgencias(
+          terminals
+            .map((t) => ({ value: t.code, label: t.name }))
+            .sort((a, b) => a.label.localeCompare(b.label, "es")),
+        ),
+      () => setAgencias([]),
+    );
+  }, []);
+
+  function recargar() {
+    setEstado({ tipo: "cargando" });
+    setIntento((valor) => valor + 1);
   }
 
-  function confirmarCierre() {
-    setCerrado(true);
-    setModalAbierto(false);
+  function nombreAgencia(codigo: string): string {
+    return agencias.find((a) => a.value === codigo)?.label ?? codigo;
+  }
+
+  async function handleAbrir() {
+    if (operandoRef.current) return;
+    if (eligeAgencia && !agencia) {
+      setErrorAgencia("Elige la agencia del turno");
+      return;
+    }
+    operandoRef.current = true;
+    setAbriendo(true);
+    try {
+      await abrirTurno(eligeAgencia ? agencia : null);
+      recargar();
+    } catch (error) {
+      const mensaje = mensajeCaja(error);
+      showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
+    } finally {
+      operandoRef.current = false;
+      setAbriendo(false);
+    }
+  }
+
+  function abrirModalCierre() {
+    setContado("");
+    setNota("");
+    setErrorContado(undefined);
+    setModalAbierto(true);
+  }
+
+  async function handleCerrar(event?: FormEvent) {
+    event?.preventDefault();
+    if (operandoRef.current) return;
+    const monto = leerMonto(contado);
+    if (monto === null) {
+      setErrorContado("Escribe el efectivo que contaste, por ejemplo 250.50");
+      return;
+    }
+    operandoRef.current = true;
+    setCerrando(true);
+    try {
+      // Lo esperado lo calcula la base al cerrar, con el turno bloqueado: un
+      // cobro simultáneo o entra al arqueo o es rechazado, nunca queda fuera.
+      const cierre = await cerrarTurno(monto, nota.trim() || null);
+      setModalAbierto(false);
+      setEstado({ tipo: "sin-turno", cierre });
+    } catch (error) {
+      if (esSinTurno(error)) {
+        setModalAbierto(false);
+        recargar();
+      } else {
+        const mensaje = mensajeCaja(error);
+        showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
+      }
+    } finally {
+      operandoRef.current = false;
+      setCerrando(false);
+    }
   }
 
   return (
@@ -38,145 +174,258 @@ export function CajaView() {
       <div>
         <h1 className="text-xl font-semibold text-navy sm:text-2xl">Arqueo de caja</h1>
         <p className="mt-1 text-sm text-navy/70">
-          Elige agencia, turno y usuario para ver el resumen de ese turno.
+          Tu turno: lo que cobraste, por medio de pago. Al cerrar, cuenta el efectivo de la caja.
         </p>
       </div>
 
-      <Card className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Select
-          label="Agencia"
-          options={OPCIONES_CIUDAD}
-          value={agencia}
-          onChange={cambiarSeleccion(setAgencia)}
-        />
-        <Select label="Turno" options={TURNOS} value={turno} onChange={cambiarSeleccion(setTurno)} />
-        <Select
-          label="Usuario"
-          options={USUARIOS_COUNTER}
-          value={usuario}
-          onChange={cambiarSeleccion(setUsuario)}
-        />
-      </Card>
-
-      {cerrado && (
-        <div className="flex items-center gap-2 rounded-md bg-success-fill p-4 text-sm text-success-text">
-          <CheckIcon className="!size-5 shrink-0" />
-          Turno cerrado. El arqueo queda congelado — cambia la selección para ver otro turno.
+      {estado.tipo === "cargando" && (
+        <div role="status" aria-label="Cargando el arqueo" className="flex flex-col gap-4">
+          <SkeletonShape variant="card" />
+          <SkeletonShape variant="card" />
         </div>
       )}
 
-      {transacciones.length === 0 ? (
+      {estado.tipo === "sesion-vencida" && (
         <EmptyState
-          icon={<ClockIcon className="!size-12 !text-navy/40" />}
-          title="Sin transacciones en este turno"
-          description="Prueba con otra combinación de agencia, turno y usuario."
-          actionLabel="Ver un turno con movimiento"
-          onAction={() => {
-            setAgencia("Lima");
-            setTurno(TURNOS[0].value);
-            setUsuario(USUARIOS_COUNTER[0].value);
-            setCerrado(false);
-          }}
+          icon={<ExclamationIcon className="!size-12 !text-primary" />}
+          title="Tu sesión terminó"
+          description="Vuelve a ingresar para ver tu caja. Tu turno sigue abierto."
+          actionLabel="Ingresar"
+          onAction={() =>
+            router.push(
+              `${RUTAS.ingresar}?${new URLSearchParams({ siguiente: RUTAS.panelCaja, motivo: "sesion-vencida" })}`,
+            )
+          }
         />
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Card>
-              <p className="text-xs text-navy/60">Total vendido</p>
-              <p className="mt-1 text-xl font-bold text-navy">{formatPrecio(resumen.total)}</p>
-            </Card>
-            <Card>
-              <p className="text-xs text-navy/60">Boletos</p>
-              <p className="mt-1 text-xl font-bold text-navy">{resumen.cantidadBoletos}</p>
-            </Card>
-            <Card>
-              <p className="text-xs text-navy/60">Encomiendas</p>
-              <p className="mt-1 text-xl font-bold text-navy">{resumen.cantidadEncomiendas}</p>
-            </Card>
-            <Card>
-              <p className="text-xs text-navy/60">Transacciones</p>
-              <p className="mt-1 text-xl font-bold text-navy">{transacciones.length}</p>
-            </Card>
-          </div>
-
-          <Card>
-            <h2 className="text-base font-semibold text-navy">Desglose por medio de pago</h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              {resumen.porMedioPago.map((item) => (
-                <li
-                  key={item.medio}
-                  className="flex items-center justify-between border-b border-navy/10 pb-2 text-sm last:border-0 last:pb-0"
-                >
-                  <span className="text-navy/70">{labelMedioPago(item.medio)}</span>
-                  <span className="font-semibold text-navy">{formatPrecio(item.total)}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card>
-            <h2 className="text-base font-semibold text-navy">Transacciones del turno</h2>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[480px] text-left text-sm">
-                <thead>
-                  <tr className="text-xs font-medium text-navy/60">
-                    <th className="pb-2 font-medium">Hora</th>
-                    <th className="pb-2 font-medium">Tipo</th>
-                    <th className="pb-2 font-medium">Referencia</th>
-                    <th className="pb-2 font-medium">Medio</th>
-                    <th className="pb-2 text-right font-medium">Monto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transacciones.map((transaccion) => (
-                    <tr key={transaccion.id} className="border-t border-navy/10">
-                      <td className="py-2 text-navy/70">{formatHora12(transaccion.hora)}</td>
-                      <td className="py-2 text-navy">
-                        {transaccion.tipo === "pasaje" ? "Pasaje" : "Encomienda"}
-                      </td>
-                      <td className="py-2 text-navy">{transaccion.referencia}</td>
-                      <td className="py-2 text-navy/70">{labelMedioPago(transaccion.medioPago)}</td>
-                      <td className="py-2 text-right font-medium text-navy">
-                        {formatPrecio(transaccion.monto)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </>
       )}
 
-      <div className="flex justify-end">
-        <Button
-          variant="destructivo"
-          disabled={cerrado || transacciones.length === 0}
-          onClick={() => setModalAbierto(true)}
-        >
-          Cerrar turno
-        </Button>
-      </div>
+      {estado.tipo === "error" && (
+        <EmptyState
+          icon={<ExclamationIcon className="!size-12 !text-primary" />}
+          title={estado.mensaje.titulo}
+          description={estado.mensaje.descripcion}
+          actionLabel="Reintentar"
+          onAction={recargar}
+        />
+      )}
+
+      {estado.tipo === "sin-turno" && estado.cierre && (
+        <ResultadoCierre cierre={estado.cierre} />
+      )}
+
+      {estado.tipo === "sin-turno" && (
+        <Card className="flex flex-col gap-4">
+          <div className="flex items-start gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary/10">
+              <ClockIcon className="!text-secondary" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">No tienes un turno abierto</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Para vender en efectivo abre tu turno. Cada cobro entra al arqueo de ese turno.
+              </p>
+            </div>
+          </div>
+          {eligeAgencia && (
+            <Select
+              label="Agencia del turno"
+              options={agencias}
+              value={agencia}
+              onChange={(valor) => {
+                setAgencia(valor);
+                setErrorAgencia(undefined);
+              }}
+              placeholder="Elige una agencia"
+              errorText={errorAgencia}
+            />
+          )}
+          <Button isLoading={abriendo} onClick={handleAbrir} className="self-start">
+            Abrir turno
+          </Button>
+        </Card>
+      )}
+
+      {estado.tipo === "abierto" && (
+        <TurnoAbierto
+          arqueo={estado.arqueo}
+          agencia={nombreAgencia(estado.arqueo.terminal)}
+          onActualizar={recargar}
+          onCerrar={abrirModalCierre}
+        />
+      )}
 
       <Modal
         open={modalAbierto}
-        onClose={() => setModalAbierto(false)}
-        title="¿Cerrar turno?"
+        onClose={() => !cerrando && setModalAbierto(false)}
+        title="Cerrar turno"
+        preventDismiss={cerrando}
         footer={
           <>
-            <Button variant="terciario" onClick={() => setModalAbierto(false)}>
+            <Button variant="terciario" disabled={cerrando} onClick={() => setModalAbierto(false)}>
               Cancelar
             </Button>
-            <Button onClick={confirmarCierre}>Sí, cerrar turno</Button>
+            <Button isLoading={cerrando} onClick={() => handleCerrar()}>
+              Cerrar turno
+            </Button>
           </>
         }
       >
-        <p>
-          Se va a congelar el arqueo de este turno: total {formatPrecio(resumen.total)} en{" "}
-          {transacciones.length} {transacciones.length === 1 ? "transacción" : "transacciones"}. Sin
-          backend todavía, esto solo cambia el estado en pantalla — no queda persistido.
-        </p>
+        <form onSubmit={handleCerrar} noValidate className="flex flex-col gap-4">
+          <p>
+            Cuenta el efectivo de la caja y escribe el total. El sistema lo compara con lo que
+            registraron tus ventas. Después de cerrar no se puede cobrar en este turno.
+          </p>
+          <Input
+            label="Efectivo contado (S/)"
+            inputMode="decimal"
+            autoComplete="off"
+            value={contado}
+            onChange={(evento) => {
+              setContado(evento.target.value);
+              setErrorContado(undefined);
+            }}
+            errorText={errorContado}
+          />
+          <Textarea
+            label="Nota (opcional)"
+            value={nota}
+            maxLength={500}
+            onChange={(evento) => setNota(evento.target.value)}
+            helperText="Por ejemplo, el motivo de una diferencia"
+          />
+        </form>
       </Modal>
+    </div>
+  );
+}
+
+function TurnoAbierto({
+  arqueo,
+  agencia,
+  onActualizar,
+  onCerrar,
+}: {
+  arqueo: ArqueoTurno;
+  agencia: string;
+  onActualizar: () => void;
+  onCerrar: () => void;
+}) {
+  const abierto = new Date(arqueo.openedAt);
+  const ventas = arqueo.breakdown.reduce((total, fila) => total + fila.movements, 0);
+
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card>
+          <p className="text-xs text-navy/60">Agencia</p>
+          <p className="mt-1 text-lg font-semibold text-navy">{agencia}</p>
+        </Card>
+        <Card>
+          <p className="text-xs text-navy/60">Turno abierto desde</p>
+          <p className="mt-1 text-lg font-semibold text-navy">
+            {formatHora12(abierto)} · {formatFechaCorta(abierto)}
+          </p>
+        </Card>
+        <Card>
+          <p className="text-xs text-navy/60">Efectivo que debe haber en caja</p>
+          <p className="mt-1 text-xl font-bold text-navy">
+            {formatPrecio(Number(arqueo.expectedCash))}
+          </p>
+        </Card>
+      </div>
+
+      <Card>
+        <h2 className="text-base font-semibold text-navy">Por medio de pago</h2>
+        <p className="mt-1 text-sm text-navy/70">
+          El efectivo se cuenta al cerrar. Yape, Plin y tarjeta se concilian con el reporte de la
+          pasarela: no se suman al efectivo.
+        </p>
+        {arqueo.breakdown.length === 0 ? (
+          <p className="mt-3 text-sm text-navy/70">Todavía no hay cobros en este turno.</p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[480px] text-left text-sm">
+              <thead>
+                <tr className="text-xs font-medium text-navy/60">
+                  <th className="pb-2 font-medium">Medio</th>
+                  <th className="pb-2 font-medium">Control</th>
+                  <th className="pb-2 text-right font-medium">Movimientos</th>
+                  <th className="pb-2 text-right font-medium">Ingresos</th>
+                  <th className="pb-2 text-right font-medium">Egresos</th>
+                  <th className="pb-2 text-right font-medium">Neto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {arqueo.breakdown.map((fila) => (
+                  <tr key={fila.method} className="border-t border-navy/10">
+                    <td className="py-2 font-medium text-navy">{ETIQUETA_MEDIO[fila.method]}</td>
+                    <td className="py-2 text-navy/70">
+                      {fila.control === "cash_count" ? "Conteo en caja" : "Conciliación"}
+                    </td>
+                    <td className="py-2 text-right text-navy">{fila.movements}</td>
+                    <td className="py-2 text-right text-navy">{formatPrecio(Number(fila.income))}</td>
+                    <td className="py-2 text-right text-navy">{formatPrecio(Number(fila.outflow))}</td>
+                    <td className="py-2 text-right font-semibold text-navy">
+                      {formatPrecio(Number(fila.net))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-3 text-xs text-navy/60">
+          {ventas === 1 ? "1 movimiento" : `${ventas} movimientos`} en este turno, entre pasajes y
+          encomiendas.
+        </p>
+      </Card>
+
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <Button variant="secundario" onClick={onActualizar}>
+          Actualizar
+        </Button>
+        <Button variant="destructivo" onClick={onCerrar}>
+          Cerrar turno
+        </Button>
+      </div>
+    </>
+  );
+}
+
+function ResultadoCierre({ cierre }: { cierre: CierreTurno }) {
+  const diferencia = Number(cierre.difference);
+  const cuadra = diferencia === 0;
+  return (
+    <div
+      role="status"
+      className={`flex flex-col gap-3 rounded-md p-4 text-sm ${cuadra ? "bg-success-fill text-success-text" : "bg-warning-fill text-warning-text"}`}
+    >
+      <p className="flex items-center gap-2 font-semibold">
+        {cuadra ? (
+          <CheckIcon className="!size-5 shrink-0" />
+        ) : (
+          <ExclamationIcon className="!size-5 shrink-0" />
+        )}
+        {cuadra
+          ? "Turno cerrado. La caja cuadra."
+          : diferencia > 0
+            ? `Turno cerrado con un sobrante de ${formatPrecio(diferencia)}.`
+            : `Turno cerrado con un faltante de ${formatPrecio(-diferencia)}.`}
+      </p>
+      <dl className="grid grid-cols-3 gap-2">
+        <div>
+          <dt className="text-xs">Esperado</dt>
+          <dd className="font-semibold">{formatPrecio(Number(cierre.expectedCash))}</dd>
+        </div>
+        <div>
+          <dt className="text-xs">Contado</dt>
+          <dd className="font-semibold">{formatPrecio(Number(cierre.countedCash))}</dd>
+        </div>
+        <div>
+          <dt className="text-xs">Diferencia</dt>
+          <dd className="font-semibold">{formatPrecio(diferencia)}</dd>
+        </div>
+      </dl>
     </div>
   );
 }

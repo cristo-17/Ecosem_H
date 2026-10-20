@@ -9,6 +9,13 @@ export interface Sesion {
   /** Identificador interno de Supabase Auth. No es un dato personal. */
   userId: string;
   rol: RolUsuario;
+  /**
+   * Agencia del personal de counter (`app_terminal_id`, firmado por la base
+   * igual que el rol). Nulo para pasajeros y para el supervisor, que no tiene
+   * una agencia fija. Solo decide qué se muestra: el backend la vuelve a tomar
+   * del token y de la tabla de personal.
+   */
+  terminalId: string | null;
   /** Para saludar. Lo escribió el propio usuario al registrarse. */
   nombre: string | null;
   correo: string | null;
@@ -35,6 +42,7 @@ export const obtenerSesion = cache(async (): Promise<Sesion | null> => {
   return {
     userId: claims.sub,
     rol: rolDesdeClaims(claims as Record<string, unknown>),
+    terminalId: typeof claims.app_terminal_id === "string" ? claims.app_terminal_id : null,
     nombre: typeof metadatos.nombre === "string" ? metadatos.nombre : null,
     correo: typeof claims.email === "string" ? claims.email : null,
   };

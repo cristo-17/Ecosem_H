@@ -9,14 +9,19 @@ import type {
   MyReservationsResponse,
   TicketsResponse,
 } from "@/lib/types/contratos-frontend";
-import { ApiError, pedirJson, type OpcionesPeticion } from "@/lib/api/cliente";
+import { ApiError, pedirJson, type OpcionesPeticion, type Servicio } from "@/lib/api/cliente";
 import { tokenSesionCompraGuardado } from "@/lib/api/compra";
 import { tokenDeAcceso } from "@/lib/supabase/navegador";
 
-async function conCuenta<T>(ruta: string, opciones: OpcionesPeticion = {}): Promise<T> {
+/** Petición a un servicio con el token de acceso de la sesión iniciada. */
+export async function conCuenta<T>(
+  ruta: string,
+  opciones: OpcionesPeticion = {},
+  servicio: Servicio = "ventas",
+): Promise<T> {
   const token = await tokenDeAcceso();
   if (!token) throw new ApiError("servidor", "Tu sesión terminó.", "UNAUTHENTICATED");
-  return pedirJson<T>("ventas", ruta, {
+  return pedirJson<T>(servicio, ruta, {
     ...opciones,
     cabeceras: { ...opciones.cabeceras, authorization: `Bearer ${token}` },
   });

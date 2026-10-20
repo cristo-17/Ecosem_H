@@ -310,32 +310,28 @@ export default function Styleguide() {
       <section className="w-full max-w-4xl text-left">
         <h2 className="text-xl font-semibold text-navy">EncomiendaTimeline</h2>
         <p className="mt-1 text-sm text-navy/70">
-          Cuatro etapas fijas del ciclo de vida de una encomienda. Cumplido:
-          punto relleno. Actual: punto más grande con relleno + anillo (mismo
-          recurso que el anillo/relleno de DatePicker), etiqueta en negrita y
-          el Badge de estado junto al punto. Pendiente: punto vacío con
-          borde.
+          Cinco etapas del ciclo de vida de una encomienda, con las claves
+          del backend: registrada, alistando, en camino, en la agencia de
+          destino y entregada. Cumplido: punto relleno. Actual: punto más
+          grande con relleno + anillo (mismo recurso que el anillo/relleno de
+          DatePicker), etiqueta en negrita y el Badge de estado junto al
+          punto. Pendiente: punto vacío con borde. Una cancelada se corta en
+          la última etapa alcanzada, con la placa &quot;Cancelado&quot;.
         </p>
-        <div className="mt-4 max-w-sm">
+        <div className="mt-4 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
           <EncomiendaTimeline
-            etapaActual="en-camino"
-            estadoBadge="en-ruta"
+            estado="en_camino"
             eventos={[
-              {
-                estado: "registrada",
-                terminal: "Terminal Lima Norte",
-                fecha: new Date(2026, 7, 29, 9, 0),
-              },
-              {
-                estado: "alistando",
-                terminal: "Terminal Lima Norte",
-                fecha: new Date(2026, 7, 29, 11, 30),
-              },
-              {
-                estado: "en-camino",
-                terminal: "Terminal Lima Norte",
-                fecha: new Date(2026, 7, 30, 6, 0),
-              },
+              { status: "registrada", terminal: "Lima", at: "2026-08-29T09:00:00-05:00" },
+              { status: "alistando", terminal: "Lima", at: "2026-08-29T11:30:00-05:00" },
+              { status: "en_camino", terminal: "Lima", at: "2026-08-30T06:00:00-05:00" },
+            ]}
+          />
+          <EncomiendaTimeline
+            estado="cancelada"
+            eventos={[
+              { status: "registrada", terminal: "Huancayo", at: "2026-08-29T09:00:00-05:00" },
+              { status: "cancelada", terminal: "Huancayo", at: "2026-08-29T10:15:00-05:00" },
             ]}
           />
         </div>
