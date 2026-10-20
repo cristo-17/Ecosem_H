@@ -18,7 +18,6 @@ export default async function MiPerfilPage(props: PageProps<"/mi-perfil">) {
       nombre={sesion.nombre}
       correo={sesion.correo}
       forzarViajesVacios={vacio === "viajes"}
-      forzarEncomiendasVacias={vacio === "encomiendas"}
     />
   );
 }

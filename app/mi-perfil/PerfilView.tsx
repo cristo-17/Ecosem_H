@@ -18,14 +18,12 @@ export interface PerfilViewProps {
   nombre: string | null;
   correo: string | null;
   forzarViajesVacios: boolean;
-  forzarEncomiendasVacias: boolean;
 }
 
 export function PerfilView({
   nombre,
   correo,
   forzarViajesVacios,
-  forzarEncomiendasVacias,
 }: PerfilViewProps) {
   const [pestana, setPestana] = useState<Pestana>("viajes");
   const baseId = useId();
@@ -56,7 +54,7 @@ export function PerfilView({
         <MisViajesTab forzarVacio={forzarViajesVacios} />
       </div>
       <div {...pillTabPanelProps(baseId, "encomiendas")} hidden={pestana !== "encomiendas"} className="mt-4">
-        <MisEncomiendasTab forzarVacio={forzarEncomiendasVacias} />
+        <MisEncomiendasTab />
       </div>
     </main>
   );
