@@ -1,21 +1,83 @@
 /**
- * Sincronización de escaneos pendientes (docs/prompts/10-pwa-embarque.md).
- * Sin backend todavía: esto simula el envío (delay de red, sin llamada
- * real) y marca los registros como sincronizados. Cuando exista el
- * endpoint real, solo cambia el cuerpo de esta función — la firma
- * (ninguna entrada, cuántos se sincronizaron de salida) no debería tener
- * que cambiar.
+ * Sincronización de escaneos con svc-ventas (POST /v1/embarque/sincronizacion).
+ *
+ * - Idempotente: cada escaneo lleva el `scanId` que generó el dispositivo al
+ *   escanear y que no cambia. Si la respuesta se pierde y se reenvía el lote,
+ *   el servidor responde `alreadyRecorded` y no embarca dos veces.
+ * - El servidor vuelve a verificar firma, clave, viaje y anulación; su
+ *   respuesta queda guardada junto al escaneo y es la que vale.
+ * - Lo que otro dispositivo embarcó antes llega como `duplicado`: la app lo
+ *   muestra como conflicto, no como un embarque más.
  */
-import { listarPendientesSincronizar, marcarSincronizados } from "@/lib/embarque/db";
+import { MAX_ESCANEOS_POR_SINCRONIZACION } from "@/lib/embarque/contrato";
+import { aplicarRespuesta, escaneosPendientes, type EscaneoLocal } from "@/lib/embarque/db";
+import { sincronizarEscaneos } from "@/lib/api/operacion";
 
-export async function sincronizarEscaneosPendientes(): Promise<number> {
-  const pendientes = await listarPendientesSincronizar();
-  if (pendientes.length === 0) return 0;
+export interface ResultadoSincronizacion {
+  enviados: number;
+  /** Embarcados aquí que el servidor dice que ya había embarcado otro dispositivo. */
+  conflictos: number;
+  /** Aceptados aquí que el servidor rechazó al volver a verificar. */
+  rechazadosPorServidor: number;
+}
 
-  // Simula la latencia real de un POST al backend — mismo criterio que el
-  // resto del mock del proyecto (ver ResultadosView, PagoView).
-  await new Promise((resolve) => setTimeout(resolve, 800));
+/**
+ * Solo lo que el dispositivo embarcó. El servidor trata cada escaneo como un
+ * intento de embarque: si se enviara un rechazo local (paquete vencido, por
+ * ejemplo), podría quedar "embarcado" alguien a quien no se dejó subir. Un QR
+ * que no es de un boleto, además, no sale del dispositivo.
+ */
+export async function escaneosPorEnviar(): Promise<EscaneoLocal[]> {
+  return (await escaneosPendientes()).filter((e) => e.local === "embarcado" && e.qr !== null);
+}
 
-  await marcarSincronizados(pendientes.map((registro) => [registro.viajeId, registro.codigoBoleto]));
-  return pendientes.length;
+// Una sola sincronización a la vez en toda la app: la cabecera y la pantalla
+// de escaneo la piden por su cuenta.
+let enCurso: Promise<ResultadoSincronizacion> | null = null;
+
+export function sincronizarPendientes(): Promise<ResultadoSincronizacion> {
+  enCurso ??= enviarPendientes().finally(() => {
+    enCurso = null;
+  });
+  return enCurso;
+}
+
+async function enviarPendientes(): Promise<ResultadoSincronizacion> {
+  const pendientes = await escaneosPorEnviar();
+  const porViaje = new Map<string, EscaneoLocal[]>();
+  for (const e of pendientes) porViaje.set(e.tripId, [...(porViaje.get(e.tripId) ?? []), e]);
+
+  const resultado: ResultadoSincronizacion = { enviados: 0, conflictos: 0, rechazadosPorServidor: 0 };
+  for (const [tripId, escaneos] of porViaje) {
+    for (let i = 0; i < escaneos.length; i += MAX_ESCANEOS_POR_SINCRONIZACION) {
+      const lote = escaneos.slice(i, i + MAX_ESCANEOS_POR_SINCRONIZACION);
+      const respuesta = await sincronizarEscaneos({
+        tripId,
+        scans: lote.map((e) => ({ scanId: e.scanId, qr: e.qr!, scannedAt: e.scannedAt })),
+      });
+      await aplicarRespuesta(respuesta);
+      resultado.enviados += lote.length;
+      for (const r of respuesta.results) {
+        if (r.result === "duplicado") resultado.conflictos += 1;
+        if (r.result === "rechazado") resultado.rechazadosPorServidor += 1;
+      }
+    }
+  }
+  return resultado;
+}
+
+/** Cómo quedó un escaneo, mirando primero lo que dijo el servidor. */
+export function estadoFinal(e: EscaneoLocal):
+  | "embarcado"
+  | "pendiente"
+  | "ya-embarcado"
+  | "conflicto"
+  | "rechazado"
+  | "rechazado-servidor" {
+  if (e.local === "rechazado") return "rechazado";
+  if (e.local === "ya-embarcado") return "ya-embarcado";
+  if (!e.servidor) return "pendiente";
+  if (e.servidor.result === "duplicado") return "conflicto";
+  if (e.servidor.result === "rechazado") return "rechazado-servidor";
+  return "embarcado";
 }

@@ -4,7 +4,6 @@ import { descargarArchivo } from "@/lib/descargarArchivo";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
 import type { DocumentKind, TicketsResponse } from "@/lib/types/contratos-frontend";
 import { etiquetaAsiento } from "@/lib/asientos";
-import { firmarCodigo } from "@/lib/firma";
 import {
   ANCHO_A4,
   ALTO_A4,
@@ -27,41 +26,11 @@ export interface PasajeroBoletoPdf {
   /**
    * El documento tal como se imprime. En el boleto de una compra real va
    * completo: el artículo 3 de la RS 156-2003/SUNAT lo exige en el boleto de
-   * viaje. Los boletos mock del panel y de Mis viajes lo traen enmascarado.
+   * viaje.
    */
   documento: string;
   /** "DNI", "C.E.", "Pasaporte". Sin él se imprime "Doc.". */
   tipoDocumento?: string;
-}
-
-export interface BoletoPdfData {
-  codigo: string;
-  emitidoEn: Date;
-  origen: string;
-  destino: string;
-  terminalOrigen: string;
-  terminalDestino: string;
-  horaSalida: Date;
-  tipoServicio: string;
-  asientos: string[];
-  pasajeros: PasajeroBoletoPdf[];
-  totalSoles: number;
-  comprobante:
-    | { tipo: "boleta" }
-    | { tipo: "factura"; ruc: string; razonSocial: string };
-}
-
-// Solo para los boletos mock (panel de venta, Mis viajes). Los de una compra
-// real llevan el QR que firma el backend, tal cual (generarBoletosCompraPdf).
-//
-// Aislado en su propia función (pedido explícito del prompt 03). El
-// contenido ahora sí lleva el identificador firmado que pide CLAUDE.md
-// (regla 4): "codigo|firma", firma = HMAC del código (lib/firma.ts, clave
-// mock — ver el pendiente crítico documentado ahí). La app de embarque
-// (docs/prompts/10-pwa-embarque.md) verifica esa firma localmente, sin red.
-export async function generarContenidoQr(codigo: string): Promise<string> {
-  const firma = await firmarCodigo(codigo);
-  return `${codigo}|${firma}`;
 }
 
 const MARGEN = 50;
@@ -260,35 +229,6 @@ async function dibujarPagina(pdfDoc: PDFDocument, recursos: Recursos, datos: Pag
     tamano: 8,
     color: COLOR_TEXT_SECONDARY,
   });
-}
-
-/** Boleto mock de una página (panel de venta, Mis viajes). No dispara la descarga. */
-export async function generarBoletoPdf(datos: BoletoPdfData): Promise<Uint8Array> {
-  const { pdfDoc, recursos } = await crearDocumento(`Boleto ${datos.codigo}`);
-  await dibujarPagina(pdfDoc, recursos, {
-    codigo: datos.codigo,
-    origen: datos.origen,
-    destino: datos.destino,
-    terminales: `${datos.terminalOrigen} - ${datos.terminalDestino}`,
-    horaSalida: datos.horaSalida,
-    lineaAsientos: `${datos.tipoServicio} · Asiento(s) ${datos.asientos.join(", ")}`,
-    pasajeros: datos.pasajeros,
-    etiquetaMonto: "Total pagado",
-    monto: formatPrecio(datos.totalSoles),
-    comprobante: datos.comprobante.tipo === "factura" ? "Factura" : "Boleta",
-    detalleComprobante:
-      datos.comprobante.tipo === "factura"
-        ? `RUC ${datos.comprobante.ruc} · ${datos.comprobante.razonSocial}`
-        : null,
-    contenidoQr: await generarContenidoQr(datos.codigo),
-    respaldoQr: datos.codigo,
-  });
-  return pdfDoc.save();
-}
-
-export async function descargarBoletoPdf(datos: BoletoPdfData): Promise<void> {
-  const bytes = await generarBoletoPdf(datos);
-  descargarArchivo(`boleto-${datos.codigo}.pdf`, bytes, "application/pdf");
 }
 
 const ESTADO_COMPROBANTE: Record<string, string> = {

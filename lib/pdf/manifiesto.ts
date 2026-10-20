@@ -1,7 +1,9 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { PDFFont } from "pdf-lib";
 import { descargarArchivo } from "@/lib/descargarArchivo";
-import { formatFechaLarga, formatHora12 } from "@/lib/format";
+import { formatFechaCorta, formatFechaLarga, formatHora12 } from "@/lib/format";
+import { etiquetaAsiento } from "@/lib/asientos";
+import type { Manifiesto, TipoDocumento } from "@/lib/embarque/contrato";
 import {
   ALTO_A4,
   ANCHO_A4,
@@ -16,26 +18,14 @@ import {
   type Contexto,
 } from "@/lib/pdf/comun";
 
-export interface PasajeroManifiestoPdf {
-  asiento: string;
-  apellidos: string;
-  nombres: string;
-  tipoDocumento: string;
-  /** Completo — el manifiesto es un documento de fiscalización, no se enmascara. */
-  numeroDocumento: string;
-  origen: string;
-  destino: string;
-}
+type Contenido = Manifiesto["content"];
+type PasajeroManifiesto = Contenido["passengers"][number];
 
-export interface ManifiestoPdfData {
-  origen: string;
-  destino: string;
-  terminalOrigen: string;
-  fechaSalida: Date;
-  placaBus: string;
-  conductores: string[];
-  pasajeros: PasajeroManifiestoPdf[];
-}
+const TIPO_DOCUMENTO: Record<TipoDocumento, string> = {
+  dni: "DNI",
+  carne_extranjeria: "C.E.",
+  pasaporte: "Pasaporte",
+};
 
 // El boleto (lib/pdf/boleto.ts) es A4 vertical; una tabla de 5 columnas
 // legible pide más ancho que alto, así que el manifiesto usa el mismo papel
@@ -45,18 +35,21 @@ const ALTO_PAGINA = ANCHO_A4;
 const MARGEN = 40;
 const ANCHO_CONTENIDO = ANCHO_PAGINA - MARGEN * 2;
 
-const COL_ASIENTO = 55;
-const COL_NOMBRE = 240;
-const COL_DOCUMENTO = 180;
-const COL_ORIGEN = 140;
-// El resto del ancho útil es la última columna (Destino): no necesita su
-// propio ancho con nombre, nada se dibuja después de ella.
+const COL_ASIENTO = 45;
+const COL_NOMBRE = 200;
+const COL_DOCUMENTO = 130;
+const COL_BOLETO = 90;
+const COL_ORIGEN = 80;
+const COL_DESTINO = 80;
+// El resto del ancho útil es la última columna (Observaciones).
 
 const X_ASIENTO = MARGEN;
 const X_NOMBRE = X_ASIENTO + COL_ASIENTO;
 const X_DOCUMENTO = X_NOMBRE + COL_NOMBRE;
-const X_ORIGEN = X_DOCUMENTO + COL_DOCUMENTO;
+const X_BOLETO = X_DOCUMENTO + COL_DOCUMENTO;
+const X_ORIGEN = X_BOLETO + COL_BOLETO;
 const X_DESTINO = X_ORIGEN + COL_ORIGEN;
+const X_OBSERVACIONES = X_DESTINO + COL_DESTINO;
 
 const ALTO_FILA = 16;
 const ALTO_FOOTER = 95;
@@ -77,17 +70,37 @@ function nuevaPagina(pdfDoc: PDFDocument, regular: PDFFont, bold: PDFFont): Cont
 
 function dibujarEncabezadoTabla(ctx: Contexto): void {
   const opciones = { tamano: 9, negrita: true, color: COLOR_TEXT_SECONDARY } as const;
-  dibujarTexto(ctx, "N.° asiento", { x: X_ASIENTO, ...opciones });
+  dibujarTexto(ctx, "Asiento", { x: X_ASIENTO, ...opciones });
   dibujarTexto(ctx, "Apellidos y nombres", { x: X_NOMBRE, ...opciones });
   dibujarTexto(ctx, "Tipo y N.° de documento", { x: X_DOCUMENTO, ...opciones });
+  dibujarTexto(ctx, "Boleto", { x: X_BOLETO, ...opciones });
   dibujarTexto(ctx, "Origen", { x: X_ORIGEN, ...opciones });
   dibujarTexto(ctx, "Destino", { x: X_DESTINO, ...opciones });
+  dibujarTexto(ctx, "Observaciones", { x: X_OBSERVACIONES, ...opciones });
   ctx.y -= 8;
   dibujarLineaDivisoria(ctx);
   ctx.y -= ALTO_FILA;
 }
 
-function dibujarFila(ctx: Contexto, pasajero: PasajeroManifiestoPdf, indice: number): void {
+/** Menor de edad y menor en brazos: el control de permisos en el andén. */
+function observaciones(pasajero: PasajeroManifiesto, contenido: Contenido): string {
+  const notas: string[] = [];
+  if (pasajero.minor) {
+    const acompanante = pasajero.companion ? `, acomp.: ${pasajero.companion.relationship}` : "";
+    notas.push(`Menor (${pasajero.ageAtTrip})${acompanante}`);
+  }
+  if (contenido.infantsInArms.some((m) => m.carrierSeat === pasajero.seat)) {
+    notas.push("Lleva menor en brazos");
+  }
+  return notas.join(" · ");
+}
+
+function dibujarFila(
+  ctx: Contexto,
+  pasajero: PasajeroManifiesto,
+  contenido: Contenido,
+  indice: number,
+): void {
   // Zebra striping: ayuda a seguir la fila en una tabla larga, y sigue
   // legible impreso en blanco y negro (gris muy claro, no un color).
   if (indice % 2 === 1) {
@@ -99,15 +112,25 @@ function dibujarFila(ctx: Contexto, pasajero: PasajeroManifiestoPdf, indice: num
       color: COLOR_FILA_ALTERNA,
     });
   }
-  dibujarTexto(ctx, pasajero.asiento, { x: X_ASIENTO, tamano: 9 });
-  dibujarTexto(ctx, `${pasajero.apellidos}, ${pasajero.nombres}`, { x: X_NOMBRE, tamano: 9 });
-  dibujarTexto(ctx, `${pasajero.tipoDocumento} ${pasajero.numeroDocumento}`, { x: X_DOCUMENTO, tamano: 9 });
-  dibujarTexto(ctx, pasajero.origen, { x: X_ORIGEN, tamano: 9 });
-  dibujarTexto(ctx, pasajero.destino, { x: X_DESTINO, tamano: 9 });
+  dibujarTexto(ctx, etiquetaAsiento(pasajero.seat), { x: X_ASIENTO, tamano: 9 });
+  dibujarTexto(ctx, `${pasajero.lastNames}, ${pasajero.firstNames}`, { x: X_NOMBRE, tamano: 9 });
+  // Completo: es el documento de fiscalización (D-052). En pantalla, enmascarado.
+  dibujarTexto(ctx, `${TIPO_DOCUMENTO[pasajero.documentType]} ${pasajero.documentNumber}`, {
+    x: X_DOCUMENTO,
+    tamano: 9,
+  });
+  const boleto = pasajero.ticket ? `${pasajero.ticket.series}-${pasajero.ticket.number}` : "Sin número";
+  dibujarTexto(ctx, boleto, { x: X_BOLETO, tamano: 9 });
+  dibujarTexto(ctx, pasajero.origin, { x: X_ORIGEN, tamano: 9 });
+  dibujarTexto(ctx, pasajero.destination, { x: X_DESTINO, tamano: 9 });
+  dibujarTexto(ctx, observaciones(pasajero, contenido), { x: X_OBSERVACIONES, tamano: 8 });
   ctx.y -= ALTO_FILA;
 }
 
-function dibujarEncabezadoPrincipal(ctx: Contexto, datos: ManifiestoPdfData): void {
+function dibujarEncabezadoPrincipal(ctx: Contexto, manifiesto: Manifiesto): void {
+  const { trip, bus, drivers } = manifiesto.content;
+  const salida = new Date(trip.departsAt);
+  const generado = new Date(manifiesto.generatedAt);
   dibujarTextoDerecha(ctx, "EMPCOSEM S.A.", { tamano: 10, negrita: true });
   ctx.y -= 13;
   // RUC real confirmado (ver docs/DECISIONES.md D-012, supersede D-011).
@@ -118,26 +141,52 @@ function dibujarEncabezadoPrincipal(ctx: Contexto, datos: ManifiestoPdfData): vo
   dibujarLineaDivisoria(ctx);
   ctx.y -= 18;
 
-  dibujarTexto(ctx, `${datos.origen} - ${datos.destino}`, { tamano: 13, negrita: true });
-  dibujarTextoDerecha(ctx, `${formatFechaLarga(datos.fechaSalida)}, ${formatHora12(datos.fechaSalida)}`, {
-    tamano: 11,
+  dibujarTexto(ctx, `${trip.origin} - ${trip.destination}`, { tamano: 13, negrita: true });
+  dibujarTextoDerecha(ctx, `${formatFechaLarga(salida)}, ${formatHora12(salida)}`, { tamano: 11 });
+  ctx.y -= 18;
+  const autorizacion = bus.authorizationNumber ? ` · Autorización ${bus.authorizationNumber}` : "";
+  dibujarTexto(ctx, `Unidad ${bus.unit} · Placa ${bus.plate} · ${bus.make} ${bus.model}${autorizacion}`, {
+    tamano: 10,
+    negrita: true,
   });
   ctx.y -= 16;
-  dibujarTexto(ctx, `Salida: ${datos.terminalOrigen}`, { tamano: 9, color: COLOR_TEXT_SECONDARY });
-  ctx.y -= 18;
-  dibujarTexto(ctx, `Placa de la unidad: ${datos.placaBus}`, { tamano: 10, negrita: true });
-  dibujarTextoDerecha(
+  const conductores = drivers.length
+    ? drivers.map((d) => `${d.lastNames}, ${d.firstNames} (lic. ${d.licenseNumber})`).join(" / ")
+    : "Sin conductor asignado";
+  dibujarTexto(ctx, `Conductor${drivers.length > 1 ? "es" : ""}: ${conductores}`, { tamano: 9 });
+  ctx.y -= 14;
+  // Qué versión se imprimió, y su huella: con eso se puede comprobar después.
+  const huella = manifiesto.fingerprint ? ` · huella ${manifiesto.fingerprint.slice(0, 16)}` : "";
+  dibujarTexto(
     ctx,
-    `Conductor${datos.conductores.length > 1 ? "es" : ""}: ${datos.conductores.join(" / ")}`,
-    { tamano: 10 },
+    `Versión ${manifiesto.version} · generada el ${formatFechaCorta(generado)} a las ${formatHora12(generado)}${huella}`,
+    { tamano: 8, color: COLOR_TEXT_SECONDARY },
   );
-  ctx.y -= 24;
+  ctx.y -= 22;
+}
+
+/** Los menores en brazos: no ocupan asiento, pero van en el manifiesto. */
+function dibujarMenoresEnBrazos(ctx: Contexto, contenido: Contenido): void {
+  dibujarTexto(ctx, "Menores en brazos", { tamano: 10, negrita: true });
+  ctx.y -= ALTO_FILA;
+  for (const menor of contenido.infantsInArms) {
+    dibujarTexto(
+      ctx,
+      `Asiento ${etiquetaAsiento(menor.carrierSeat)} · ${menor.lastNames}, ${menor.firstNames} · ` +
+        `${TIPO_DOCUMENTO[menor.documentType]} ${menor.documentNumber} · ${menor.ageAtTrip} años · ` +
+        `en brazos de ${menor.carrierLastNames}, ${menor.carrierFirstNames} (${menor.relationship})`,
+      { tamano: 8.5 },
+    );
+    ctx.y -= ALTO_FILA;
+  }
 }
 
 /** Construye el PDF del manifiesto, paginando la tabla si no entra en una hoja. No dispara la descarga. */
-export async function generarManifiestoPdf(datos: ManifiestoPdfData): Promise<Uint8Array> {
+export async function generarManifiestoPdf(manifiesto: Manifiesto): Promise<Uint8Array> {
+  const contenido = manifiesto.content;
+  const { origin, destination } = contenido.trip;
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.setTitle(`Manifiesto ${datos.origen}-${datos.destino}`);
+  pdfDoc.setTitle(`Manifiesto ${origin}-${destination} v${manifiesto.version}`);
   pdfDoc.setSubject(NOTA_FUENTE);
 
   const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -145,15 +194,15 @@ export async function generarManifiestoPdf(datos: ManifiestoPdfData): Promise<Ui
 
   let ctx = nuevaPagina(pdfDoc, regular, bold);
   let pagina = 1;
-  dibujarEncabezadoPrincipal(ctx, datos);
+  dibujarEncabezadoPrincipal(ctx, manifiesto);
   dibujarEncabezadoTabla(ctx);
 
-  datos.pasajeros.forEach((pasajero, indice) => {
+  contenido.passengers.forEach((pasajero, indice) => {
     if (ctx.y - ALTO_FILA < MARGEN_INFERIOR) {
       pagina += 1;
       ctx = nuevaPagina(pdfDoc, regular, bold);
       dibujarTextoDerecha(ctx, `Página ${pagina}`, { tamano: 8, color: COLOR_TEXT_SECONDARY });
-      dibujarTexto(ctx, `${datos.origen} - ${datos.destino} (continuación)`, {
+      dibujarTexto(ctx, `${origin} - ${destination} (continuación)`, {
         tamano: 10,
         negrita: true,
         color: COLOR_TEXT_SECONDARY,
@@ -161,8 +210,18 @@ export async function generarManifiestoPdf(datos: ManifiestoPdfData): Promise<Ui
       ctx.y -= 16;
       dibujarEncabezadoTabla(ctx);
     }
-    dibujarFila(ctx, pasajero, indice);
+    dibujarFila(ctx, pasajero, contenido, indice);
   });
+
+  if (contenido.infantsInArms.length > 0) {
+    if (ctx.y - ALTO_FILA * (contenido.infantsInArms.length + 2) < MARGEN_INFERIOR) {
+      pagina += 1;
+      ctx = nuevaPagina(pdfDoc, regular, bold);
+    } else {
+      ctx.y -= 10;
+    }
+    dibujarMenoresEnBrazos(ctx, contenido);
+  }
 
   // --- Total + firma y sello: si no entra debajo de la tabla, van en una
   // página aparte en vez de encimarse con la última fila. ---
@@ -175,8 +234,18 @@ export async function generarManifiestoPdf(datos: ManifiestoPdfData): Promise<Ui
     ctx.y -= 20;
   }
 
-  dibujarTexto(ctx, "Total de pasajeros", { tamano: 10, color: COLOR_TEXT_SECONDARY });
-  dibujarTextoDerecha(ctx, String(datos.pasajeros.length), { tamano: 14, negrita: true });
+  const enBrazos = contenido.infantsInArms.length;
+  dibujarTexto(
+    ctx,
+    enBrazos
+      ? `Total de pasajeros (${contenido.passengers.length} con asiento y ${enBrazos} en brazos)`
+      : "Total de pasajeros",
+    { tamano: 10, color: COLOR_TEXT_SECONDARY },
+  );
+  dibujarTextoDerecha(ctx, String(contenido.passengers.length + enBrazos), {
+    tamano: 14,
+    negrita: true,
+  });
   ctx.y -= 50;
 
   const anchoFirma = (ctx.anchoContenido - 40) / 2;
@@ -203,17 +272,17 @@ export async function generarManifiestoPdf(datos: ManifiestoPdfData): Promise<Ui
   return pdfDoc.save();
 }
 
-export async function descargarManifiestoPdf(datos: ManifiestoPdfData): Promise<void> {
-  const bytes = await generarManifiestoPdf(datos);
-  const slug = `${datos.origen}-${datos.destino}`
+export async function descargarManifiestoPdf(manifiesto: Manifiesto): Promise<void> {
+  const bytes = await generarManifiestoPdf(manifiesto);
+  const { origin, destination, departsAt } = manifiesto.content.trip;
+  const slug = `${origin}-${destination}`
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, "-");
-  // La hora de salida entra al nombre del archivo porque dos salidas de la
-  // misma ruta el mismo día (como v1 y v4 en el mock, ambas Lima-Huancayo)
-  // no deben pisarse el archivo descargado una a la otra.
-  const hora = String(datos.fechaSalida.getHours()).padStart(2, "0");
-  const minutos = String(datos.fechaSalida.getMinutes()).padStart(2, "0");
-  descargarArchivo(`manifiesto-${slug}-${hora}${minutos}.pdf`, bytes, "application/pdf");
+  // Hora y versión en el nombre: dos salidas de la misma ruta el mismo día, o
+  // dos versiones del mismo viaje, no se pisan el archivo.
+  const salida = new Date(departsAt);
+  const hora = `${String(salida.getHours()).padStart(2, "0")}${String(salida.getMinutes()).padStart(2, "0")}`;
+  descargarArchivo(`manifiesto-${slug}-${hora}-v${manifiesto.version}.pdf`, bytes, "application/pdf");
 }

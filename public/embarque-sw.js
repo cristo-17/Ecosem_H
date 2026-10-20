@@ -11,7 +11,9 @@
  * en sí (lib/embarque/validar.ts) no depende de este archivo — es
  * IndexedDB + JS puro, funciona sin red exista o no el service worker.
  */
-const CACHE = "ecosem-embarque-v1";
+// v2: la validación pasó a ECDSA con el paquete del viaje; lo cacheado de
+// la versión mock (HMAC) se descarta al activarse.
+const CACHE = "ecosem-embarque-v2";
 const SHELL = ["/embarque", "/manifest.webmanifest", "/icon.png"];
 
 self.addEventListener("install", (event) => {

@@ -7,7 +7,8 @@ import { WifiIcon, WifiOffIcon } from "@/components/ui/icons";
 import { RUTAS } from "@/lib/routes";
 
 export function EmbarqueHeader() {
-  const { enLinea, pendientes, sincronizando, sincronizarAhora } = useEstadoSincronizacion();
+  const { enLinea, pendientes, sincronizando, sesionVencida, sincronizarAhora } =
+    useEstadoSincronizacion();
 
   return (
     <header className="flex items-center justify-between gap-3 bg-navy px-4 py-3 sm:px-6">
@@ -25,6 +26,15 @@ export function EmbarqueHeader() {
           {enLinea ? <WifiIcon className="!size-4" /> : <WifiOffIcon className="!size-4" />}
           {enLinea ? "En línea" : "Sin conexión"}
         </span>
+
+        {sesionVencida && pendientes > 0 && (
+          <Link
+            href={`${RUTAS.ingresar}?${new URLSearchParams({ siguiente: RUTAS.embarque, motivo: "sesion-vencida" })}`}
+            className="flex min-h-9 items-center rounded-pill bg-warning-fill px-3 py-1.5 text-xs font-medium text-warning-text"
+          >
+            Ingresa para subir
+          </Link>
+        )}
 
         {pendientes > 0 && (
           <button
