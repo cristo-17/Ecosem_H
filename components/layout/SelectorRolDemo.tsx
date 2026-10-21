@@ -13,6 +13,7 @@ const OPCIONES: { valor: EstadoDemo; etiqueta: string }[] = [
   { valor: "pasajero", etiqueta: "Pasajero" },
   { valor: "counter", etiqueta: "Counter" },
   { valor: "supervisor", etiqueta: "Supervisor" },
+  { valor: "embarque", etiqueta: "Embarque" },
 ];
 
 export interface SelectorRolDemoProps {

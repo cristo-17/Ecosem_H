@@ -23,14 +23,13 @@ export const viewport: Viewport = {
 
 /**
  * Igual que /panel: rol verificado en el servidor desde el token firmado
- * (`exigirAcceso`). Acá además decide qué usuario puede instalar y usar
- * la PWA de embarque; por ahora el mismo rol de personal que el panel
- * (`esPersonal`), sin un rol "embarque" propio — no se justifica todavía
- * separar counter/embarque cuando ninguno de los dos tiene permisos reales
- * distintos.
+ * (`exigirAcceso`). Entran counter, supervisor y el rol `embarque`
+ * (`puedeEmbarcar`), que es solo para esto: elegir viaje, bajar el paquete,
+ * escanear y sincronizar. Embarque no entra al panel, y el backend le niega
+ * venta, caja, tarifas, personal y manifiesto (D-XXX-rol-embarque).
  */
 export default async function EmbarqueLayout({ children }: { children: ReactNode }) {
-  const acceso = await exigirAcceso("personal", RUTAS.embarque);
+  const acceso = await exigirAcceso("embarque", RUTAS.embarque);
   if (acceso.tipo === "denegado") return <AccesoDenegado />;
 
   return (

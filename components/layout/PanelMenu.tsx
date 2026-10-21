@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { RUTAS } from "@/lib/routes";
-import { esSupervisor, type RolUsuario } from "@/lib/auth/roles";
+import { esSupervisor, usaPanel, type RolUsuario } from "@/lib/auth/roles";
 
 interface EnlacePanel {
   href: string;
@@ -29,7 +29,11 @@ const ENLACES_SUPERVISOR_EXTRA: EnlacePanel[] = [
   { href: RUTAS.panelAlertas, label: "Alertas" },
 ];
 
+// Embarque no entra al panel: solo ve su propia sección.
+const ENLACES_EMBARQUE: EnlacePanel[] = [{ href: RUTAS.embarque, label: "Embarque" }];
+
 export function enlacesPanel(rol: RolUsuario): EnlacePanel[] {
+  if (!usaPanel(rol)) return ENLACES_EMBARQUE;
   return esSupervisor(rol) ? [...ENLACES_COUNTER, ...ENLACES_SUPERVISOR_EXTRA] : ENLACES_COUNTER;
 }
 

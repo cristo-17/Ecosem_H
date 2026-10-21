@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { clienteSupabaseServidor } from "@/lib/supabase/servidor";
-import { esPersonal, esSupervisor, rolDesdeClaims, type RolUsuario } from "@/lib/auth/roles";
+import { esSupervisor, puedeEmbarcar, rolDesdeClaims, usaPanel, type RolUsuario } from "@/lib/auth/roles";
 import { RUTAS } from "@/lib/routes";
 
 export interface Sesion {
@@ -71,14 +71,15 @@ export type Acceso =
  * la base (D-015 del backend).
  */
 export async function exigirAcceso(
-  requisito: "sesion" | "personal" | "supervisor",
+  requisito: "sesion" | "panel" | "embarque" | "supervisor",
   rutaActual: string,
 ): Promise<Acceso> {
   const sesion = await obtenerSesion();
   if (!sesion) redirect(rutaIngreso(rutaActual));
   const permitido =
     requisito === "sesion" ||
-    (requisito === "personal" && esPersonal(sesion.rol)) ||
+    (requisito === "panel" && usaPanel(sesion.rol)) ||
+    (requisito === "embarque" && puedeEmbarcar(sesion.rol)) ||
     (requisito === "supervisor" && esSupervisor(sesion.rol));
   return { tipo: permitido ? "permitido" : "denegado", sesion };
 }

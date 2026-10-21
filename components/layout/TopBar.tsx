@@ -12,7 +12,7 @@ import { RUTAS } from "@/lib/routes";
 import { cerrarSesion } from "@/lib/auth/acciones";
 import { olvidarSesionCompra } from "@/lib/api/compra";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
-import { esPersonal, type RolUsuario } from "@/lib/auth/roles";
+import { esPersonal, usaPanel, type RolUsuario } from "@/lib/auth/roles";
 import { PanelMenu, enlacesPanel } from "@/components/layout/PanelMenu";
 
 const FOCUSABLE_SELECTOR =
@@ -186,7 +186,17 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
       {esInterno && (
         <div className="hidden md:flex items-center gap-4">
           <div aria-hidden="true" className="h-6 w-px bg-border-default" />
-          <PanelMenu rol={rol} />
+          {/* Embarque no tiene panel: un enlace directo, no un desplegable "Panel" con una sola entrada. */}
+          {usaPanel(rol) ? (
+            <PanelMenu rol={rol} />
+          ) : (
+            <Link
+              href={RUTAS.embarque}
+              className="flex h-10 items-center rounded-pill px-4 text-sm font-semibold text-text-primary transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+            >
+              Embarque
+            </Link>
+          )}
         </div>
       )}
 
@@ -284,7 +294,7 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
               {esInterno && (
                 <div className="mt-4 border-t border-white/10 pt-4">
                   <p className="mb-2 px-3 text-xs font-semibold tracking-wider text-white/50 uppercase">
-                    Panel interno
+                    {usaPanel(rol) ? "Panel interno" : "Uso interno"}
                   </p>
                   <ul className="flex flex-col gap-1">
                     {enlacesInternos.map((enlace) => (
