@@ -5,6 +5,30 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 21/10/2026
+
+**Contexto:** documentación de git. Sin commits.
+
+**Hecho**
+- `docs/GIT.md` creado (no existía en este repositorio): flujo de ramas y
+  sección «Conflictos y cómo los resolvimos» con el reparto de 77 archivos en
+  `6c48fa6`, `eaf4b43`, `fcafa82` y `c5eeab0`.
+- Verificado en un worktree aparte: los cuatro commits compilan
+  (`next typegen` + `tsc --noEmit`); invertir encomiendas/perfil da 2 errores
+  e invertir embarque/encomiendas da 6, por imports.
+- `CONTRIBUTING.md` en la raíz con el flujo de ramas copiado de
+  `backend-ecosemh/docs/GIT.md`.
+
+**Abierto**
+- El reparto fue en cuatro commits, no cinco. La lista de siete archivos
+  compartidos y su criterio no estaban registrados: la de `GIT.md` es una
+  reconstrucción desde el código. La igualdad de hash con el estado previo no
+  se puede comprobar hoy.
+- El historial no sigue el flujo: PRs a `main`, commits directos a `main`
+  desde el 17/10, `develop` 34 commits atrás.
+
+---
+
 ## 19/10/2026 (cont. 2)
 
 **Contexto:** manifiesto y embarque contra svc-ventas. Sin commits. Sin
