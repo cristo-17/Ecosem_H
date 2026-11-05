@@ -7,6 +7,15 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 
 ---
 
+## F-007 · El alta de supervisor exige agencia en el backend
+**Estado:** resuelto en contrato y frontend (05/11/2026); prueba autenticada pendiente.
+**Síntoma:** POST /v1/personal rechaza supervisor sin agencia, aunque el requisito lo permite.
+**Causa real:** CreateStaffRequest exige terminal; newStaffRequest exige isCode(terminal) para todos los roles y createStaffByEmail busca una agencia existente. PUT sí acepta null.
+**Solución:** backend corregido en D-054 y ambos contratos regenerados copiados sin modificaciones manuales. CreateStaffRequest.terminal es opcional/anulable. El frontend permite alta de supervisor con terminal null, exige agencia solo a counter/embarque y traduce STAFF_TERMINAL_REQUIRED con mensaje propio. Se retiraron el aviso de incompatibilidad y el bloqueo anterior.
+**Verificación pendiente:** alta autenticada contra EcosemH con cuenta de prueba de supervisor.
+
+---
+
 ## F-006 · "Sin conexión" en el servidor y error de hidratación en /embarque
 **Estado:** resuelto (19/10/2026)
 **Síntoma:** al abrir `/embarque`, error de hidratación en consola: el

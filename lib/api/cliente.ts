@@ -15,7 +15,7 @@ import {
   type ErrorBody,
   type ErrorCode,
   type ErrorDetails,
-} from "@/lib/types/contratos-frontend";
+} from "@/lib/types/contratos-panel";
 
 export type TipoFalla = "red" | "tiempo" | "ocupado" | "servidor";
 

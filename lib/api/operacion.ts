@@ -4,13 +4,13 @@
  * qué lo decide el servicio (el counter, su agencia; el supervisor, la que
  * elija) y la base, no esta pantalla.
  */
+import type { GenerateManifestResponse } from "@/lib/types/contratos-panel";
 import type { CatalogResponse } from "@/lib/types/contratos-frontend";
 import type {
   Manifiesto,
   PaqueteEmbarque,
   PedidoSincronizacion,
   RespuestaSincronizacion,
-  VersionManifiesto,
   VersionesManifiesto,
   ViajesOperacion,
 } from "@/lib/embarque/contrato";
@@ -53,7 +53,7 @@ export function manifiesto(tripId: string, version: number, opciones: OpcionesPe
 
 /** Una versión nueva, con lo que el viaje tiene ahora. Queda registrada quién la generó. */
 export function generarManifiesto(tripId: string, opciones: OpcionesPeticion = {}) {
-  return conCuenta<VersionManifiesto & { tripId: string }>(`${viaje(tripId)}/manifiestos`, {
+  return conCuenta<GenerateManifestResponse>(`${viaje(tripId)}/manifiestos`, {
     ...opciones,
     metodo: "POST",
   });
