@@ -15,6 +15,7 @@ interface EnlacePanel {
 const ENLACES_COUNTER: EnlacePanel[] = [
   { href: RUTAS.panel, label: "Inicio del panel" },
   { href: RUTAS.panelVenta, label: "Venta" },
+  { href: RUTAS.panelImpresiones, label: "Impresiones" },
   { href: RUTAS.panelCaja, label: "Caja" },
   { href: RUTAS.panelEncomiendas, label: "Encomiendas" },
   { href: RUTAS.panelViajes, label: "Viajes del día" },
@@ -22,6 +23,7 @@ const ENLACES_COUNTER: EnlacePanel[] = [
 ];
 
 const ENLACES_SUPERVISOR_EXTRA: EnlacePanel[] = [
+  { href: RUTAS.panelPersonal, label: "Personal" },
   { href: RUTAS.panelPrecios, label: "Precios" },
   { href: RUTAS.panelTarifario, label: "Tarifario" },
   { href: RUTAS.panelFlota, label: "Flota" },

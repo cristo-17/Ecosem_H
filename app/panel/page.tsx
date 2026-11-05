@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import { BoxIcon, TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
+import { BoxIcon, UserIcon, TicketIcon, ClockIcon, CreditCardIcon, BusIcon, SteeringWheelIcon, ExclamationIcon, ScaleIcon } from "@/components/ui/icons";
 import { esSupervisor } from "@/lib/auth/roles";
 import { obtenerSesion } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
@@ -81,6 +81,24 @@ export default async function PanelIndexPage() {
             </p>
           </div>
           <span className="mt-auto text-sm font-semibold text-primary">Ir a Encomiendas →</span>
+        </Card>
+      </Link>
+
+      <Link
+        href={RUTAS.panelImpresiones}
+        className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+      >
+        <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+          <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+            <TicketIcon className="!size-6 !text-secondary" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-navy">Impresiones de boletos</h2>
+            <p className="mt-1 text-sm text-navy/70">
+              Imprime por código de compra con registro de cada solicitud.
+            </p>
+          </div>
+          <span className="mt-auto text-sm font-semibold text-secondary">Ir a Impresiones →</span>
         </Card>
       </Link>
 
@@ -181,6 +199,25 @@ export default async function PanelIndexPage() {
               </p>
             </div>
             <span className="mt-auto text-sm font-semibold text-secondary">Ir a Tarifario →</span>
+          </Card>
+        </Link>
+      )}
+      {esSupervisor(rol) && (
+        <Link
+          href={RUTAS.panelPersonal}
+          className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        >
+          <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+            <span className="flex size-11 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <UserIcon className="!text-secondary" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-navy">Personal</h2>
+              <p className="mt-1 text-sm text-navy/70">
+                Alta por correo, roles, agencias y bajas. Solo supervisor.
+              </p>
+            </div>
+            <span className="mt-auto text-sm font-semibold text-secondary">Ir a Personal →</span>
           </Card>
         </Link>
       )}

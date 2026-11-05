@@ -643,10 +643,7 @@ export function VentaView() {
               <dd className="text-lg font-bold text-navy">{formatPrecio(Number(paso.venta.change))}</dd>
             </div>
           </dl>
-          <p className="max-w-sm text-xs text-navy/60">
-            El cobro ya está en el arqueo de tu turno. La impresión del boleto con QR desde el panel
-            todavía no está disponible: entrega al pasajero el código de compra.
-          </p>
+          <Link href={RUTAS.panelImpresiones} className="flex min-h-12 items-center text-secondary underline">Ir a imprimir el boleto con el código de compra</Link>
           <Button onClick={nuevaVenta} className="mt-2">
             Nueva venta
           </Button>
