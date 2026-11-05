@@ -5,6 +5,79 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 05/11/2026 (cont. 4)
+
+**Contexto:** acceso de counter y presentación de auditoría de impresiones. Misma rama `docs/conflictos-y-contributing`, sin commits.
+
+- No era deliberado omitir Impresiones de la barra interna: agregado enlace visible a counter y supervisor. Se comprobó que la tarjeta del índice y el menú superior ya tenían acceso para counter, sin condición de supervisor; se conservaron. Personal e historial siguen restringidos a supervisor.
+- Historial con fecha explícita `AAAA-MM-DD HH:mm:ss · America/Lima (UTC-05:00)`, reloj de 24 horas y elemento time con el instante original. El offset se obtiene de la zona, no de la configuración horaria del navegador.
+- Confirmación e historial comparten etiqueta: «Impresión original n.º 1» y «Reimpresión n.º N» para posteriores; la numeración conserva la del registro de auditoría.
+- `/.qa-tmp/` agregado a `.gitignore`; comprobado con git check-ignore. No se borran los artefactos locales.
+- Comprobación directa de formato de fecha, cambio de día/medianoche en Lima y etiquetas de original/reimpresión: correcta. `git diff --check` sin errores.
+- Cadena final `npx.cmd tsc --noEmit && npx.cmd eslint . && npm.cmd run build`: exit 0; ESLint mantiene tres advertencias preexistentes de scripts de QA (gitignore no modifica la selección de ESLint).
+
+---
+
+## 05/11/2026 (cont. 3)
+
+**Contexto:** consistencia de tarjetas y orden del índice del panel. Sin commits.
+
+- Revisados el skill ecosem-design-system, el styleguide y Card: se reutiliza Card con radio md, padding de 16 px, sombra low/medium, espaciado en múltiplos de 4 y colores semánticos existentes. Sin nuevos valores de diseño ni dependencias.
+- Impresiones y Personal incorporan TicketIcon/UserIcon, título y descripción con la jerarquía existente, llamada «Ir a …» al pie y foco visible sobre toda la tarjeta enlazada. El enlace completo supera el mínimo táctil de 44 px; no se agrega un botón anidado.
+- Orden: se conservan primero Viajes, Venta, Caja y Encomiendas; Impresiones sigue como apoyo a la operación diaria. Después continúan las herramientas de administración existentes; Personal queda al final por ser gestión de accesos y permanece exclusivo de supervisor. La primera fila de escritorio conserva Viajes/Venta/Caja y el orden del DOM también se aplica en móvil y teclado.
+- Verificación: TypeScript y ESLint del archivo modificado pasan; revisión de enlaces, guardia de supervisor y `git diff --check` sin errores.
+
+---
+
+## 05/11/2026 (cont. 2)
+
+**Contexto:** corrección D-054: supervisor sin agencia. Sin commits.
+
+**Hecho**
+- Copiados nuevamente ambos archivos generados del backend a `lib/types/`: `contratos-panel.ts` y `contratos-frontend.ts`. SHA-256 de cada copia idéntico a su origen; sin declaraciones manuales.
+- Eliminados el aviso de incompatibilidad y el bloqueo del alta de supervisor. Alta y edición envían terminal null para supervisor; counter y embarque requieren agencia según el rol seleccionado, con aviso específico antes del envío.
+- Agregado mensaje propio para STAFF_TERMINAL_REQUIRED: «Selecciona una agencia», con explicación de que counter y embarque la necesitan para operar.
+- F-007 actualizado: resuelto en contrato/frontend; la prueba autenticada contra EcosemH sigue pendiente de cuentas de prueba.
+- Verificación final: `npx.cmd tsc --noEmit && npx.cmd eslint . && npm.cmd run build`, exit 0. ESLint conserva las tres advertencias preexistentes de scripts de QA. `git diff --check` sin errores.
+
+---
+
+## 05/11/2026 (cont.)
+
+**Contexto:** continuación con contrato regenerado completo. Sin commits.
+
+**Hecho**
+- Copiado primero `backend-ecosemh/generado/contratos-panel.ts` a `lib/types/contratos-panel.ts`; SHA-256 idéntico al origen. Se consumen CreateStaffRequest/Response y TicketPrintResponse/LogResponse sin redeclararlos.
+- Sustituidas las copias manuales de caja, encomiendas y operación/embarque por imports o alias generados. El cliente de errores usa los códigos generados del panel.
+- `/panel/personal`, con guardia de supervisor en servidor: lista, alta por correo, edición de rol/agencia/nombres y baja; catálogo real de agencias, cargas, errores y confirmación con aviso de cierre de sesiones. Explica registro previo y permisos de embarque. Mensajes propios para STAFF_ACCOUNT_NOT_FOUND y STAFF_ALREADY_ACTIVE.
+- `/panel/impresiones`: POST auditado por código, PDF con documento completo y pantalla enmascarada; GET del historial solo para supervisor, con usuario, rol, camino y hora de Perú. Mensajes propios para REPRINT_SHIFT_CLOSED y PURCHASE_VOIDED. Recuperar un PDF fallido no repite el POST; perder la respuesta pide revisar el historial antes de repetir.
+- Enlaces en índice y menú del panel y desde venta confirmada. No había llamadas al endpoint viejo de boletos en el panel; se conservan las de compra web y del titular en su perfil.
+- EcosemH, lectura real: catálogo HTTP 200, tres terminales. Playwright verificó redirección a Ingresar en ambas rutas sin sesión; evidencia local en `.qa-tmp/personal-impresiones-acceso.json` y capturas `personal-sin-sesion.png` / `impresiones-sin-sesion.png`.
+- Cadena final `npx.cmd tsc --noEmit && npx.cmd eslint . && npm.cmd run build`: exit 0. ESLint conserva tres advertencias anteriores de scripts de QA. El build aislado falló al descargar Google Fonts; el reintento con red autorizada pasó. Se usaron wrappers .cmd porque PowerShell bloquea npx.ps1.
+
+**Abierto**
+- F-007: POST exige agencia incluso para supervisor (tipo generado y handler); PUT sí permite null. No se inventó un contrato ni se modificó el backend: el formulario informa antes de confirmar y evita enviar el alta inválida. Pendiente decisión consultada sobre agencia inicial explícita o corrección de backend.
+- Falta demostración autenticada contra EcosemH: `.env.local` no tiene DEV_CUENTA_* ni se proporcionó código de compra de prueba. Se solicitó configurarlas localmente sin contraseñas en chat. No se realizaron altas, cambios de rol, bajas ni impresiones remotas.
+
+---
+
+## 05/11/2026
+
+**Contexto:** personal (D-054/D-056) e impresiones (D-057). Sin commits.
+
+**Hecho**
+- Leídos los tres documentos requeridos y copiado inicialmente el contrato generado del backend a `lib/types/contratos-panel.ts`.
+- Confirmados en `backend-ecosemh/supabase/functions/_shared/contratos/ventas.ts`, pero ausentes en `backend-ecosemh/generado/contratos-panel.ts`:
+  - `CreateStaffRequest`: cuerpo de POST /v1/personal (alta por correo).
+  - `CreateStaffResponse`: respuesta 201 de POST /v1/personal.
+  - `TicketPrintResponse`: respuesta de POST /v1/caja/ventas/:codigo/impresiones; extiende TicketsResponse con printNumber y reprint.
+  - `TicketPrintLogResponse`: respuesta de GET /v1/caja/ventas/:codigo/impresiones; historial exclusivo del supervisor.
+- No se identificaron otros tipos faltantes durante esta inspección; no se hizo una auditoría exhaustiva de todos los contratos.
+
+**Abierto**
+- El arreglo del generador corresponde al backend. Por instrucción del usuario, no copiar declaraciones manualmente ni tocar `lib/types/` o `lib/api/` mientras se espera el contrato completo. Pantallas y validaciones finales pendientes. Trabajo detenido a la espera del contrato.
+
+---
 ## 21/10/2026
 
 **Contexto:** documentación de git. Sin commits.

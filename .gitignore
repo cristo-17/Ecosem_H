@@ -28,6 +28,7 @@ lerna-debug.log*
 
 # testing / coverage
 /coverage
+/.qa-tmp/
 
 # misc
 *.local
