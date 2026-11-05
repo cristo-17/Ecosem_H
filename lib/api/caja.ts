@@ -11,74 +11,18 @@
  * - Calcular el total o el vuelto que valen. Los dos los devuelve la venta.
  */
 import type {
-  BillTo,
-  PassengerData,
-} from "@/lib/types/contratos-frontend";
+  PaymentMethod as MedioPagoCaja, OpenShiftResponse as AbrirTurnoRespuesta,
+  ShiftSummaryResponse as ArqueoTurno, CloseShiftResponse as CierreTurno,
+  CashSaleRequest as VentaEfectivoPedido, CashSaleResponse as VentaEfectivo,
+} from "@/lib/types/contratos-panel";
+export type {
+  PaymentMethod as MedioPagoCaja, OpenShiftResponse as AbrirTurnoRespuesta,
+  ShiftSummaryResponse as ArqueoTurno, CloseShiftResponse as CierreTurno,
+  CashSaleRequest as VentaEfectivoPedido, CashSaleResponse as VentaEfectivo,
+} from "@/lib/types/contratos-panel";
 import { ApiError, type OpcionesPeticion } from "@/lib/api/cliente";
 import { conCuenta } from "@/lib/api/cuenta";
 import { mensajeCompra, type MensajeError } from "@/lib/api/compra";
-
-// ----- Copia a mano de `_shared/contratos/ventas.ts` (Caja, B-05) del backend.
-// El generador del contrato del frontend deja fuera, a propósito, las formas
-// de los paneles de personal (D-046 del backend). Hasta que el backend decida
-// publicarlas, estas copias tienen que seguir al contrato: si cambia allá,
-// cambia aquí.
-
-export type MedioPagoCaja = "efectivo" | "tarjeta" | "yape" | "plin";
-
-/** POST /v1/caja/turnos */
-export interface AbrirTurnoRespuesta {
-  shiftId: string;
-  status: "opened" | "already_open";
-}
-
-/** GET /v1/caja/turnos/actual. Efectivo y electrónico no se suman. */
-export interface ArqueoTurno {
-  shiftId: string;
-  /** Código de la agencia del turno. */
-  terminal: string;
-  openedAt: string;
-  /** Lo que tiene que haber en la caja en efectivo. */
-  expectedCash: string;
-  breakdown: Array<{
-    method: MedioPagoCaja;
-    control: "cash_count" | "gateway_reconciliation";
-    movements: number;
-    income: string;
-    outflow: string;
-    net: string;
-  }>;
-}
-
-/** POST /v1/caja/turnos/actual/cierre */
-export interface CierreTurno {
-  shiftId: string;
-  expectedCash: string;
-  countedCash: string;
-  /** Contado menos esperado. Positiva: sobrante. Negativa: faltante. */
-  difference: string;
-}
-
-/** POST /v1/caja/ventas */
-export interface VentaEfectivoPedido {
-  tripId: string;
-  seats: string[];
-  cashReceived: number;
-  passengers: Array<PassengerData & { seat: string }>;
-  dataAuthorization: true;
-  billTo?: BillTo | null;
-}
-
-export interface VentaEfectivo {
-  purchaseId: string;
-  purchaseCode: string;
-  tripId: string;
-  seats: string[];
-  totalAmount: string;
-  /** Vuelto. */
-  change: string;
-  currency: "PEN";
-}
 
 // ----- Peticiones
 

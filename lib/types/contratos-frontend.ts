@@ -7,15 +7,22 @@
 
 // ----- De _shared/contratos/mod.ts
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export const API_VERSION = 'v1';
 
-/** Espera base de un 503, en segundos. Va en `Retry-After` y en el cuerpo. */
+/** Espera base de un 503, en segundos. Va en `Retry-After` y en el cuerpo.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export const SERVICE_BUSY_RETRY_AFTER_SECONDS = 2;
 
-/** Reintentos de un 503 antes de mostrar el error. */
+/** Reintentos de un 503 antes de mostrar el error.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export const RETRY_MAX_ATTEMPTS = 4;
 
-/** Ninguna espera pasa de esto. */
+/** Ninguna espera pasa de esto.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export const RETRY_MAX_DELAY_MS = 30_000;
 
 /**
@@ -23,6 +30,8 @@ export const RETRY_MAX_DELAY_MS = 30_000;
  * base en cada intento hasta el tope, y elige al azar entre la mitad y el total.
  * Nunca es menos de la mitad de `Retry-After`: con espera aleatoria pura,
  * algunos clientes reintentarían casi de inmediato.
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export function retryDelayMs(
   attempt: number,
@@ -34,8 +43,10 @@ export function retryDelayMs(
   return Math.round(ceiling / 2 + random() * (ceiling / 2));
 }
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export type ErrorCode =
   | 'VALIDATION'
+  | 'STAFF_TERMINAL_REQUIRED'
   // Falta el token de acceso o no es válido (B-14).
   | 'UNAUTHENTICATED'
   // Token válido, pero sin el rol que hace falta.
@@ -90,6 +101,12 @@ export type ErrorCode =
   | 'TRACKING_CODE_INVALID'
   // Personal activo, consultado a ventas antes de una escritura (D-032).
   | 'STAFF_VERIFICATION_UNAVAILABLE'
+  // Alta de personal por correo (D-054).
+  | 'STAFF_ACCOUNT_NOT_FOUND'
+  | 'STAFF_ALREADY_ACTIVE'
+  // Reimpresión de boletos (D-057).
+  | 'REPRINT_SHIFT_CLOSED'
+  | 'PURCHASE_VOIDED'
   // Flota (B-09).
   | 'MILEAGE_DECREASED'
   | 'ALERT_ALREADY_ATTENDED'
@@ -108,7 +125,9 @@ export type ErrorCode =
   | 'CONCURRENT_CONFLICT'
   | 'INTERNAL';
 
-/** Datos que acompañan a un error para que el cliente pueda actuar. Sin datos personales. */
+/** Datos que acompañan a un error para que el cliente pueda actuar. Sin datos personales.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export interface ErrorDetails {
   /** Con SEAT_UNAVAILABLE: los asientos que ya no están libres. */
   unavailableSeats?: string[];
@@ -142,7 +161,9 @@ export interface ErrorDetails {
   reason?: 'viaje_cancelado' | 'viaje_salio' | 'sin_bus';
 }
 
-/** Formato de error único de los cinco servicios. */
+/** Formato de error único de los cinco servicios.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export interface ErrorBody {
   error: {
     code: ErrorCode;
@@ -163,9 +184,12 @@ export interface ErrorBody {
 
 // ----- De _shared/contratos/ventas.ts
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export type ServiceType = 'economico' | 'ejecutivo' | 'vip';
 
-/** Estado de un asiento. La disponibilidad que devuelve esta API es la única fuente de verdad. */
+/** Estado de un asiento. La disponibilidad que devuelve esta API es la única fuente de verdad.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export type SeatStatus = 'libre' | 'reservado' | 'vendido';
 
 /**
@@ -201,7 +225,9 @@ export interface TripSummary {
   unitPrice: string | null;
 }
 
-/** Un factor del precio, tal como se aplicó. */
+/** Un factor del precio, tal como se aplicó.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export interface PriceFactor {
   /** Multiplicador aplicado. 1 si no hay un factor configurado para el caso. */
   factor: number;
@@ -214,6 +240,8 @@ export interface PriceFactor {
  * Desglose del precio, factor por factor. Es lo que hace el precio defendible
  * ante un reclamo: tarifa base × ocupación × anticipación × temporada, acotado
  * por el mínimo y el máximo de la ruta.
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export interface PriceBreakdown {
   baseFare: string;
@@ -238,10 +266,12 @@ export interface PriceQuoteResponse extends PriceBreakdown {
   currency: 'PEN';
 }
 
+/** GET /v1/viajes */
 export interface TripListResponse {
   trips: TripSummary[];
 }
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export interface Seat {
   /** Código del asiento, por ejemplo `P1-3A`. */
   code: string;
@@ -269,6 +299,7 @@ export interface CreateReservationRequest {
   copyPassengersFrom?: string;
 }
 
+/** POST /v1/reservas */
 export interface ReservationResponse {
   reservationId: string;
   tripId: string;
@@ -328,6 +359,7 @@ export interface MyReservationsResponse {
   }>;
 }
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export type ElectronicPaymentMethod = 'tarjeta' | 'yape' | 'plin';
 
 /**
@@ -335,6 +367,8 @@ export type ElectronicPaymentMethod = 'tarjeta' | 'yape' | 'plin';
  * RUC y sus apellidos y nombres, denominación o razón social. Van en el mismo
  * boleto (RS 156-2003/SUNAT, artículo 3). **No hay factura de un pasaje**: el
  * artículo 2 prohíbe canjear boletos de viaje por facturas (D-019).
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export interface BillTo {
   ruc: string;
@@ -351,6 +385,8 @@ export interface StartPaymentRequest {
  * Lo que el cliente necesita para completar el pago en la pasarela. **Recibir
  * esta respuesta no confirma nada**: la compra se confirma solo cuando la
  * pasarela notifica al servidor.
+
+ * POST /v1/reservas/:id/pago
  */
 export interface StartPaymentResponse {
   reservationId: string;
@@ -362,9 +398,12 @@ export interface StartPaymentResponse {
   checkout: Record<string, unknown>;
 }
 
+/** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
 export type DocumentKind = 'dni' | 'carne_extranjeria' | 'pasaporte';
 
-/** Los datos que van en el boleto de viaje (RS 156-2003, artículo 3). */
+/** Los datos que van en el boleto de viaje (RS 156-2003, artículo 3).
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export interface TicketPassenger {
   documentType: DocumentKind;
   /** DNI: 8 dígitos. Carné de extranjería y pasaporte: 4 a 20 letras o dígitos. */
@@ -376,6 +415,8 @@ export interface TicketPassenger {
 /**
  * Los datos de un pasajero al cargarlo. La fecha de nacimiento, no la edad: la
  * edad se calcula a la fecha del viaje (D-025).
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export interface PassengerData extends TicketPassenger {
   /** `AAAA-MM-DD`. */
@@ -394,7 +435,9 @@ export interface PassengerData extends TicketPassenger {
   infantInArms?: InfantInArms | null;
 }
 
-/** El menor en brazos: sus datos y qué es suyo el adulto que lo lleva. */
+/** El menor en brazos: sus datos y qué es suyo el adulto que lo lleva.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export interface InfantInArms extends TicketPassenger {
   /** `AAAA-MM-DD`. */
   birthDate: string;
@@ -416,6 +459,8 @@ export interface SavePassengerRequest extends PassengerData {
  * Un pasajero, tal como se muestra en una lista: con el documento enmascarado.
  * Una lista junta datos de varias personas; el documento completo va solo en el
  * boleto de cada pasajero (D-020).
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export interface PassengerView {
   seat: string;
@@ -466,7 +511,8 @@ export interface SaveContactRequest {
 }
 
 /**
- * GET /v1/reservas/:id/boletos, con la sesión o el usuario que compró. Un boleto
+ * GET /v1/reservas/:id/boletos, con la sesión o el usuario que compró; en una
+ * venta de counter, con el token del operador que la vendió (D-051). Un boleto
  * por pasajero: con su documento completo (el boleto lo exige, D-020) y su QR.
  */
 export interface TicketsResponse {
@@ -506,6 +552,8 @@ export interface CatalogResponse {
 /**
  * D-031: cinco estados. `en_destino` es que llegó a la agencia de destino;
  * `entregada`, que se le entregó al destinatario, con su documento verificado.
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export type ParcelStatus =
   | 'registrada'
@@ -534,8 +582,12 @@ export interface ParcelTrackingResponse {
  * Tipo de comprobante (D-019). El pasaje va en boleto de viaje
  * (RS 156-2003/SUNAT), nunca en boleta ni en factura. Boleta y factura son para
  * el exceso de equipaje y la encomienda.
+
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
  */
 export type DocumentType = 'boleto_viaje' | 'boleta' | 'factura';
 
-/** Estado del comprobante, tal como lo ve quien compró. */
+/** Estado del comprobante, tal como lo ve quien compró.
+ * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
+ */
 export type ReceiptStatus = 'pending' | 'issued' | 'failed' | 'voided';

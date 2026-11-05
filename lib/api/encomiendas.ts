@@ -11,101 +11,18 @@
  *   todavía, y no se suple con el DNI ni el correo (D-048, D-050).
  */
 import type {
-  DocumentKind,
   ParcelStatus,
   ParcelTrackingResponse,
 } from "@/lib/types/contratos-frontend";
 import { ApiError, pedirJson, type OpcionesPeticion } from "@/lib/api/cliente";
 import { conCuenta } from "@/lib/api/cuenta";
-import { mensajeCaja, type MedioPagoCaja } from "@/lib/api/caja";
+import { mensajeCaja } from "@/lib/api/caja";
 import type { MensajeError } from "@/lib/api/compra";
 
-// ----- Copia a mano de `_shared/contratos/encomiendas.ts` del backend (B-08).
-// El contrato generado para el frontend solo trae el rastreo (D-046 del
-// backend). Si cambia allá, cambia aquí.
-
-export type DocumentoEncomienda = DocumentKind | "ruc";
-
-/** POST /v1/encomiendas/cotizacion. Público. Agencias por su código. */
-export interface PedidoCotizacion {
-  origin: string;
-  destination: string;
-  weightKg: number;
-  /** Las tres o ninguna, en centímetros. */
-  lengthCm?: number | null;
-  widthCm?: number | null;
-  heightCm?: number | null;
-  declaredValue?: number | null;
-}
-
-export interface Cotizacion {
-  realWeightKg: string;
-  volumetricWeightKg: string | null;
-  billableWeightKg: string;
-  billedBy: "real" | "volumetrico";
-  volumetricDivisor: number;
-  range: { fromKg: string; toKg: string; price: string };
-  declaredValue: string | null;
-  surchargePercent: string | null;
-  surcharge: string;
-  total: string;
-  currency: "PEN";
-}
-
-export interface PersonaEncomienda {
-  name: string;
-  documentType: DocumentoEncomienda;
-  documentNumber: string;
-  phone?: string;
-}
-
-/** POST /v1/encomiendas. Counter de la agencia de origen: registra y cobra. */
-export interface PedidoRegistro extends PedidoCotizacion {
-  sender: PersonaEncomienda & { whatsappOptIn?: boolean };
-  recipient: PersonaEncomienda;
-  receipt: { type: "boleta" | "factura"; ruc?: string; name?: string };
-  payment: { method: MedioPagoCaja; cashReceived?: number };
-}
-
-export interface Registro {
-  parcelId: string;
-  trackingCode: string;
-  quote: Cotizacion;
-  change: string | null;
-  status: ParcelStatus;
-}
-
-/** GET /v1/encomiendas/guia/:guia. Personal de la agencia de origen o de destino. */
-export interface DetalleEncomienda {
-  parcelId: string;
-  trackingCode: string;
-  origin: string;
-  destination: string;
-  status: ParcelStatus;
-  sender: { name: string; documentType: DocumentoEncomienda; documentNumber: string; phone: string | null };
-  recipient: {
-    name: string;
-    documentType: DocumentoEncomienda | null;
-    documentNumber: string | null;
-    phone: string | null;
-  };
-  quote: Cotizacion;
-  payment: { method: MedioPagoCaja; confirmedAt: string };
-  receipt: {
-    type: "boleta" | "factura";
-    status: "pendiente" | "emitido" | "rechazado" | "fallido" | "anulado";
-    series: string | null;
-    number: string | null;
-  };
-  cancellation: { at: string; reason: string; refundResolved: boolean } | null;
-  delivery: { at: string; deliveredBy: string; documentType: DocumentoEncomienda } | null;
-  events: ParcelTrackingResponse["events"];
-}
-
-/** Los estados que se marcan a mano, en orden. `entregada` va por la entrega. */
-export type EstadoManual = "alistando" | "en_camino" | "en_destino";
-
-// ----- Públicas
+import type { ParcelQuoteRequest as PedidoCotizacion, ParcelQuote as Cotizacion, RegisterParcelRequest as PedidoRegistro, RegisterParcelResponse as Registro, ParcelDetailResponse as DetalleEncomienda, ParcelStatusRequest, ParcelPerson as PersonaEncomienda } from "@/lib/types/contratos-panel";
+export type { ParcelQuoteRequest as PedidoCotizacion, ParcelQuote as Cotizacion, RegisterParcelRequest as PedidoRegistro, RegisterParcelResponse as Registro, ParcelDetailResponse as DetalleEncomienda, ParcelPerson as PersonaEncomienda } from "@/lib/types/contratos-panel";
+export type DocumentoEncomienda = NonNullable<PersonaEncomienda["documentType"]>;
+export type EstadoManual = ParcelStatusRequest["status"];
 
 export function cotizar(pedido: PedidoCotizacion, opciones: OpcionesPeticion = {}) {
   return pedirJson<Cotizacion>("encomiendas", "/v1/encomiendas/cotizacion", {
