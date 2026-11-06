@@ -1,218 +1,164 @@
 "use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Modal } from "@/components/ui/Modal";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { UrgenciaPill } from "@/components/ui/UrgenciaPill";
-import { ChevronLeftIcon, SearchOffIcon } from "@/components/ui/icons";
-import { formatFechaCorta } from "@/lib/format";
-import {
-  buscarUnidad,
-  labelTipoServicio,
-  diasRestantes,
-  nivelAlertaDocumento,
-  generarAlertasActivas,
-  alertasDeUnidad,
-  HISTORIAL_ATENDIDO_SEED,
-  type DocumentosUnidad,
-} from "@/lib/mock/flota";
-import { RUTAS } from "@/lib/routes";
-
-const NOMBRES_DOCUMENTO: Record<keyof DocumentosUnidad, string> = {
-  soat: "SOAT",
-  revisionTecnica: "Revisión técnica",
-  tarjetaCirculacion: "Tarjeta de circulación",
+import { EstadoFlota, useDatosFlota } from "@/components/panel/EstadoFlota";
+import { listarUnidades, listarAlertas, guardarUnidad, guardarDocumento, historialDocumento, coberturaDocumentos } from "@/lib/api/flota";
+import { mensajeFlota } from "@/lib/api/flota";
+import { DOCUMENTOS, nivelDocumento } from "@/lib/flota";
+import type { UnitView, UnitDocumentType, SaveUnitRequest, SaveUnitDocumentRequest, UnitDocumentHistoryResponse, UnitDocumentCoverageResponse } from "@/lib/types/contratos-panel";
+const cargar = async () => {
+  const [unidades, activas, atendidas] = await Promise.all([listarUnidades(), listarAlertas("activa"), listarAlertas("atendida")]);
+  return { unidades: unidades.units, alertas: [...activas.alerts, ...atendidas.alerts] };
 };
-
-export function UnidadDetalleView({ placa }: { placa: string }) {
-  const router = useRouter();
-  const unidad = buscarUnidad(placa);
-
-  const [umbralKilometraje, setUmbralKilometraje] = useState(unidad?.umbralKilometraje ?? 0);
-  const [editandoUmbral, setEditandoUmbral] = useState(false);
-  const [valorUmbral, setValorUmbral] = useState("");
-  const [error, setError] = useState<string | undefined>();
-
-  if (!unidad) {
-    return (
-      <EmptyState
-        icon={<SearchOffIcon />}
-        title="Unidad no encontrada"
-        description={`No existe ninguna unidad registrada con la placa ${placa}.`}
-        actionLabel="Volver a Flota"
-        onAction={() => router.push(RUTAS.panelFlota)}
-      />
-    );
+function Documentos({ unidad, recargar }: {
+  unidad: UnitView;
+  recargar: () => Promise<void>;
+}) {
+  const [tipo, setTipo] = useState<UnitDocumentType | null>(null);
+  const [numero, setNumero] = useState("");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+  const [motivo, setMotivo] = useState<SaveUnitDocumentRequest["reason"]>("renovacion");
+  const [historial, setHistorial] = useState<UnitDocumentHistoryResponse | null>(null);
+  const [fecha, setFecha] = useState("");
+  const [cobertura, setCobertura] = useState<UnitDocumentCoverageResponse | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+  const [aviso, setAviso] = useState("");
+  async function ejecutar(accion: () => Promise<void>) {
+    if (ocupado)
+      return;
+    setOcupado(true);
+    setError("");
+    setAviso("");
+    try {
+      await accion();
+    }
+    catch (e) {
+      setError(mensajeFlota(e).descripcion);
+    }
+    finally {
+      setOcupado(false);
+    }
   }
-
-  const documentos = Object.entries(unidad.documentos) as [keyof DocumentosUnidad, DocumentosUnidad[keyof DocumentosUnidad]][];
-
-  const sobreUmbral = unidad.kilometrajeAcumulado >= umbralKilometraje;
-
-  const historicoUnidad = [
-    ...alertasDeUnidad(unidad.placa, generarAlertasActivas()),
-    ...alertasDeUnidad(unidad.placa, HISTORIAL_ATENDIDO_SEED),
-  ].sort((a, b) => b.fechaEmision.getTime() - a.fechaEmision.getTime());
-
-  function abrirEdicionUmbral() {
-    setValorUmbral(String(umbralKilometraje));
-    setError(undefined);
-    setEditandoUmbral(true);
-  }
-
-  function guardarUmbral() {
-    const nuevo = Number(valorUmbral);
-    if (!valorUmbral.trim() || !Number.isFinite(nuevo) || nuevo <= 0) {
-      setError("Ingresa un kilometraje válido, mayor que 0");
+  async function guardar() {
+    if (!tipo || !numero.trim() || !desde || !hasta || hasta < desde) {
+      setError("Completa el número y un periodo de vigencia válido.");
       return;
     }
-    setUmbralKilometraje(nuevo);
-    setEditandoUmbral(false);
+    await ejecutar(async () => {
+      const cuerpo: SaveUnitDocumentRequest = { number: numero.trim(), validFrom: desde, expiresOn: hasta, ...(unidad.documents.some(d => d.type === tipo) ? { reason: motivo } : {}) };
+      const resultado = await guardarDocumento(unidad.unitId, tipo, cuerpo);
+      setTipo(null);
+      setHistorial(null);
+      setCobertura(null);
+      setAviso(resultado.result === "unchanged" ? "Los datos no cambiaron: no se creó una versión." : `Versión ${resultado.version} registrada.`);
+      await recargar();
+    });
   }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <Button variant="terciario" className="w-fit" onClick={() => router.push(RUTAS.panelFlota)}>
-        <ChevronLeftIcon />
-        Volver a Flota
-      </Button>
-
-      <div>
-        <h1 className="text-xl font-semibold text-navy sm:text-2xl">
-          {unidad.placa} · {unidad.modelo}
-        </h1>
-        <p className="mt-1 text-sm text-navy/70">
-          {labelTipoServicio(unidad.tipoServicio)} · {unidad.capacidad} asientos
-        </p>
-      </div>
-
-      <Card>
-        <h2 className="text-base font-semibold text-navy">Documentos</h2>
-        <p className="mt-1 text-sm text-navy/70">
-          SOAT, revisión técnica y tarjeta de circulación, con su fecha de vencimiento.
-        </p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-sm">
-            <thead>
-              <tr className="text-xs font-medium text-navy/60">
-                <th className="pb-2 font-medium">Documento</th>
-                <th className="pb-2 font-medium">Número</th>
-                <th className="pb-2 font-medium">Vencimiento</th>
-                <th className="pb-2 font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {documentos.map(([clave, documento]) => {
-                const dias = diasRestantes(documento.vencimiento);
-                const urgencia = nivelAlertaDocumento(dias);
-                return (
-                  <tr key={clave} className="border-t border-navy/10">
-                    <td className="py-2 text-navy">{NOMBRES_DOCUMENTO[clave]}</td>
-                    <td className="py-2 text-navy/70">{documento.numero}</td>
-                    <td className="py-2 text-navy/70">{formatFechaCorta(documento.vencimiento)}</td>
-                    <td className="py-2">
-                      {urgencia ? <UrgenciaPill urgencia={urgencia} /> : <span className="text-navy/50">Vigente</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+  return <section className="space-y-4">
+    <h2 className="text-lg font-semibold">Documentos versionados</h2>
+    <p>Renovar registra un documento nuevo. Corregir reemplaza datos mal digitados: la versión reemplazada por corrección no cuenta como cobertura, aunque se hubiera creído vigente ese día.</p>
+    {(Object.keys(DOCUMENTOS) as UnitDocumentType[]).map(t => {
+      const d = unidad.documents.find(d => d.type === t);
+      const nivel = d ? nivelDocumento(d.expiresOn) : null;
+      return <Card key={t} className="space-y-3">
+        <h3 className="font-semibold">{DOCUMENTOS[t]}</h3>{d ? <>
+          <p>{d.number} · versión {d.version} · {d.reason}</p>
+          <p>Vigencia: {d.validFrom} al {d.expiresOn}</p>{nivel && <UrgenciaPill urgencia={nivel} />}</> : <p>Sin documento registrado</p>}<div className="flex flex-wrap gap-3">
+          <Button variant="secundario" disabled={ocupado} onClick={() => { setTipo(t); setNumero(d?.number ?? ""); setDesde(d?.validFrom ?? ""); setHasta(d?.expiresOn ?? ""); setMotivo("renovacion"); setError(""); }}>{d ? "Renovar o corregir" : "Registrar documento"}</Button>
+          <Button variant="terciario" disabled={ocupado} onClick={() => { setHistorial(null); void ejecutar(async () => setHistorial(await historialDocumento(unidad.unitId, t))); }}>Ver historial</Button>
         </div>
-      </Card>
-
-      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-navy">Umbral de mantenimiento</h2>
-          <p className="mt-1 text-sm text-navy/70">
-            {unidad.kilometrajeAcumulado.toLocaleString("es-PE")} km acumulados de un umbral de{" "}
-            {umbralKilometraje.toLocaleString("es-PE")} km
-            {sobreUmbral ? " — superado." : "."}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {sobreUmbral && <UrgenciaPill urgencia="warning" />}
-          <Button variant="secundario" className="h-10 min-h-0 px-4 text-sm" onClick={abrirEdicionUmbral}>
-            Editar umbral
-          </Button>
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="text-base font-semibold text-navy">Histórico de alertas</h2>
-        <p className="mt-1 text-sm text-navy/70">Emitidas y atendidas para esta unidad.</p>
-
-        {historicoUnidad.length === 0 ? (
-          <p className="mt-4 text-sm text-navy/60">Esta unidad no tiene alertas registradas.</p>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="text-xs font-medium text-navy/60">
-                  <th className="pb-2 font-medium">Descripción</th>
-                  <th className="pb-2 font-medium">Emitida</th>
-                  <th className="pb-2 font-medium">Estado</th>
-                  <th className="pb-2 font-medium">Atendida por</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historicoUnidad.map((alerta) => (
-                  <tr key={alerta.id} className="border-t border-navy/10 align-top">
-                    <td className="py-2 text-navy">{alerta.descripcion}</td>
-                    <td className="py-2 whitespace-nowrap text-navy/70">{formatFechaCorta(alerta.fechaEmision)}</td>
-                    <td className="py-2">
-                      {alerta.estado === "activa" ? (
-                        <UrgenciaPill urgencia={alerta.urgencia} />
-                      ) : (
-                        <span className="text-success-text">Atendida</span>
-                      )}
-                    </td>
-                    <td className="py-2 text-navy/70">
-                      {alerta.estado === "atendida" ? (
-                        <>
-                          <p>{alerta.responsableAtencion}</p>
-                          <p className="text-xs text-navy/50">
-                            {alerta.fechaAtencion && formatFechaCorta(alerta.fechaAtencion)} · {alerta.notaAtencion}
-                          </p>
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <Modal
-        open={editandoUmbral}
-        onClose={() => setEditandoUmbral(false)}
-        title="Editar umbral de kilometraje"
-        footer={
-          <>
-            <Button variant="terciario" onClick={() => setEditandoUmbral(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={guardarUmbral}>Guardar</Button>
-          </>
-        }
-      >
-        <Input
-          label="Kilometraje para mantenimiento"
-          inputMode="numeric"
-          value={valorUmbral}
-          onChange={(evento) => setValorUmbral(evento.target.value)}
-          errorText={error}
-          helperText="A partir de este kilometraje, la unidad aparece en la bandeja de alertas."
-        />
-      </Modal>
-    </div>
-  );
+      </Card>;
+    })}
+    {historial && <Card className="space-y-3">
+      <h3 className="font-semibold">Historial · {DOCUMENTOS[historial.type]}</h3>{!historial.versions.length && <p>No hay versiones registradas.</p>}{historial.versions.map((v, i) => {
+        const corregida = i > 0 && historial.versions[i - 1].reason === "correccion";
+        return <div key={v.version} className="border-b border-border-default py-3">
+          <p>Versión {v.version} · {v.reason} · {v.number}</p>
+          <p>{v.validFrom} al {v.expiresOn}</p>
+          <p>Registrada: {new Date(v.registeredAt).toLocaleString("es-PE", { timeZone: "America/Lima" })} · Por: {v.registeredBy ?? "Carga administrativa"}</p>
+          <p>{v.replacedAt ? `Reemplazada: ${new Date(v.replacedAt).toLocaleString("es-PE", { timeZone: "America/Lima" })}` : "Versión vigente"}</p>{corregida && <p className="text-error-text">Versión corregida: excluida de cobertura.</p>}</div>;
+      })}</Card>}
+    <Card className="space-y-4">
+      <h3 className="font-semibold">Cobertura para fiscalización</h3>
+      <Input label="Fecha que se necesita verificar" type="date" value={fecha} onChange={e => { setFecha(e.target.value); setCobertura(null); }} />
+      <Button variant="secundario" isLoading={ocupado} disabled={!fecha} onClick={() => { setCobertura(null); void ejecutar(async () => setCobertura(await coberturaDocumentos(unidad.unitId, fecha))); }}>Consultar cobertura</Button>
+      <p>Consulta histórica del servidor. Las versiones corregidas quedan excluidas.</p>{cobertura && <div>
+        <p>Cobertura al {cobertura.date}</p>{cobertura.coverage.map(c => <p key={c.type} className={c.covered ? "text-success-text" : "text-error-text"}>{DOCUMENTOS[c.type]}: {c.covered ? `Con cobertura · ${c.document?.number} · versión ${c.document?.version} · ${c.document?.validFrom} al ${c.document?.expiresOn}` : "Sin cobertura"}</p>)}</div>}</Card>
+    {aviso && <p role="status">{aviso}</p>}{error && <p role="alert" className="text-error-text">{error}</p>}
+    <Modal open={tipo !== null} onClose={() => {
+      if (!ocupado)
+        setTipo(null);
+    }} title={tipo ? DOCUMENTOS[tipo] : "Documento"} footer={<>
+      <Button variant="terciario" disabled={ocupado} onClick={() => setTipo(null)}>Cancelar</Button>
+      <Button isLoading={ocupado} onClick={guardar}>Registrar versión</Button>
+    </>}>
+      <div className="space-y-4">
+        <Input label="Número de documento" value={numero} maxLength={40} onChange={e => setNumero(e.target.value)} />
+        <Input label="Vigente desde" type="date" value={desde} onChange={e => setDesde(e.target.value)} />
+        <Input label="Vence el" type="date" value={hasta} onChange={e => setHasta(e.target.value)} />{unidad.documents.some(d => d.type === tipo) && <Select label="Motivo" options={[{ value: "renovacion", label: "Renovación: documento nuevo" }, { value: "correccion", label: "Corrección: datos mal digitados" }]} value={motivo ?? null} onChange={v => setMotivo(v as SaveUnitDocumentRequest["reason"])} />}<p>Una corrección excluye la versión anterior de la cobertura histórica.</p>{error && <p role="alert" className="text-error-text">{error}</p>}</div>
+    </Modal>
+  </section>;
+}
+function Umbral({ unidad: u, recargar }: {
+  unidad: UnitView;
+  recargar: () => Promise<void>;
+}) {
+  const [valor, setValor] = useState(u.mileageThresholdKm?.toString() ?? "");
+  const [marca, setMarca] = useState(u.make ?? "");
+  const [ocupado, setOcupado] = useState(false);
+  const [aviso, setAviso] = useState("");
+  async function guardar() {
+    if (valor !== "" && (!Number.isSafeInteger(Number(valor)) || Number(valor) <= 0)) {
+      setAviso("Ingresa kilómetros enteros mayores que cero o deja vacío.");
+      return;
+    }
+    if (!marca.trim()) {
+      setAviso("La unidad no tiene marca registrada. Se necesita completar ese dato en el maestro antes de guardar el umbral.");
+      return;
+    }
+    setOcupado(true);
+    setAviso("");
+    try {
+      const cuerpo: SaveUnitRequest = { plate: u.plate, make: marca.trim(), model: u.model, capacity: u.capacity, serviceType: u.serviceType, authorizationNumber: u.authorizationNumber, mileageThresholdKm: valor === "" ? null : Number(valor) };
+      await guardarUnidad(u.unitId, cuerpo);
+      setAviso("Umbral guardado en el servidor.");
+      await recargar();
+    }
+    catch (e) {
+      setAviso(mensajeFlota(e).descripcion);
+    }
+    finally {
+      setOcupado(false);
+    }
+  }
+  return <Card className="space-y-4">
+    <h2 className="font-semibold">Umbral de kilometraje</h2>
+    <p>{u.mileageKm.toLocaleString("es-PE")} km acumulados</p>{!u.make && <Input label="Marca de la unidad" value={marca} maxLength={60} onChange={e => setMarca(e.target.value)} helperText="Completa el dato faltante para guardar la unidad." />}<Input label="Alertar desde (km)" type="number" value={valor} onChange={e => setValor(e.target.value)} helperText="Vacío: sin alerta por kilometraje. Persiste al recargar." />
+    <Button variant="secundario" isLoading={ocupado} onClick={guardar}>Guardar umbral</Button>{aviso && <p role="status">{aviso}</p>}</Card>;
+}
+export function UnidadDetalleView({ placa }: {
+  placa: string;
+}) {
+  const estado = useDatosFlota(cargar);
+  const unidad = estado.datos?.unidades.find(u => u.plate.toUpperCase() === placa.toUpperCase());
+  return <div className="space-y-6">
+    <Link className="inline-flex min-h-11 items-center text-secondary" href="/panel/flota">Volver a flota</Link>
+    <h1 className="text-xl font-semibold text-navy">Unidad {placa}</h1>{estado.cargando || estado.error || !unidad ? <EstadoFlota {...estado} /> : <>
+      <p>{unidad.make} · {unidad.model} · {unidad.capacity} asientos</p>
+      <Umbral unidad={unidad} recargar={estado.recargar} />
+      <Documentos unidad={unidad} recargar={estado.recargar} />
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Histórico de alertas</h2>{!estado.datos?.alertas.some(a => a.unitId === unidad.unitId) && <p>Sin alertas emitidas para esta unidad.</p>}{estado.datos?.alertas.filter(a => a.unitId === unidad.unitId).map(a => <Card key={a.alertId}>
+          <UrgenciaPill urgencia={a.level} />
+          <p>{a.description}</p>
+          <p>Observado: {a.observedValue} · Emitida: {new Date(a.issuedAt).toLocaleString("es-PE", { timeZone: "America/Lima" })} · {a.status}</p>{a.attention && <p>{a.attention.responsible}: {a.attention.note}</p>}</Card>)}</section>
+    </>}</div>;
 }
