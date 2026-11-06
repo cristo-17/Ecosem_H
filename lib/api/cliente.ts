@@ -53,7 +53,7 @@ export interface OpcionesPeticion {
   onReintento?: (aviso: AvisoReintento) => void;
 }
 
-export type Servicio = "ventas" | "encomiendas";
+export type Servicio = "ventas" | "encomiendas" | "flota";
 
 // Holgado a propósito: la señal en los terminales de altura es lenta, y
 // cortar antes solo cambiaría "lento" por "falló".
