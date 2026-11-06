@@ -1,148 +1,102 @@
 "use client";
-
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Modal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SearchOffIcon } from "@/components/ui/icons";
 import { formatPrecio } from "@/lib/format";
-import { etiquetaRuta, type TarifaRuta } from "@/lib/mock/precios";
-
-export interface TablaRutasProps {
-  rutas: TarifaRuta[];
-  onGuardar: (rutaActualizada: TarifaRuta, rutaAnterior: TarifaRuta) => void;
-}
-
-interface Borrador {
-  tarifaBase: string;
-  topeMinimo: string;
-  topeMaximo: string;
-}
-
-function aBorrador(ruta: TarifaRuta): Borrador {
-  return {
-    tarifaBase: String(ruta.tarifaBase),
-    topeMinimo: String(ruta.topeMinimo),
-    topeMaximo: String(ruta.topeMaximo),
-  };
-}
-
-export function TablaRutas({ rutas, onGuardar }: TablaRutasProps) {
-  const [editando, setEditando] = useState<TarifaRuta | null>(null);
-  const [borrador, setBorrador] = useState<Borrador>({ tarifaBase: "", topeMinimo: "", topeMaximo: "" });
-  const [errores, setErrores] = useState<Partial<Record<keyof Borrador, string>>>({});
-
-  function abrirEdicion(ruta: TarifaRuta) {
-    setEditando(ruta);
-    setBorrador(aBorrador(ruta));
-    setErrores({});
+import { mensajePrecios } from "@/lib/api/precios";
+import type { FareListResponse, SaveFareRequest } from "@/lib/types/contratos-panel";
+export function TablaRutas({ rutas, onGuardar, recargar }: {
+  rutas: FareListResponse["fares"];
+  onGuardar: (ruta: string, cuerpo: SaveFareRequest) => Promise<void>;
+  recargar: () => void;
+}) {
+  const [editando, setEditando] = useState<FareListResponse["fares"][number] | null>(null);
+  const [base, setBase] = useState("");
+  const [minimo, setMinimo] = useState("");
+  const [maximo, setMaximo] = useState("");
+  const [ficticia, setFicticia] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  async function guardar() {
+    if (!editando || guardando)
+      return;
+    const numeros = [base, minimo, maximo].map(Number);
+    if ([base, minimo, maximo].some(v => !v.trim()) || numeros.some(n => !Number.isFinite(n) || n <= 0)) {
+      setError("Completa tarifa base, mínimo y máximo con importes mayores que cero.");
+      return;
+    }
+    if (numeros[1] > numeros[0] || numeros[0] > numeros[2]) {
+      setError("La tarifa base debe estar entre el mínimo y el máximo.");
+      return;
+    }
+    setGuardando(true);
+    setError("");
+    try {
+      const cuerpo: SaveFareRequest = { baseFare: numeros[0], minFare: numeros[1], maxFare: numeros[2], fictitious: ficticia };
+      await onGuardar(editando.route, cuerpo);
+      setEditando(null);
+    }
+    catch (e) {
+      setError(mensajePrecios(e).descripcion);
+    }
+    finally {
+      setGuardando(false);
+    }
   }
-
-  function guardar() {
-    if (!editando) return;
-
-    const tarifaBase = Number(borrador.tarifaBase);
-    const topeMinimo = Number(borrador.topeMinimo);
-    const topeMaximo = Number(borrador.topeMaximo);
-    const nuevosErrores: Partial<Record<keyof Borrador, string>> = {};
-
-    if (!borrador.tarifaBase.trim() || !Number.isFinite(tarifaBase) || tarifaBase <= 0) {
-      nuevosErrores.tarifaBase = "Ingresa una tarifa base válida";
-    }
-    if (!borrador.topeMinimo.trim() || !Number.isFinite(topeMinimo) || topeMinimo <= 0) {
-      nuevosErrores.topeMinimo = "Ingresa un tope mínimo válido";
-    }
-    // Regla obligatoria del prompt: ninguna ruta se guarda sin tope máximo.
-    if (!borrador.topeMaximo.trim() || !Number.isFinite(topeMaximo) || topeMaximo <= 0) {
-      nuevosErrores.topeMaximo = "El tope máximo es obligatorio";
-    } else if (Number.isFinite(topeMinimo) && topeMaximo < topeMinimo) {
-      nuevosErrores.topeMaximo = "Debe ser mayor o igual al tope mínimo";
-    }
-
-    setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0) return;
-
-    onGuardar({ ...editando, tarifaBase, topeMinimo, topeMaximo }, editando);
-    setEditando(null);
-  }
-
-  return (
-    <Card>
-      <h2 className="text-base font-semibold text-navy">Tarifas por ruta</h2>
-      <p className="mt-1 text-sm text-navy/70">
-        El tope máximo es obligatorio: sin él, la ruta no se puede guardar.
-      </p>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[520px] text-left text-sm">
+  return <Card className="space-y-4">
+    <h2 className="text-base font-semibold text-navy">Tarifas por ruta</h2>
+    <p className="text-sm text-text-secondary">El máximo es obligatorio. La marca «Ficticia» identifica importes de prueba; editar un importe no elimina esa marca automáticamente.</p>
+    {!rutas.length ? <EmptyState icon={<SearchOffIcon className="size-8" />} title="No hay rutas disponibles" description="Actualiza la consulta o pide que se registre una ruta en el catálogo." actionLabel="Actualizar consulta" onAction={recargar} /> :
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
           <thead>
-            <tr className="text-xs font-medium text-navy/60">
-              <th className="pb-2 font-medium">Ruta</th>
-              <th className="pb-2 font-medium">Tarifa base</th>
-              <th className="pb-2 font-medium">Tope mínimo</th>
-              <th className="pb-2 font-medium">Tope máximo</th>
-              <th className="pb-2 font-medium" />
+            <tr>
+              <th className="p-3">Ruta</th>
+              <th className="p-3">Base</th>
+              <th className="p-3">Mínimo</th>
+              <th className="p-3">Máximo</th>
+              <th className="p-3">Datos</th>
+              <th className="p-3">
+                <span className="sr-only">Acciones</span>
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {rutas.map((ruta) => (
-              <tr key={ruta.id} className="border-t border-navy/10">
-                <td className="py-2 text-navy">{etiquetaRuta(ruta)}</td>
-                <td className="py-2 text-navy">{formatPrecio(ruta.tarifaBase)}</td>
-                <td className="py-2 text-navy/70">{formatPrecio(ruta.topeMinimo)}</td>
-                <td className="py-2 text-navy/70">{formatPrecio(ruta.topeMaximo)}</td>
-                <td className="py-2 text-right">
-                  <Button
-                    variant="secundario"
-                    className="h-9 min-h-0 px-3 text-xs"
-                    onClick={() => abrirEdicion(ruta)}
-                  >
-                    Editar
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          <tbody>{rutas.map(r => <tr key={r.route} className="border-t border-border-default">
+            <th scope="row" className="p-3 font-medium">{r.route}</th>
+            {[r.baseFare, r.minFare, r.maxFare].map((importe, i) => <td key={i} className="p-3 whitespace-nowrap">{importe === null ? "Sin definir" : formatPrecio(Number(importe))}</td>)}
+            <td className="p-3">{r.fictitious ? <span className="rounded-sm bg-warning-fill px-3 py-1 text-warning-text">Ficticia</span> : "Sin marca de prueba"}</td>
+            <td className="p-3">
+              <Button variant="secundario" onClick={() => {
+                setEditando(r);
+                setBase(r.baseFare ?? "");
+                setMinimo(r.minFare ?? "");
+                setMaximo(r.maxFare ?? "");
+                setFicticia(r.fictitious);
+                setError("");
+              }}>{r.baseFare === null ? "Definir tarifa" : "Editar"}</Button>
+            </td>
+          </tr>)}</tbody>
         </table>
+      </div>}
+    <Modal open={!!editando} title={`Tarifa · ${editando?.route ?? ""}`} onClose={() => {
+      if (!guardando)
+        setEditando(null);
+    }} footer={<>
+      <Button variant="terciario" disabled={guardando} onClick={() => setEditando(null)}>Cancelar</Button>
+      <Button isLoading={guardando} onClick={guardar}>Guardar tarifa</Button>
+    </>}>
+      <div className="space-y-4">
+        <Input label="Tarifa base (S/)" inputMode="decimal" value={base} onChange={e => setBase(e.target.value)} />
+        <Input label="Tope mínimo (S/)" inputMode="decimal" value={minimo} onChange={e => setMinimo(e.target.value)} />
+        <Input label="Tope máximo (S/)" inputMode="decimal" value={maximo} onChange={e => setMaximo(e.target.value)} helperText="Obligatorio para guardar la ruta." />
+        <Checkbox label="Tarifa ficticia (de prueba)" checked={ficticia} onChange={e => setFicticia(e.target.checked)} disabled={guardando} />
+        {error && <p role="alert" className="text-error-text">{error}</p>}
       </div>
-
-      <Modal
-        open={editando !== null}
-        onClose={() => setEditando(null)}
-        title={editando ? `Editar ${etiquetaRuta(editando)}` : "Editar ruta"}
-        footer={
-          <>
-            <Button variant="terciario" onClick={() => setEditando(null)}>
-              Cancelar
-            </Button>
-            <Button onClick={guardar}>Guardar</Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4 text-left">
-          <Input
-            label="Tarifa base (S/)"
-            inputMode="decimal"
-            value={borrador.tarifaBase}
-            onChange={(evento) => setBorrador((prev) => ({ ...prev, tarifaBase: evento.target.value }))}
-            errorText={errores.tarifaBase}
-          />
-          <Input
-            label="Tope mínimo (S/)"
-            inputMode="decimal"
-            value={borrador.topeMinimo}
-            onChange={(evento) => setBorrador((prev) => ({ ...prev, topeMinimo: evento.target.value }))}
-            errorText={errores.topeMinimo}
-          />
-          <Input
-            label="Tope máximo (S/)"
-            inputMode="decimal"
-            value={borrador.topeMaximo}
-            onChange={(evento) => setBorrador((prev) => ({ ...prev, topeMaximo: evento.target.value }))}
-            errorText={errores.topeMaximo}
-            helperText="Obligatorio: evita exponer a la empresa ante Indecopi por abuso de precio."
-          />
-        </div>
-      </Modal>
-    </Card>
-  );
+    </Modal>
+  </Card>;
 }

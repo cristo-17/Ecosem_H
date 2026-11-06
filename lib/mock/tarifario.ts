@@ -1,7 +1,6 @@
 /**
  * Tarifario de encomiendas y exceso de equipaje (docs/prompts/13-tarifario-encomiendas.md).
- * A diferencia de otros mocks de este proyecto (p. ej. `lib/mock/precios.ts`,
- * que sí trae valores placeholder editables), acá el prompt es explícito:
+ * El prompt original es explícito:
  * "mientras comercial no defina los montos, los campos quedan vacíos... no
  * rellenar con cifras inventadas". Por eso `TARIFARIO_ENCOMIENDA_INICIAL`
  * arranca sin rangos y los recargos empiezan en `null` — el supervisor los
@@ -16,8 +15,7 @@ export interface RutaEncomienda {
   destino: Ciudad;
 }
 
-// Mismos 3 pares que ya existen para pasajes (lib/mock/precios.ts): las
-// únicas combinaciones posibles entre las 3 ciudades que cubre la empresa.
+// Referencia local de los 3 pares entre las ciudades del mock de viajes.
 export const RUTAS_ENCOMIENDA: RutaEncomienda[] = [
   { id: "lima-huancayo", origen: "Lima", destino: "Huancayo" },
   { id: "lima-cerro-de-pasco", origen: "Lima", destino: "Cerro de Pasco" },

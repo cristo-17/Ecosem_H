@@ -7,6 +7,16 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 
 ---
 
+## F-008 · Precios y tarifario aparentaban guardar cambios que no llegaban al cobro
+
+**Estado:** precios conectado y edición de tarifario bloqueada (05/11/2026).
+**Síntoma:** el supervisor podía guardar tarifas y factores, o editar el tarifario, mientras el backend seguía cotizando con otra configuración. El historial local atribuía los cambios a Carlos Mendoza Ruiz.
+**Causa real:** precios solo actualizaba estado de React; tarifario escribía un singleton en memoria compartido con el cotizador público de esa pestaña. Ninguna acción persistía los cambios. El autor del historial venía de `USUARIO_MOCK.nombre`, sin relación con el usuario real (no intervenía en permisos).
+**Solución:** precios usa GET/PUT de tarifas, GET/POST/PUT de factores y GET de auditoría del servicio. Rangos [desde, hasta), temporadas por fecha, marcas ficticias visibles y vacío legítimo sin semillas. El simulador consulta la cotización real del viaje. Se borraron los mocks de precios y sesión. Tarifario queda solo lectura con aviso de desconexión y sin acciones de edición mientras faltan sus contratos; no se conectó en esta tarea. Se retiró la frase sobre reservas nuevas: no se repone sin comprobar el monto de una reserva viva tras cambiar una tarifa.
+**Cómo detectarlo:** observar las peticiones al guardar, volver a consultar y recargar; contrastar userId de auditoría y precio del servidor. QA de navegador con servicio fixture verifica errores, reconsulta tras guardar, bordes sin conversión, fechas inclusivas, marcas ficticias y ausencia de controles de escritura en tarifario. No sustituye una prueba autenticada contra EcosemH.
+
+---
+
 ## F-007 · El alta de supervisor exige agencia en el backend
 **Estado:** resuelto en contrato y frontend (05/11/2026); prueba autenticada pendiente.
 **Síntoma:** POST /v1/personal rechaza supervisor sin agencia, aunque el requisito lo permite.

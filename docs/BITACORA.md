@@ -5,6 +5,28 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 05/11/2026 (cont. 6) · Motor de precios conectado; tarifario sin guardados locales
+
+**Rama:** `feature/motor-de-precios`, desde `main` actualizado con `git pull` (8b0c44f). Árbol limpio al empezar. Sin commits.
+
+- Leídos CLAUDE.md, skill ecosem-design-system y ESTADO.md antes de modificar archivos; revisados styleguide, componentes UI, guía local de Next, FALLOS.md y validaciones/rutas del backend. Se reutilizan los contratos generados sin alterarlos ni redeclararlos.
+- `/panel/precios` carga tarifas, factores y auditoría por los tres GET de svc-ventas con token de cuenta. Guarda tarifas mediante PUT; factores mediante POST/PUT, incluyendo activo y ficticio. El modal solo se cierra tras respuesta correcta; si falla la escritura conserva los campos y muestra el error. Tras guardar reconsulta configuración y auditoría: si esa lectura falla, informa del guardado confirmado y permite reintentar solo la consulta, sin duplicar la escritura.
+- Rangos numéricos [desde, hasta), con límite superior vacío enviado como null. Sin sumar/restar uno ni convertir rangos inclusivos del mock. Temporadas con fechas de salida, ambas incluidas, incluso un solo día. Formularios para crear y editar factores y para activarlos/desactivarlos. No se rellenan factores cuando el servidor devuelve vacío: se explica ×1 y tarifa base con topes.
+- Marca fictitious visible por tarifa y por factor, en edición y en listado. Se preserva al guardar salvo cambio explícito del supervisor. Aviso general para tarifas de prueba y señal fictitious en la cotización del simulador.
+- El simulador anterior duplicaba el motor con semillas. Ahora consulta viajes reales por ruta/fecha y GET `/v1/viajes/:id/precio`: muestra factores aplicados, ausencia de factor (×1), ocupación, días, subtotal, topes y precio. No calcula ni reserva en el navegador.
+- Historial exclusivamente de GET `/v1/auditoria-tarifas`, con userId del autor, fecha/hora de Perú, registro y datos anterior/posterior. Se borraron `lib/mock/precios.ts` y `lib/mock/sesion.ts` sin consumidores; limpiadas referencias históricas a esos archivos en comentarios de `lib/mock/tarifario.ts`. La guardia anidada de supervisor permanece intacta.
+- Retirada la frase «Los cambios de acá solo aplican a reservas nuevas». No se repone: no se ejecutó la prueba autenticada de cambiar una tarifa con una reserva viva y confirmar su monto. No se hicieron escrituras contra EcosemH.
+- `/panel/tarifario` no se conecta: ya no monta formularios ni callbacks que escriban en el singleton. Sin Editar, Agregar, Quitar ni Guardar. Aviso visible de pantalla no conectada y cambios no aplicados al cobro real; los valores se identifican como referencia local. No se modificaron el cotizador público ni el backend de tarifario; sus contratos pendientes los atiende otra sesión.
+- F-008 registra el problema de guardados aparentes y la solución.
+
+**QA ejecutada:** harness local de navegador a 390×844 con componentes y adaptador HTTP reales, token de prueba sustituido solo en el harness y servidor fixture aislado en 127.0.0.1:58431. Verificados: tres vacíos legítimos, marcas ficticias, error que conserva formulario, PUT de tarifa y persistencia en servidor fixture tras recargar, auditoría con userId; creación de rangos contiguos [0,50)/[50,sin límite) y [0,2)/[2,sin límite), edición por PUT sin alterar el borde, desactivar factor, temporada de un día, cotización leída del servidor fixture; fallo de lectura después de guardar sin repetir escritura, sesión vencida y tarifario sin botones/formularios/escrituras. Nueve intentos de escritura controlados en fixture; cero errores JS. Archivos auxiliares solo en `.qa-tmp/` ignorado. Esta prueba no demuestra persistencia autenticada en EcosemH ni el congelamiento de una reserva real.
+
+**Checks finales:** `npx.cmd tsc --noEmit && npx.cmd eslint . && npm.cmd run build` terminó con exit 0. Corregida una advertencia del loader de QA y repetido ESLint: cero errores y solo las tres advertencias preexistentes de datepicker en `.qa-tmp/`. Build correcto, contratos sin diff y `git diff --check` sin errores. Se ejecutaron `git status --short` y su variante `--untracked-files=all`: el único archivo nuevo de código es `lib/api/precios.ts` y debe incluirse al commitear junto con los modificados y las dos eliminaciones de mocks.
+
+**Pendiente operativo:** prueba autenticada con supervisor en ambiente de prueba; comprobación de reserva viva antes de reponer la frase. No se agregaron dependencias ni se cambiaron contratos.
+
+---
+
 ## 05/11/2026 (cont. 5) · Flota y alertas contra svc-flota
 
 **Rama:** `feature/flota-y-alertas`, creada después de `git switch main` y `git pull` (main actualizado). Sin commits. Se conserva el cambio previo de `app/panel/layout.tsx` sin modificarlo en esta tarea.
