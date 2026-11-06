@@ -20,7 +20,7 @@ export default async function ResultadosPasajesPage(props: PageProps<"/pasajes/r
   const origen = origenParam?.trim();
   const destino = destinoParam?.trim();
   if (!origen || !destino) redirect(RUTAS.inicio);
-  // Sin fecha (p. ej. desde Rutas populares) se busca hoy, hora de Perú.
+  // Sin fecha (p. ej. desde Nuestras rutas) se busca hoy, hora de Perú.
   const fecha = esFechaBusqueda(fechaParam) ? fechaParam : hoyEnPeru();
   const pasajerosParam = Number(primerValor(searchParams.pasajeros));
   const pasajerosCount = Number.isInteger(pasajerosParam) && pasajerosParam > 0 ? pasajerosParam : 1;

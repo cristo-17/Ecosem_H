@@ -12,12 +12,8 @@ import { TripCard } from "@/components/ui/TripCard";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
 import { SearchOffIcon, ExclamationIcon } from "@/components/ui/icons";
-import {
-  franjaHoraria,
-  labelTipoAsiento,
-  FRANJAS_HORARIAS,
-  TIPOS_ASIENTO,
-} from "@/lib/mock/viajes";
+import { franjaHoraria, FRANJAS_HORARIAS } from "@/lib/horarios";
+import { labelTipoServicio, TIPOS_SERVICIO } from "@/lib/servicios";
 import { RUTAS } from "@/lib/routes";
 import { formatFechaLarga } from "@/lib/format";
 import {
@@ -64,7 +60,7 @@ const OPCIONES_HORARIO: SelectOption[] = [
 
 const OPCIONES_SERVICIO: SelectOption[] = [
   { value: "todos", label: "Todos los servicios" },
-  ...TIPOS_ASIENTO,
+  ...TIPOS_SERVICIO,
 ];
 
 export interface ResultadosViewProps {
@@ -270,7 +266,7 @@ export function ResultadosView({
                 }
                 llegadaAproximada={viaje.arrivalProvisional}
                 asientosDisponibles={viaje.availableSeats}
-                tipoAsiento={labelTipoAsiento(viaje.serviceType)}
+                tipoAsiento={labelTipoServicio(viaje.serviceType)}
                 // Informativo: el precio que vale es el que congela la reserva.
                 precio={viaje.unitPrice !== null ? Number(viaje.unitPrice) : null}
                 selected={seleccionadoId === viaje.id}

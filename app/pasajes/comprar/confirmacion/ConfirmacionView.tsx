@@ -32,7 +32,7 @@ import {
 import { vincularComprasDeEstaPestana } from "@/lib/api/cuenta";
 import { etiquetaAsiento } from "@/lib/asientos";
 import { formatFechaLarga, formatHora12, formatPrecio, maskDocumento } from "@/lib/format";
-import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { labelTipoServicio } from "@/lib/servicios";
 import { descargarBoletosCompraPdf } from "@/lib/pdf/boleto";
 import { RUTAS } from "@/lib/routes";
 import { useIsMounted } from "@/lib/useIsMounted";
@@ -219,7 +219,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
     try {
       await descargarBoletosCompraPdf(boletos, {
         terminalOrigen: elegido?.terminalOrigen,
-        tipoServicio: elegido ? labelTipoAsiento(elegido.viaje.serviceType) : undefined,
+        tipoServicio: elegido ? labelTipoServicio(elegido.viaje.serviceType) : undefined,
       });
     } finally {
       setGenerandoPdf(false);
