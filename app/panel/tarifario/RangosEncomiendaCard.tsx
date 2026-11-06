@@ -1,159 +1,87 @@
 "use client";
-
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ScaleIcon } from "@/components/ui/icons";
 import { formatPrecio } from "@/lib/format";
-import type { RangoTarifaEncomienda } from "@/lib/mock/tarifario";
-
-export interface RangosEncomiendaCardProps {
+import { leerMonto } from "@/lib/api/caja";
+import { mensajeTarifario } from "@/lib/api/tarifario";
+import type { ParcelRatesResponse, SaveParcelRatesRequest } from "@/lib/types/contratos-panel";
+export function RangosEncomiendaCard({ titulo, ruta, onGuardar }: {
   titulo: string;
-  rangos: RangoTarifaEncomienda[];
-  onCambiar: (rangos: RangoTarifaEncomienda[]) => void;
-}
-
-function nuevoId(): string {
-  return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-}
-
-/**
- * Rangos de peso editables para una ruta de encomiendas. Arranca vacío
- * (docs/prompts/13-tarifario-encomiendas.md: "no rellenar con cifras
- * inventadas") — el supervisor agrega cada rango con su hasta-kg y precio,
- * en vez de editar valores ya puestos como en TablaFactores (precios.ts).
- */
-export function RangosEncomiendaCard({ titulo, rangos, onCambiar }: RangosEncomiendaCardProps) {
-  const [editandoId, setEditandoId] = useState<string | null | "nuevo">(null);
-  const [hastaKg, setHastaKg] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [error, setError] = useState<string | undefined>();
-
-  const rangosOrdenados = [...rangos].sort((a, b) => a.hastaKg - b.hastaKg);
-  const editando = editandoId && editandoId !== "nuevo" ? rangos.find((r) => r.id === editandoId) ?? null : null;
-
-  function abrirNuevo() {
-    setEditandoId("nuevo");
-    setHastaKg("");
-    setPrecio("");
-    setError(undefined);
+  ruta: ParcelRatesResponse["routes"][number];
+  onGuardar: (pedido: SaveParcelRatesRequest) => Promise<void>;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [borrador, setBorrador] = useState<Array<{
+    hasta: string;
+    precio: string;
+  }>>([]);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  function abrir() {
+    setBorrador(ruta.ranges.map(r => ({ hasta: r.toKg, precio: r.price })));
+    setError("");
+    setAbierto(true);
   }
-
-  function abrirEditar(rango: RangoTarifaEncomienda) {
-    setEditandoId(rango.id);
-    setHastaKg(String(rango.hastaKg));
-    setPrecio(String(rango.precio));
-    setError(undefined);
+  function editar(i: number, campo: "hasta" | "precio", valor: string) {
+    setBorrador(prev => prev.map((r, j) => i === j ? { ...r, [campo]: valor } : r));
   }
-
-  function cerrar() {
-    setEditandoId(null);
-  }
-
-  function quitar(id: string) {
-    onCambiar(rangos.filter((rango) => rango.id !== id));
-  }
-
-  function guardar() {
-    const nuevoHastaKg = Number(hastaKg);
-    const nuevoPrecio = Number(precio);
-
-    if (!hastaKg.trim() || !Number.isFinite(nuevoHastaKg) || nuevoHastaKg <= 0) {
-      setError("Ingresa un límite de peso válido, mayor que 0");
+  async function guardar() {
+    if (guardando)
       return;
+    const ranges: SaveParcelRatesRequest["ranges"] = [];
+    for (const r of borrador) {
+      const toKg = leerMonto(r.hasta), price = leerMonto(r.precio);
+      if (toKg === null || toKg <= 0 || price === null || price <= 0 || (ranges.length > 0 && toKg <= ranges[ranges.length - 1].toKg)) {
+        setError("Ingresa topes de peso mayores que cero, en orden creciente y sin repetir, y precios mayores que cero (hasta dos decimales).");
+        return;
+      }
+      ranges.push({ toKg, price });
     }
-    if (!precio.trim() || !Number.isFinite(nuevoPrecio) || nuevoPrecio <= 0) {
-      setError("Ingresa un precio válido, mayor que 0");
-      return;
+    setGuardando(true);
+    setError("");
+    try {
+      await onGuardar({ origin: ruta.origin, destination: ruta.destination, ranges });
+      setAbierto(false);
     }
-    const yaExiste = rangos.some((r) => r.hastaKg === nuevoHastaKg && r.id !== editandoId);
-    if (yaExiste) {
-      setError("Ya existe un rango con ese límite de peso");
-      return;
+    catch (e) {
+      setError(mensajeTarifario(e).descripcion);
     }
-
-    if (editandoId === "nuevo") {
-      onCambiar([...rangos, { id: nuevoId(), hastaKg: nuevoHastaKg, precio: nuevoPrecio }]);
-    } else if (editandoId) {
-      onCambiar(rangos.map((r) => (r.id === editandoId ? { ...r, hastaKg: nuevoHastaKg, precio: nuevoPrecio } : r)));
+    finally {
+      setGuardando(false);
     }
-    cerrar();
   }
-
-  return (
-    <Card>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-navy">{titulo}</h3>
-        <Button variant="secundario" className="h-9 min-h-0 px-3 text-xs" onClick={abrirNuevo}>
-          Agregar rango
-        </Button>
+  return <Card className="space-y-4">
+    <h3 className="font-semibold text-navy">{titulo}</h3>
+    {ruta.fictitious && <p className="rounded-md bg-warning-fill p-3 text-warning-text">Tarifario ficticio de prueba. No es una tarifa comercial aprobada.</p>}
+    {ruta.ranges.length ? <>
+      <div className="space-y-2">{ruta.ranges.map(r => <p key={r.toKg}>Desde {r.fromKg} hasta {r.toKg} kg · {formatPrecio(Number(r.price))}</p>)}</div>
+      <Button variant="secundario" onClick={abrir}>Editar rangos de ruta</Button>
+    </> : <EmptyState icon={<ScaleIcon className="size-8" />} title="La empresa todavía no definió montos" description="Sin tarifa no se puede cotizar ni registrar una encomienda para esta ruta. No se cobra a ojo." actionLabel="Definir rangos de ruta" onAction={abrir} />}
+    <Modal open={abierto} title={`Rangos · ${titulo}`} preventDismiss={guardando} onClose={() => {
+      if (!guardando)
+        setAbierto(false);
+    }} footer={<>
+      <Button variant="terciario" disabled={guardando} onClick={() => setAbierto(false)}>Cancelar</Button>
+      <Button isLoading={guardando} onClick={guardar}>{borrador.length ? "Guardar conjunto de rangos" : "Guardar ruta sin rangos"}</Button>
+    </>}>
+      <div className="space-y-4">
+        <p>Guardar reemplaza todos los rangos de esta ruta. El primer rango comienza en 0 kg; cada tope es inclusivo. Los siguientes comienzan por encima del tope anterior.</p>
+        {ruta.fictitious && <p className="rounded-md bg-warning-fill p-3 text-warning-text">Guardar estos montos los configura como definidos por la empresa y quita su marca de prueba.</p>}
+        {borrador.map((r, i) => <fieldset key={i} className="space-y-3 border-b border-border-default pb-4">
+          <legend className="font-medium">Rango {i + 1}</legend>
+          <Input label={`Hasta (kg) · rango ${i + 1}`} inputMode="decimal" value={r.hasta} readOnly={guardando} onChange={e => editar(i, "hasta", e.target.value)} />
+          <Input label={`Precio (S/) · rango ${i + 1}`} inputMode="decimal" value={r.precio} readOnly={guardando} onChange={e => editar(i, "precio", e.target.value)} />
+          <Button variant="terciario" disabled={guardando} onClick={() => setBorrador(prev => prev.filter((_, j) => j !== i))}>Quitar rango {i + 1} del conjunto</Button>
+        </fieldset>)}
+        <Button variant="secundario" disabled={guardando || borrador.length >= 50} onClick={() => setBorrador(prev => [...prev, { hasta: "", precio: "" }])}>Agregar rango</Button>
+        {!borrador.length && <p className="rounded-md bg-warning-fill p-3 text-warning-text">Se eliminarán todos los rangos de esta ruta. Sin tarifa no se puede cotizar ni registrar.</p>}
+        {error && <p role="alert" className="text-error-text">{error}</p>}
       </div>
-
-      {rangosOrdenados.length === 0 ? (
-        <div className="mt-3 rounded-md bg-warning-fill p-3 text-sm text-warning-text">
-          Pendiente de aprobación comercial: todavía no hay rangos de peso definidos para esta ruta.
-        </div>
-      ) : (
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[360px] text-left text-sm">
-            <thead>
-              <tr className="text-xs font-medium text-navy/60">
-                <th className="pb-2 font-medium">Hasta</th>
-                <th className="pb-2 font-medium">Precio</th>
-                <th className="pb-2 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {rangosOrdenados.map((rango) => (
-                <tr key={rango.id} className="border-t border-navy/10">
-                  <td className="py-2 text-navy">{rango.hastaKg} kg</td>
-                  <td className="py-2 text-navy">{formatPrecio(rango.precio)}</td>
-                  <td className="py-2 text-right whitespace-nowrap">
-                    <Button variant="secundario" className="h-9 min-h-0 px-3 text-xs" onClick={() => abrirEditar(rango)}>
-                      Editar
-                    </Button>{" "}
-                    <Button variant="terciario" className="h-9 min-h-0 px-3 text-xs" onClick={() => quitar(rango.id)}>
-                      Quitar
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <Modal
-        open={editandoId !== null}
-        onClose={cerrar}
-        title={editando ? `Editar rango — hasta ${editando.hastaKg} kg` : "Agregar rango"}
-        footer={
-          <>
-            <Button variant="terciario" onClick={cerrar}>
-              Cancelar
-            </Button>
-            <Button onClick={guardar}>Guardar</Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Input
-            label="Hasta (kg)"
-            inputMode="decimal"
-            value={hastaKg}
-            onChange={(evento) => setHastaKg(evento.target.value)}
-            helperText="Límite superior del rango, inclusive."
-          />
-          <Input
-            label="Precio (S/)"
-            inputMode="decimal"
-            value={precio}
-            onChange={(evento) => setPrecio(evento.target.value)}
-            errorText={error}
-          />
-        </div>
-      </Modal>
-    </Card>
-  );
+    </Modal>
+  </Card>;
 }
