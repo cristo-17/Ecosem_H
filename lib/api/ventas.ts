@@ -1,7 +1,6 @@
 /**
- * Búsqueda de viajes contra svc-ventas. Es lo único que reemplaza al mock por
- * ahora: alimenta el buscador y /pasajes/resultados. Asientos, compra y panel
- * siguen con `lib/mock` hasta que les toque.
+ * Catálogo y búsqueda de viajes contra svc-ventas. El catálogo alimenta
+ * ciudades y rutas de la home, del buscador y de las herramientas internas.
  */
 import type {
   CatalogResponse,

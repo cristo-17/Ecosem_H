@@ -1,7 +1,6 @@
 /**
- * Forma del plano de asientos que dibuja `SeatMap`. La usan el flujo web (con
- * datos del backend, `planoDesdeApi`) y el panel de venta (todavía con
- * `lib/mock/asientos`).
+ * Forma del plano de asientos que dibuja `SeatMap`. El flujo web y el panel
+ * de venta traducen los asientos del backend mediante `planoDesdeApi`.
  */
 import type { Seat, SeatStatus } from "@/lib/types/contratos-frontend";
 

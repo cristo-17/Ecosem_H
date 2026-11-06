@@ -19,7 +19,7 @@ import {
 } from "@/lib/api/operacion";
 import type { MensajeError } from "@/lib/api/compra";
 import { etiquetaAsiento } from "@/lib/asientos";
-import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { labelTipoServicio } from "@/lib/servicios";
 import { descargarManifiestoPdf } from "@/lib/pdf/manifiesto";
 import { formatFechaCorta, formatFechaLarga, formatHora12, maskDocumento } from "@/lib/format";
 import { RUTAS } from "@/lib/routes";
@@ -194,7 +194,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
           {trip.origin} → {trip.destination}
         </h1>
         <p className="mt-1 text-sm text-navy/70">
-          {formatFechaLarga(salida)}, {formatHora12(salida)} · {labelTipoAsiento(trip.serviceType)}
+          {formatFechaLarga(salida)}, {formatHora12(salida)} · {labelTipoServicio(trip.serviceType)}
         </p>
       </div>
 

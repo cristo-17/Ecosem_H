@@ -16,7 +16,7 @@ import { ciudadesDeRuta, viajesDelDia } from "@/lib/api/operacion";
 import { fechaDesdeBusqueda, fechaParaBusqueda, hoyEnPeru, obtenerCatalogo } from "@/lib/api/ventas";
 import { esSesionVencida } from "@/lib/api/cuenta";
 import { mensajeCompra, type MensajeError } from "@/lib/api/compra";
-import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { labelTipoServicio } from "@/lib/servicios";
 import { formatFechaCorta, formatHora12 } from "@/lib/format";
 import { RUTAS, rutaPanelViaje } from "@/lib/routes";
 
@@ -177,7 +177,7 @@ export function ViajesDelDiaView({ eligeAgencia }: ViajesDelDiaViewProps) {
                     <p className="text-xs text-text-secondary">
                       {formatHora12(salida)} · {formatFechaCorta(salida)}
                       {viaje.bus ? ` · Bus ${viaje.bus.plate}` : " · Sin bus asignado"} ·{" "}
-                      {labelTipoAsiento(viaje.serviceType)}
+                      {labelTipoServicio(viaje.serviceType)}
                     </p>
                     <p className="mt-1 text-xs text-text-secondary">
                       {viaje.seats.sold}/{viaje.seats.total} vendidos

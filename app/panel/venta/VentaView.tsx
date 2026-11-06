@@ -44,7 +44,7 @@ import {
   type ViajeEncontrado,
 } from "@/lib/api/ventas";
 import { etiquetaAsiento, planoDesdeApi, type Asiento, type DistribucionPiso } from "@/lib/asientos";
-import { labelTipoAsiento } from "@/lib/mock/viajes";
+import { labelTipoServicio } from "@/lib/servicios";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
 import { RUTAS } from "@/lib/routes";
 
@@ -439,7 +439,7 @@ export function VentaView() {
                   }
                   llegadaAproximada={encontrado.viaje.arrivalProvisional}
                   asientosDisponibles={encontrado.viaje.availableSeats}
-                  tipoAsiento={labelTipoAsiento(encontrado.viaje.serviceType)}
+                  tipoAsiento={labelTipoServicio(encontrado.viaje.serviceType)}
                   precio={encontrado.viaje.unitPrice !== null ? Number(encontrado.viaje.unitPrice) : null}
                   selected={viaje?.viaje.id === encontrado.viaje.id}
                   onSeleccionar={() => elegirViaje(encontrado)}

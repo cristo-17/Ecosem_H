@@ -5,6 +5,51 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 06/11/2026 · Home conectada al catálogo, sin precios comerciales
+
+**Rama:** `feature/home-conectada`, desde main actualizado (e746329).
+Comprobados nombres remotos y locales con `home` tras `git fetch --prune`:
+sin coincidencias; árbol limpio al crear la rama. Los cambios anteriores de
+calidad ya estaban integrados en main. Sin commits en esta tarea.
+
+- Leídos CLAUDE.md, ESTADO.md, skill ecosem-design-system, styleguide y guía
+  local de Next. Confirmado en el backend que GET /v1/viajes exige ruta y
+  fecha; no permite obtener un mínimo general por ruta, y su resumen no
+  incluye fictitious. GET /v1/catalogo basta para esta home sin precios.
+- `OurRoutes` sustituye `PopularRoutes`: título «Nuestras rutas», pares de
+  ciudades obtenidos de rutas activas del catálogo real, sin precios,
+  duraciones ni marca leída de un viaje de ejemplo. Reutiliza obtenerCatalogo
+  y ciudadesConRuta del buscador (petición compartida, terminales válidos y
+  deduplicación de pares). No consulta viajes para construir la home.
+- Carga con skeleton y role=status; error con reintento y sin fallback a
+  ejemplos; catálogo vacío con explicación y recarga. Enlaces codificados
+  con URLSearchParams hacia resultados de hoy, indicados como tales.
+- Etiquetas de servicio movidas a `lib/servicios.ts` (TIPOS_SERVICIO y
+  labelTipoServicio), tipadas con ServiceType del contrato. Franjas del
+  filtro de búsqueda trasladadas a `lib/horarios.ts`, conservando su lógica.
+  Actualizados todos los consumidores; eliminados VIAJES, RUTAS_POPULARES,
+  ciudades/terminales fijos y el último archivo de lib/mock. La carpeta
+  desaparece tanto del árbol de archivos como de los archivos a entregar.
+- `/encomiendas/enviar` ya obtenía agencias y rutas del catálogo real desde
+  la integración anterior del tarifario; no precisaba otra modificación.
+- Regla comercial: no publicar «desde S/ X» mientras las tarifas sean
+  ficticias y hasta que la empresa defina qué período cubre ese mínimo.
+  Un precio base o el mínimo de un día no sustituyen esa definición.
+
+**Validación:** `npx tsc --noEmit && npx eslint . && npm run build` pasa,
+sin errores ni advertencias de ESLint. No apareció el fallo de caché de
+Turbopack. Chromium contra el build Next en 360×640, 768×900 y 1440×900,
+con respuestas HTTP locales de prueba: carga, una petición de catálogo
+compartida con el buscador, rutas activas y deduplicadas, omisión de rutas
+sin terminal o entre la misma ciudad, cero consultas de viajes desde home,
+ausencia de importes/duraciones, enlace con acentos y ampersand hacia
+resultados, error/reintento y vacío/recarga. Sin errores de navegador ni
+overflow horizontal. No se modificó el backend ni se escribieron datos en
+producción. Evidencia local ignorada: `.qa-tmp/home-conectada-resultado.json`
+y capturas home-conectada-*.png. Pendiente preview de despliegue.
+
+---
+
 ## 06/11/2026 · Corrección de jerarquía del texto secundario
 
 - La primera solución de H-002 igualaba /40, /50 y /60 y eliminaba su
