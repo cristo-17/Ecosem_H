@@ -285,17 +285,17 @@ export function RegistroEncomienda({ agencias, agenciaPropia, onVerEncomienda }:
         <p className="text-2xl font-bold tracking-wide text-navy">{registro.trackingCode}</p>
         <dl className="mt-2 grid w-full max-w-sm grid-cols-2 gap-2 text-sm">
           <div>
-            <dt className="text-xs text-navy/60">Total ({ETIQUETA_MEDIO[resultado.medio]})</dt>
+            <dt className="text-xs text-text-secondary">Total ({ETIQUETA_MEDIO[resultado.medio]})</dt>
             <dd className="font-semibold text-navy">{formatPrecio(Number(registro.quote.total))}</dd>
           </div>
           <div>
-            <dt className="text-xs text-navy/60">Vuelto</dt>
+            <dt className="text-xs text-text-secondary">Vuelto</dt>
             <dd className="text-lg font-bold text-navy">
               {registro.change !== null ? formatPrecio(Number(registro.change)) : "—"}
             </dd>
           </div>
         </dl>
-        <p className="max-w-sm text-xs text-navy/60">
+        <p className="max-w-sm text-xs text-text-secondary">
           El cobro ya está en el arqueo de tu turno. Con la guía, quien recibe puede rastrearla sin
           cuenta y recogerla con su documento.
         </p>
@@ -388,7 +388,7 @@ export function RegistroEncomienda({ agencias, agenciaPropia, onVerEncomienda }:
         {errores.medidas ? (
           <p className="text-sm text-error-text">{errores.medidas}</p>
         ) : (
-          <p className="text-xs text-navy/60">
+          <p className="text-xs text-text-secondary">
             Con medidas, se factura el mayor entre el peso real y el volumétrico.
           </p>
         )}
@@ -478,7 +478,7 @@ export function RegistroEncomienda({ agencias, agenciaPropia, onVerEncomienda }:
 
       <div className="flex items-center justify-between rounded-modal bg-white p-4 shadow-low">
         <div>
-          <p className="text-xs text-navy/60">Total cotizado</p>
+          <p className="text-xs text-text-secondary">Total cotizado</p>
           <p className="text-lg font-bold text-navy">
             {cotizacionVigente ? formatPrecio(Number(cotizacionVigente.total)) : "Sin cotizar"}
           </p>

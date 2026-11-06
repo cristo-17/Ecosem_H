@@ -28,7 +28,7 @@ export function Stepper({ currentStep, className }: StepperProps) {
                   "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
                   isCompleted && "bg-secondary text-white",
                   isActive && "bg-primary text-white",
-                  !isCompleted && !isActive && "bg-navy/10 text-navy/40"
+                  !isCompleted && !isActive && "bg-navy/10 text-text-secondary"
                 )}
               >
                 {isCompleted ? <CheckIcon className="!text-white" /> : stepNumber}
@@ -38,7 +38,7 @@ export function Stepper({ currentStep, className }: StepperProps) {
                   "text-xs font-medium whitespace-nowrap",
                   isActive && "text-navy",
                   isCompleted && "text-navy/70",
-                  !isActive && !isCompleted && "text-navy/40"
+                  !isActive && !isCompleted && "text-text-faint"
                 )}
               >
                 {label}

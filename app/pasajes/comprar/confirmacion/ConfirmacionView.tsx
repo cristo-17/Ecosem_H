@@ -1,4 +1,6 @@
 "use client";
+import { CENTRAL } from "@/lib/contacto";
+
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -134,7 +136,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
           description="El estado de una compra solo se puede ver en la misma pestaña del navegador donde se hizo. Si pagaste, conserva el comprobante de tu pago y llama a la central."
           actionLabel="Ir al inicio"
           onAction={() => router.push(RUTAS.inicio)}
-          footer={<p className="text-sm text-navy/70">Central: +51 959 366 710</p>}
+          footer={<p className="text-sm text-navy/70">Central: {CENTRAL.telefono}</p>}
         />
       </Pantalla>
     );
@@ -179,7 +181,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
           restanteMs={Math.max(0, Date.parse(estado.expiresAt) - ahora)}
           className="mt-4"
         />
-        <p className="mt-4 text-center text-xs text-navy/60">Referencia de tu reserva: {referencia}</p>
+        <p className="mt-4 text-center text-xs text-text-secondary">Referencia de tu reserva: {referencia}</p>
       </Pantalla>
     );
   }
@@ -195,7 +197,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
           onAction={() => router.push(RUTAS.inicio)}
           footer={
             <div className="flex flex-col gap-1 text-sm text-navy/70">
-              <p>Central: +51 959 366 710</p>
+              <p>Central: {CENTRAL.telefono}</p>
               <p>Referencia de tu reserva: {referencia}</p>
             </div>
           }
@@ -298,12 +300,12 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
                           {ticket.passenger.firstNames} {ticket.passenger.lastNames}
                         </p>
                         {/* El número completo va en el boleto; en pantalla, enmascarado. */}
-                        <p className="text-navy/60">
+                        <p className="text-text-secondary">
                           Documento {maskDocumento(ticket.passenger.documentNumber)}
                         </p>
                       </>
                     )}
-                    <p className="text-navy/60">
+                    <p className="text-text-secondary">
                       Boleto de viaje:{" "}
                       {ticket.receipt.series && ticket.receipt.number
                         ? `${ticket.receipt.series}-${ticket.receipt.number}`

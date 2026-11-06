@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -59,6 +60,11 @@ export function SeleccionViajeView() {
         if (controlador.signal.aborted) return;
         const viajes = [...trips].sort((a, b) => a.departsAt.localeCompare(b.departsAt));
         setLista({ tipo: "lista", viajes, catalogo });
+        // Un paquete guardado puede preceder a una cancelación conocida ahora.
+        setDescargados((previos) => previos.map((d) => {
+          const actual = trips.find((v) => v.tripId === d.tripId);
+          return actual ? { ...d, viaje: actual } : d;
+        }));
       },
       (error: unknown) => {
         if (controlador.signal.aborted) return;
@@ -112,10 +118,10 @@ export function SeleccionViajeView() {
                 key={d.tripId}
                 origen={d.origen}
                 destino={d.destino}
-                viaje={d.viaje}
+                viaje={d.paquete.status === "cancelado" ? { ...d.viaje, status: "cancelado" } : d.viaje}
                 aviso={paqueteVencido(d.paquete, new Date()) ? "El paquete venció: actualízalo con señal" : null}
                 accion={
-                  <Button variant="secundario" onClick={() => router.push(rutaEmbarqueViaje(d.tripId))} className="shrink-0">
+                  <Button variant="secundario" disabled={d.viaje.status === "cancelado" || d.paquete.status === "cancelado"} onClick={() => router.push(rutaEmbarqueViaje(d.tripId))} className="shrink-0">
                     <CheckIcon className="!size-4" />
                     Abrir
                   </Button>
@@ -236,19 +242,20 @@ function TarjetaViaje({
   return (
     <Card className="flex items-center justify-between gap-3">
       <div className="flex min-w-0 items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy/5 text-navy/60">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy/5 text-text-secondary">
           <BusIcon />
         </span>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-navy">
             {origen} → {destino}
           </p>
-          <p className="text-xs text-navy/60">
+          <p className="text-xs text-text-secondary">
             {formatHora12(salida)} · {formatFechaCorta(salida)}
             {viaje.bus ? ` · Bus ${viaje.bus.plate}` : ""}
           </p>
-          <p className="mt-1 text-xs text-navy/60">{viaje.seats.sold} pasajeros vendidos</p>
-          {aviso && <p className="mt-1 text-xs font-medium text-error-text">{aviso}</p>}
+          <p className="mt-1 text-xs text-text-secondary">{viaje.seats.sold} pasajeros vendidos</p>
+          {viaje.status === "cancelado" && <div className="mt-2"><Badge status="cancelado" /><p className="mt-1 text-sm text-error-text">Este viaje no sale. No se permite embarcar.</p></div>}
+          {aviso && viaje.status !== "cancelado" && <p className="mt-1 text-xs font-medium text-error-text">{aviso}</p>}
         </div>
       </div>
       {accion}

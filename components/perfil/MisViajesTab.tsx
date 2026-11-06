@@ -162,13 +162,13 @@ export function MisViajesTab({ forzarVacio = false }: MisViajesTabProps) {
             <Card key={compra.reservationId} className="flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold text-navy/60">Ecosem H</p>
+                  <p className="text-xs font-semibold text-text-secondary">Ecosem H</p>
                   {viaje ? (
                     <>
                       <p className="text-base font-semibold text-navy">
                         {viaje.origin} → {viaje.destination}
                       </p>
-                      <p className="mt-0.5 text-xs text-navy/60">
+                      <p className="mt-0.5 text-xs text-text-secondary">
                         {formatFechaLarga(new Date(viaje.departsAt))} ·{" "}
                         {formatHora12(new Date(viaje.departsAt))}
                       </p>

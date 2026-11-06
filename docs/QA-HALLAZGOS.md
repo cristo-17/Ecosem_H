@@ -1,5 +1,36 @@
 # QA integral — Hallazgos
 
+## Revisión del 06/11/2026 · `fix/calidad-y-accesibilidad`
+
+Las reproducciones originales se conservan debajo. Cambió la aplicación desde
+septiembre: Alertas usa tarjetas y las rutas consultan APIs reales; `?error=1`
+ya no fuerza el error. Para reproducir errores y estados operativos se usó un
+harness de Chromium con componentes y adaptadores HTTP reales y respuestas
+locales de prueba. Solo se sustituyen navegación de Next, Server Action de
+salida de sesión y token de acceso; ninguna escritura contra producción.
+
+| Caso | Cambio y verificación | Resultado |
+|---|---|---|
+| H-002 | Jerarquía corregida tras revisión: se retiran los alias que igualaban /40, /50 y /60. Sus usos migran a tokens semánticos opacos diferentes: antiguo /60 → text-secondary #5A6672 (**5.87:1** sobre blanco, **5.52:1** sobre surface-base); /50 → text-muted #606C78 (**5.37 / 5.05:1**); /40 → text-faint #67737F (**4.84 / 4.56:1**). El nivel tenue sirve para texto normal sobre blanco/base, no sobre navy/10: el número pequeño del paso pendiente usa text-secondary, mientras su etiqueta conserva text-faint. Los nombres ya no prometen opacidades que no cumplen. Skill actualizado con usos y fondos admitidos. | Verificación numérica WCAG; no equivale a una auditoría de todo el sitio. |
+| H-003 | `ScrollRegion` compartido con Tab, role=region, nombre e instrucciones accesibles y foco visible; adoptado en las cuatro tablas con overflow-x-auto (tarifas, caja, manifiesto y styleguide). Alertas ya no tiene tabla. En Chromium a 360×640: Tab y ArrowRight, sin ratón, scrollLeft **0 → 40px** tanto en tarifas del harness como en `/styleguide` del build Next. A 768 y 1440 la tabla de tarifas recibe foco y cabe sin scroll. | Verificado con teclado; caja/manifiesto comparten componente pero no se recorrieron con datos reales. |
+| H-004 | Modal comprueba que el disparador siga conectado y haya aceptado foco; de lo contrario usa `returnFocusRef`. Alertas conserva un h1 estable con tabindex=-1 y anuncia el resultado con role=status. Se espera la recarga antes de cerrar para evitar que esta borre después el foco restaurado. Se atendió la última alerta activa con API local: botón eliminado y activeElement=h1, nunca body, a 360, 768 y 1440. Escape en ModalShowcase devuelve el foco al disparador persistente. | Verificado en navegador; sin lector de pantalla real. |
+| H-007 | `lib/contacto.ts` es la única fuente del número 987654321; Footer, Ayuda, error de resultados y errores de confirmación usan esa fuente. Fallo HTTP de búsqueda reproducido en harness: muestra 987 654 321, igual al footer. `/ayuda` del build Next tiene ambos enlaces tel:+51987654321. | Verificado. |
+| H-008 | ShellPublico omite TopBar y Footer en `/panel`, `/embarque` y descendientes, con límite de segmento. En las rutas internas del harness no hay header/footer público a 360, 768 y 1440; en las públicas sí. | Verificado con ShellPublico real; no se recorrió venta autenticada contra producción. |
+| H-012 | Badge Cancelado y mensaje «Este viaje no sale. No se permite embarcar» en la tarjeta compartida. La descarga ya estaba bloqueada en main; ahora también Abrir de un viaje guardado conocido como cancelado. La lista del día actualiza el estado visible de las tarjetas guardadas, y un paquete cancelado prevalece para la tarjeta local. Fixture equivalente a v6 frente a otro programado con 0 pasajeros: Cancelado visible/acción deshabilitada frente a Descargar habilitado, a 360, 768 y 1440. | Verificado para lista del día y dos tarjetas guardadas (cancelación en paquete o conocida por lista actual): Abrir bloqueado y Badge visible. No se probó una cancelación nueva durante desconexión. |
+| Despliegue | `images.unoptimized: true` en la misma configuración para desarrollo y producción. Mantiene next/image, dimensiones y lazy loading, sirve originales y elimina dependencia de `/_next/image`. Se pierde redimensionado, conversión de formato y compresión automática por calidad; pueden aumentar bytes descargados. Chromium contra `next start`: logos y hero cargados (naturalWidth>0), cero solicitudes al optimizador. | Verificado en build local; pendiente preview real en Workers. |
+| Honestidad | Tras reservar se comparan céntimos del total devuelto con unitPrice de búsqueda × asientos. Cualquier diferencia abre modal con ambos totales y detiene la navegación. Aceptar conserva el total congelado; Volver a buscar libera la reserva. Probados 10→20, 10→5 con liberación, dos asientos 20→40; 20→20 y 10→10 siguen sin aviso. Escape no omite la aceptación. | Verificado con APIs locales y componentes reales; sin cobros. |
+| Limpieza | `git rm -r --cached .qa-tmp`: 235 archivos salen del índice y permanecen localmente, ignorados. `git ls-files .qa-tmp` devuelve cero. | Verificado, bajas preparadas en el índice por la operación solicitada; sin commits. |
+
+Validación: `npx tsc --noEmit && npx eslint . && npm run build` pasa.
+ESLint mantiene tres advertencias preexistentes en los scripts locales ignorados
+datepicker-scan.mjs y reglas-datepicker.mjs (cero errores). No apareció el fallo
+de caché de Turbopack descrito en la tarea. Evidencia local, ignorada:
+`.qa-tmp/calidad-resultado.json`, `.qa-tmp/calidad-live.json` y scripts
+`calidad-*`; estos artefactos no forman parte del cambio a entregar.
+
+No se cierran los otros hallazgos del QA original ni se afirma validación de
+producción, lector de pantalla o auditoría axe completa.
+
 Ejecutado: 15/09/2026. Rama: `feature/qa-integral`.
 
 ## Método

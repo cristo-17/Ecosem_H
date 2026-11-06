@@ -1,3 +1,4 @@
+import { CENTRAL } from "@/lib/contacto";
 import Image from "next/image";
 import Link from "next/link";
 import { RUTAS } from "@/lib/routes";
@@ -111,10 +112,10 @@ export function Footer() {
             */}
             <li>
               <a
-                href="tel:+51987654321"
+                href={CENTRAL.href}
                 className="text-sm text-white/70 hover:text-white transition-colors duration-200"
               >
-                987 654 321
+                {CENTRAL.telefono}
               </a>
             </li>
             <li>

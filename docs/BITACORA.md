@@ -5,6 +5,71 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 06/11/2026 · Corrección de jerarquía del texto secundario
+
+- La primera solución de H-002 igualaba /40, /50 y /60 y eliminaba su
+  jerarquía. Se retira esa sobrescritura global; sus usos migran a nombres
+  semánticos y tres tokens opacos distintos en globals.css.
+- Antiguo /60: text-secondary #5A6672, contraste blanco/base 5.87/5.52:1;
+  metadata, captions y etiquetas secundarias. Antiguo /40: text-faint
+  #67737F, 4.84/4.56:1; etiquetas de pasos pendientes, filas de asientos,
+  placeholders e iconos de menor énfasis. /50: text-muted #606C78,
+  5.37/5.05:1 para el nivel intermedio.
+- Todos admiten texto normal en blanco y surface-base. El número pequeño
+  del stepper lleva text-secondary porque su fondo navy/10 necesita más
+  contraste; la etiqueta sin ese relleno conserva el nivel tenue.
+- Actualizados el skill ecosem-design-system local (ignorado por Git) y la
+  entrada H-002 de QA-HALLAZGOS con valores y restricciones. Sin commits.
+- Verificados los tres colores computados del CSS generado en Chromium:
+  seis pares (blanco y surface-base) por encima de 4.5:1 y colores distintos.
+  Evidencia local: .qa-tmp/contraste-niveles-resultado.json. TypeScript y
+  ESLint pasan; quedan las tres advertencias preexistentes de scripts locales.
+
+---
+
+## 06/11/2026 · Calidad, accesibilidad y aviso de cambio de tarifa
+
+**Rama:** `fix/calidad-y-accesibilidad`, desde `main` actualizado (2d9e501).
+Antes de crearla: `git fetch --prune`, comprobación de nombres con calidad en
+ramas remotas y locales, sin coincidencias; árbol limpio. Leídos CLAUDE.md,
+skill ecosem-design-system y reproducciones completas de QA-HALLAZGOS.md;
+revisados styleguide y guía local de next/image. Sin commits.
+
+- H-002: utilidades heredadas de texto secundario apuntan al token opaco
+  #5A6672 en un solo lugar. Contraste medido: navy/60 sobre blanco 4.29→5.87:1;
+  navy/40 2.43→5.87:1. Fondo base 5.52:1; navy/10 4.83:1.
+  Esta solución inicial fue sustituida por la corrección de jerarquía
+  registrada arriba: /40 y /60 ya no comparten color.
+- H-003: ScrollRegion compartido para las cuatro tablas con overflow horizontal;
+  Tab/flechas y foco visible. Confirmado con teclado sin ratón, scroll 0→40px.
+- H-004: Modal ofrece ancla alternativa cuando el disparador desaparece;
+  Alertas espera la recarga y devuelve foco al título estable con anuncio de estado.
+  Confirmado tras eliminar el último disparador y también con disparador persistente.
+- H-007: central única en lib/contacto.ts para Ayuda, Footer, error de búsqueda
+  y errores de confirmación. H-008: navegación pública ausente en rutas internas.
+- H-012: Cancelado con Badge y explicación en la tarjeta compartida; acciones
+  de descarga/apertura bloqueadas cuando se conoce la cancelación. Contrastado
+  con un viaje programado con cero pasajeros en los tres anchos.
+- Despliegue: images.unoptimized en ambos ambientes. Originales sin endpoint de
+  optimización; conserva dimensiones/lazy loading pero pierde compresión,
+  conversión y tamaños automáticos. Logos/hero cargan en next start sin /_next/image.
+- Honestidad: reserva con total distinto al mostrado exige aceptar ambos importes
+  antes de Datos. Volver a buscar libera los asientos; precio congelado intacto.
+  Probados subida 10→20, bajada 10→5 y dos asientos con y sin diferencia.
+- Limpieza: retirado .qa-tmp del índice con --cached; archivos locales conservados,
+  cero archivos rastreados allí. QA-HALLAZGOS actualizado sin borrar reproducciones.
+
+**Validación:** cadena tsc/eslint/build correcta, tres advertencias preexistentes
+en scripts locales de .qa-tmp, cero errores. Chromium con componentes/adaptadores
+reales y API local para estados operativos; build Next real para imágenes,
+contraste, teléfonos y teclado en styleguide. Detalles y límites en QA-HALLAZGOS.
+
+**Abierto:** preview en Workers, prueba con lector de pantalla real, recorrido
+autenticado completo contra backend y auditoría axe de todas las pantallas.
+No se escribieron datos en producción ni se tocaron los otros hallazgos.
+
+---
+
 ## 05/11/2026 (cont. 7) · Tarifario y cotizador público contra EcosemH
 
 **Rama:** `feature/tarifario-encomiendas`, desde `main` actualizado (f06eda0). Árbol limpio al empezar. Sin commits.

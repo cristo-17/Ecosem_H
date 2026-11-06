@@ -10,7 +10,7 @@ export function LockIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-5 text-navy/50", className)}
+      className={cn("pointer-events-none size-5 text-text-muted", className)}
     >
       <rect x="4" y="9" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
       <path
@@ -29,7 +29,7 @@ export function ChevronDownIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-5 text-navy/60 transition-transform", className)}
+      className={cn("pointer-events-none size-5 text-text-secondary transition-transform", className)}
     >
       <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -68,7 +68,7 @@ export function CalendarIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-5 text-navy/60", className)}
+      className={cn("pointer-events-none size-5 text-text-secondary", className)}
     >
       <rect x="3.5" y="4.5" width="13" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
       <path d="M3.5 8h13M7 3v3M13 3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -82,7 +82,7 @@ export function CloseIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-4 text-navy/60", className)}
+      className={cn("pointer-events-none size-4 text-text-secondary", className)}
     >
       <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
@@ -237,7 +237,7 @@ export function PinIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-5 text-navy/60", className)}
+      className={cn("pointer-events-none size-5 text-text-secondary", className)}
     >
       <path
         d="M10 17.5s6-5.2 6-9.7A6 6 0 0 0 4 7.8c0 4.5 6 9.7 6 9.7Z"
@@ -641,7 +641,7 @@ export function SteeringWheelIcon({ className }: { className?: string }) {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className={cn("pointer-events-none size-5 text-navy/40", className)}
+      className={cn("pointer-events-none size-5 text-text-faint", className)}
     >
       <circle cx="10" cy="10" r="6.5" stroke="currentColor" strokeWidth="1.5" />
       <circle cx="10" cy="10" r="1.75" stroke="currentColor" strokeWidth="1.5" />

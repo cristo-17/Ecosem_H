@@ -199,7 +199,7 @@ export function GestionEncomienda({ agencias, eligeAgencia, guiaInicial }: Gesti
       )}
 
       {carga.tipo === "inicial" && (
-        <div className="flex flex-col items-center gap-2 py-10 text-center text-navy/50">
+        <div className="flex flex-col items-center gap-2 py-10 text-center text-text-muted">
           <TrackIcon />
           <p className="max-w-xs text-sm">
             Escribe la guía que trae el remitente o quien viene a recoger. Ves las encomiendas que
@@ -301,11 +301,11 @@ function DetalleVista({
     <Card className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold text-navy/60">Guía {encomienda.trackingCode}</p>
+          <p className="text-xs font-semibold text-text-secondary">Guía {encomienda.trackingCode}</p>
           <p className="text-base font-semibold text-navy">
             {encomienda.origin} → {encomienda.destination}
           </p>
-          <p className="mt-0.5 text-xs text-navy/60">
+          <p className="mt-0.5 text-xs text-text-secondary">
             Peso facturable: {encomienda.quote.billableWeightKg} kg
           </p>
         </div>
@@ -314,27 +314,27 @@ function DetalleVista({
 
       <dl className="grid grid-cols-1 gap-3 border-t border-navy/10 pt-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-xs text-navy/60">Remitente</dt>
+          <dt className="text-xs text-text-secondary">Remitente</dt>
           <dd className="text-navy">{encomienda.sender.name}</dd>
-          <dd className="text-xs text-navy/60">
+          <dd className="text-xs text-text-secondary">
             {documento(encomienda.sender.documentType, encomienda.sender.documentNumber)}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-navy/60">Destinatario</dt>
+          <dt className="text-xs text-text-secondary">Destinatario</dt>
           <dd className="text-navy">{encomienda.recipient.name}</dd>
-          <dd className="text-xs text-navy/60">
+          <dd className="text-xs text-text-secondary">
             {documento(encomienda.recipient.documentType, encomienda.recipient.documentNumber)}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-navy/60">Cobro</dt>
+          <dt className="text-xs text-text-secondary">Cobro</dt>
           <dd className="text-navy">
             {formatPrecio(Number(encomienda.quote.total))} · {ETIQUETA_MEDIO[encomienda.payment.method]}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-navy/60">Comprobante</dt>
+          <dt className="text-xs text-text-secondary">Comprobante</dt>
           <dd className="text-navy">
             {comprobante.type === "factura" ? "Factura" : "Boleta"}{" "}
             {comprobante.series && comprobante.number

@@ -1,4 +1,5 @@
 "use client";
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -317,17 +318,17 @@ function TurnoAbierto({
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-xs text-navy/60">Agencia</p>
+          <p className="text-xs text-text-secondary">Agencia</p>
           <p className="mt-1 text-lg font-semibold text-navy">{agencia}</p>
         </Card>
         <Card>
-          <p className="text-xs text-navy/60">Turno abierto desde</p>
+          <p className="text-xs text-text-secondary">Turno abierto desde</p>
           <p className="mt-1 text-lg font-semibold text-navy">
             {formatHora12(abierto)} · {formatFechaCorta(abierto)}
           </p>
         </Card>
         <Card>
-          <p className="text-xs text-navy/60">Efectivo que debe haber en caja</p>
+          <p className="text-xs text-text-secondary">Efectivo que debe haber en caja</p>
           <p className="mt-1 text-xl font-bold text-navy">
             {formatPrecio(Number(arqueo.expectedCash))}
           </p>
@@ -343,10 +344,10 @@ function TurnoAbierto({
         {arqueo.breakdown.length === 0 ? (
           <p className="mt-3 text-sm text-navy/70">Todavía no hay cobros en este turno.</p>
         ) : (
-          <div className="mt-3 overflow-x-auto">
+          <ScrollRegion label="Movimientos por medio de pago" className="mt-3">
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead>
-                <tr className="text-xs font-medium text-navy/60">
+                <tr className="text-xs font-medium text-text-secondary">
                   <th className="pb-2 font-medium">Medio</th>
                   <th className="pb-2 font-medium">Control</th>
                   <th className="pb-2 text-right font-medium">Movimientos</th>
@@ -372,9 +373,9 @@ function TurnoAbierto({
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         )}
-        <p className="mt-3 text-xs text-navy/60">
+        <p className="mt-3 text-xs text-text-secondary">
           {ventas === 1 ? "1 movimiento" : `${ventas} movimientos`} en este turno, entre pasajes y
           encomiendas.
         </p>

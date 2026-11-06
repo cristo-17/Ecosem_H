@@ -1,3 +1,4 @@
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { Button, type ButtonVariant } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SelectShowcase } from "./SelectShowcase";
@@ -95,7 +96,7 @@ export default function Styleguide() {
           grilla, pero cada botón sigue siendo real: pasa el cursor o
           mantenlo presionado para confirmarlo.
         </p>
-        <div className="mt-4 overflow-x-auto">
+        <ScrollRegion label="Variantes de botones" className="mt-4">
           <table className="w-full min-w-[720px] border-separate border-spacing-3">
             <thead>
               <tr className="text-sm font-medium text-navy/70">
@@ -138,7 +139,7 @@ export default function Styleguide() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
 
         <h3 className="mt-6 text-sm font-semibold text-navy">
           Confirmación de compra — principal junto a destructivo

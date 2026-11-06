@@ -88,7 +88,7 @@ export function PasajeroReservaForm({
     <Card className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-navy">Pasajero {indice + 1}</h2>
-        <span className="text-xs font-medium text-navy/50">Asiento {etiquetaAsiento(asiento)}</span>
+        <span className="text-xs font-medium text-text-muted">Asiento {etiquetaAsiento(asiento)}</span>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

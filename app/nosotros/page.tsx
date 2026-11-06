@@ -203,13 +203,13 @@ export default function NosotrosPage() {
           <div className="mt-2 flex items-start gap-3">
             <div className="mt-0.5 flex items-center gap-1.5">
               <SteeringWheelIcon />
-              <ScaleIcon className="!size-5 !text-navy/40" />
+              <ScaleIcon className="!size-5 !text-text-faint" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-navy">
                 También ofrecemos servicio industrial y minero
               </h3>
-              <p className="mt-1 text-sm text-navy/60">
+              <p className="mt-1 text-sm text-text-secondary">
                 Traslado de personal minero e industrial, transporte de carga
                 pesada y peligrosa, y servicios logísticos con izaje de camiones
                 grúa.

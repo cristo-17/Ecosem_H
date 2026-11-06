@@ -108,7 +108,7 @@ export function RastrearEncomiendaView() {
 
       <div className="mt-6">
         {estado.tipo === "inicial" && (
-          <div className="flex flex-col items-center gap-2 py-10 text-center text-navy/50">
+          <div className="flex flex-col items-center gap-2 py-10 text-center text-text-muted">
             <TrackIcon />
             <p className="max-w-xs text-sm">
               Ingresa el número de guía de tu comprobante de envío. Puedes escribirlo con o sin
@@ -147,13 +147,13 @@ export function RastrearEncomiendaView() {
           <Card className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold text-navy/60">
+                <p className="text-xs font-semibold text-text-secondary">
                   Guía {estado.encomienda.trackingCode}
                 </p>
                 <p className="text-base font-semibold text-navy">
                   {estado.encomienda.origin} → {estado.encomienda.destination}
                 </p>
-                <p className="mt-0.5 text-xs text-navy/60">
+                <p className="mt-0.5 text-xs text-text-secondary">
                   Peso facturable: {estado.encomienda.billableWeightKg} kg
                 </p>
               </div>

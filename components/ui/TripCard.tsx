@@ -69,11 +69,11 @@ export function TripCard({
       <div className="mt-3 flex items-center justify-between gap-2">
         <div>
           <p className="text-lg font-semibold text-navy">{formatHora12(horaSalida)}</p>
-          <p className="text-xs text-navy/60">{terminalOrigen}</p>
+          <p className="text-xs text-text-secondary">{terminalOrigen}</p>
         </div>
         <div className="flex flex-1 flex-col items-center px-2">
           {duracionMinutos !== null && (
-            <span className="text-xs whitespace-nowrap text-navy/60">
+            <span className="text-xs whitespace-nowrap text-text-secondary">
               {llegadaAproximada && "aprox. "}
               {formatDuracion(duracionMinutos)}
             </span>
@@ -84,7 +84,7 @@ export function TripCard({
           <p className="text-lg font-semibold text-navy">
             {horaLlegada ? formatHora12(horaLlegada) : "Por confirmar"}
           </p>
-          <p className="text-xs text-navy/60">{destino}</p>
+          <p className="text-xs text-text-secondary">{destino}</p>
         </div>
       </div>
 
@@ -92,7 +92,7 @@ export function TripCard({
 
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>
-          <p className="text-xs text-navy/60">Precio</p>
+          <p className="text-xs text-text-secondary">Precio</p>
           <p className="text-xl font-bold text-navy">
             {precio !== null ? formatPrecio(precio) : "Sin tarifa"}
           </p>

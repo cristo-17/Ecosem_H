@@ -4,6 +4,9 @@ import { PHASE_PRODUCTION_BUILD } from "next/constants";
 const nextConfig = (fase: string): NextConfig => ({
   devIndicators: false,
   images: {
+    // Workers no ejecuta /_next/image. Servir originales en ambos ambientes;
+    // se conservan dimensiones y lazy loading, sin conversión ni redimensionado.
+    unoptimized: true,
     // Next 16 exige declarar explícitamente cada quality usada: por defecto
     // solo permite 75. 90 es solo para el carrusel y el encabezado de
     // /nosotros (ver docs/prompts/05-nitidez-imagenes-nosotros.md) — el

@@ -64,7 +64,7 @@ export function SeatMap({ distribucion, asientos, seleccionados, onToggle, class
                 className={cn(
                   "h-11 flex-1 rounded-full text-sm font-semibold transition",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary",
-                  activo ? "bg-primary text-white" : "bg-navy/5 text-navy/60 hover:text-navy"
+                  activo ? "bg-primary text-white" : "bg-navy/5 text-text-secondary hover:text-navy"
                 )}
               >
                 {p.nombre}
@@ -84,7 +84,7 @@ export function SeatMap({ distribucion, asientos, seleccionados, onToggle, class
       </ul>
 
       <div className="rounded-modal border border-navy/10 bg-white p-4">
-        <div className="mb-3 flex items-center justify-center gap-1.5 text-xs font-medium text-navy/40">
+        <div className="mb-3 flex items-center justify-center gap-1.5 text-xs font-medium text-text-faint">
           <SteeringWheelIcon />
           Adelante
         </div>
@@ -92,7 +92,7 @@ export function SeatMap({ distribucion, asientos, seleccionados, onToggle, class
         <div role="group" aria-label={piso.nombre} className="flex flex-col items-center gap-2">
           {Array.from({ length: piso.filas }, (_, i) => i + 1).map((fila) => (
             <div key={fila} className="flex items-center gap-1.5">
-              <span className="w-4 shrink-0 text-center text-xs text-navy/40">{fila}</span>
+              <span className="w-4 shrink-0 text-center text-xs text-text-faint">{fila}</span>
               <div className="flex gap-1.5">
                 {piso.columnas.map((columna, indice) => {
                   const asiento = asientosPiso.find((a) => a.fila === fila && a.columna === columna);

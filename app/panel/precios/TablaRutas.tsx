@@ -1,4 +1,5 @@
 "use client";
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -52,7 +53,7 @@ export function TablaRutas({ rutas, onGuardar, recargar }: {
     <h2 className="text-base font-semibold text-navy">Tarifas por ruta</h2>
     <p className="text-sm text-text-secondary">El máximo es obligatorio. La marca «Ficticia» identifica importes de prueba; editar un importe no elimina esa marca automáticamente.</p>
     {!rutas.length ? <EmptyState icon={<SearchOffIcon className="size-8" />} title="No hay rutas disponibles" description="Actualiza la consulta o pide que se registre una ruta en el catálogo." actionLabel="Actualizar consulta" onAction={recargar} /> :
-      <div className="overflow-x-auto">
+      <ScrollRegion label="Tarifas por ruta" className="">
         <table className="w-full text-left text-sm">
           <thead>
             <tr>
@@ -82,7 +83,7 @@ export function TablaRutas({ rutas, onGuardar, recargar }: {
             </td>
           </tr>)}</tbody>
         </table>
-      </div>}
+      </ScrollRegion>}
     <Modal open={!!editando} title={`Tarifa · ${editando?.route ?? ""}`} onClose={() => {
       if (!guardando)
         setEditando(null);

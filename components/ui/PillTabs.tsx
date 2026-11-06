@@ -50,7 +50,7 @@ export function PillTabs<Value extends string>({
             className={cn(
               "flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold transition",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary",
-              selected ? "bg-primary text-white" : "bg-navy/5 text-navy/60 hover:text-navy",
+              selected ? "bg-primary text-white" : "bg-navy/5 text-text-secondary hover:text-navy",
             )}
           >
             <tab.Icon />

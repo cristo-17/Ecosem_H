@@ -167,19 +167,19 @@ export function ViajesDelDiaView({ eligeAgencia }: ViajesDelDiaViewProps) {
             return (
               <Card key={viaje.tripId} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy/5 text-navy/60">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy/5 text-text-secondary">
                     <BusIcon />
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-navy">
                       {origen} → {destino}
                     </p>
-                    <p className="text-xs text-navy/60">
+                    <p className="text-xs text-text-secondary">
                       {formatHora12(salida)} · {formatFechaCorta(salida)}
                       {viaje.bus ? ` · Bus ${viaje.bus.plate}` : " · Sin bus asignado"} ·{" "}
                       {labelTipoAsiento(viaje.serviceType)}
                     </p>
-                    <p className="mt-1 text-xs text-navy/60">
+                    <p className="mt-1 text-xs text-text-secondary">
                       {viaje.seats.sold}/{viaje.seats.total} vendidos
                     </p>
                   </div>

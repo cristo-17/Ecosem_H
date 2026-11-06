@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SeatMap } from "@/components/pasajes/SeatMap";
@@ -61,6 +62,8 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
   // Cambiarlo vuelve a pedir el plano (tras un asiento tomado o un reintento).
   const [intento, setIntento] = useState(0);
   const [reservando, setReservando] = useState(false);
+  const [cambioPrecio, setCambioPrecio] = useState<{ anterior: number; actual: string; reservaId: string } | null>(null);
+  const continuarRef = useRef<HTMLButtonElement>(null);
 
   // Una reserva viva de este mismo viaje (se volvió desde "Datos"): sus
   // asientos arrancan elegidos.
@@ -155,7 +158,7 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
   }
 
   async function continuar() {
-    if (reservando) return;
+    if (reservando || cambioPrecio) return;
     if (reserva && purchase.pagoIniciado) {
       router.push(rutaCompraConfirmacion(reserva.reservationId));
       return;
@@ -175,6 +178,15 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
       }
       const nueva = await reservarAsientos(viajeId, seleccionados);
       purchase.fijarReserva(nueva);
+      const mostrado = carga.tipo === "listo" ? carga.viaje.viaje.unitPrice : null;
+      // Comparar totales en céntimos: unitPrice es por asiento, totalAmount
+      // ya incluye todos los elegidos. El monto congelado nunca se modifica.
+      const anterior = mostrado ? Math.round(Number(mostrado) * 100) * seleccionados.length : null;
+      if (anterior !== null && anterior !== Math.round(Number(nueva.totalAmount) * 100)) {
+        setCambioPrecio({ anterior: anterior / 100, actual: nueva.totalAmount, reservaId: nueva.reservationId });
+        setReservando(false);
+        return;
+      }
       router.push(rutaCompraDatos(nueva.reservationId));
     } catch (error) {
       const mensaje = mensajeCompra(error);
@@ -195,6 +207,29 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 pb-28 sm:py-8">
+      <Modal open={cambioPrecio !== null} title="La tarifa cambió" preventDismiss
+        returnFocusRef={continuarRef} onClose={() => {}}
+        footer={<>
+          <Button variant="secundario" onClick={() => {
+            purchase.soltarReserva();
+            setCambioPrecio(null);
+            router.push(RUTAS.inicio);
+          }}>Volver a buscar</Button>
+          <Button disabled={vigencia === "vencida" || vigencia === "verificando"} onClick={() => {
+            if (!cambioPrecio || vigencia === "vencida") return;
+            const id = cambioPrecio.reservaId;
+            setCambioPrecio(null);
+            router.push(rutaCompraDatos(id));
+          }}>Aceptar y continuar</Button>
+        </>}>
+        {cambioPrecio && <div className="space-y-3">
+          <p>La tarifa cambió desde tu búsqueda. Revisa el total antes de continuar.</p>
+          <p>Total mostrado en la búsqueda: <strong>{formatPrecio(cambioPrecio.anterior)}</strong>.</p>
+          <p>Total de la reserva: <strong>{formatPrecio(Number(cambioPrecio.actual))}</strong>.</p>
+          <p>Este es el importe congelado para tus {seleccionados.length} asientos. Aún no se ha realizado ningún cobro.</p>
+          {vigencia === "vencida" && <p role="alert">La reserva venció. Vuelve a buscar tus pasajes.</p>}
+        </div>}
+      </Modal>
       <Stepper currentStep={2} className="mb-6" />
 
       {carga.tipo === "cargando" && (
@@ -252,22 +287,23 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
               <div>
                 {totalCongelado ? (
                   <>
-                    <p className="text-xs text-navy/60">Total</p>
+                    <p className="text-xs text-text-secondary">Total</p>
                     <p className="text-lg font-bold text-navy">{formatPrecio(Number(totalCongelado))}</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-xs text-navy/60">Precio por asiento, referencial</p>
+                    <p className="text-xs text-text-secondary">Precio por asiento, referencial</p>
                     <p className="text-lg font-bold text-navy">
                       {carga.viaje.viaje.unitPrice
                         ? formatPrecio(Number(carga.viaje.viaje.unitPrice))
                         : "Sin tarifa"}
                     </p>
-                    <p className="text-xs text-navy/60">El total se fija al separar los asientos</p>
+                    <p className="text-xs text-text-secondary">El total se fija al separar los asientos</p>
                   </>
                 )}
               </div>
               <Button
+                ref={continuarRef}
                 disabled={!listoParaContinuar || (reserva !== null && vigencia === "vencida")}
                 isLoading={reservando}
                 onClick={continuar}

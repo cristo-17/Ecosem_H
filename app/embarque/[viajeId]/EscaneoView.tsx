@@ -240,11 +240,11 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
           <p className="text-sm font-semibold text-navy">
             {descargado.origen} → {descargado.destino}
           </p>
-          <p className="text-xs text-navy/60">
+          <p className="text-xs text-text-secondary">
             {formatHora12(salida)}
             {descargado.viaje.bus ? ` · Bus ${descargado.viaje.bus.plate}` : ""}
           </p>
-          <p className="mt-1 text-xs text-navy/60">
+          <p className="mt-1 text-xs text-text-secondary">
             Paquete del {formatHora12(new Date(descargado.descargadoEn))}
           </p>
         </div>
@@ -252,7 +252,7 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
           <p className="text-2xl font-bold text-navy">
             {contarEmbarcados(descargado, escaneos)}/{descargado.viaje.seats.sold}
           </p>
-          <p className="text-xs text-navy/60">embarcados</p>
+          <p className="text-xs text-text-secondary">embarcados</p>
         </div>
       </Card>
 
@@ -284,7 +284,7 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
 
       <Card>
         <h2 className="text-sm font-semibold text-navy">Lector externo</h2>
-        <p className="mt-1 text-xs text-navy/60">
+        <p className="mt-1 text-xs text-text-secondary">
           Si la cámara falla: escanea con un lector conectado al teléfono, o pega el contenido del QR.
           Se verifica igual, con la firma.
         </p>
@@ -389,7 +389,7 @@ function HistorialEscaneos({ escaneos }: { escaneos: EscaneoLocal[] }) {
           clase: "text-error-text",
         };
       case "ya-embarcado":
-        return { texto: "Ya estaba embarcado", clase: "text-navy/60" };
+        return { texto: "Ya estaba embarcado", clase: "text-text-secondary" };
       default:
         return { texto: e.motivo ? MOTIVO_LOCAL[e.motivo] : "No embarcó", clase: "text-error-text" };
     }
@@ -410,7 +410,7 @@ function HistorialEscaneos({ escaneos }: { escaneos: EscaneoLocal[] }) {
                 </p>
                 <p className={cn("text-xs", clase)}>{texto}</p>
               </div>
-              <span className="shrink-0 text-xs text-navy/60">{formatHora12(new Date(e.scannedAt))}</span>
+              <span className="shrink-0 text-xs text-text-secondary">{formatHora12(new Date(e.scannedAt))}</span>
             </li>
           );
         })}

@@ -310,7 +310,7 @@ export function VentaView() {
         )}
         {turno.tipo === "sin-turno" && (
           <EmptyState
-            icon={<ClockIcon className="!size-12 !text-navy/40" />}
+            icon={<ClockIcon className="!size-12 !text-text-faint" />}
             title="Abre tu turno para vender"
             description="Cada cobro en efectivo entra al arqueo de un turno. Ábrelo en Caja y vuelve aquí."
             actionLabel="Ir a Caja"
@@ -490,7 +490,7 @@ export function VentaView() {
 
           <div className="flex items-center justify-between rounded-modal bg-white p-4 shadow-low">
             <div>
-              <p className="text-xs text-navy/60">Total a precio de ahora</p>
+              <p className="text-xs text-text-secondary">Total a precio de ahora</p>
               <p className="text-lg font-bold text-navy">
                 {totalEstimado !== null ? formatPrecio(totalEstimado) : "Sin tarifa"}
               </p>
@@ -591,7 +591,7 @@ export function VentaView() {
 
           <div className="flex items-center justify-between rounded-modal bg-white p-4 shadow-low">
             <div>
-              <p className="text-xs text-navy/60">Total a precio de ahora</p>
+              <p className="text-xs text-text-secondary">Total a precio de ahora</p>
               <p className="text-lg font-bold text-navy">
                 {totalEstimado !== null ? formatPrecio(totalEstimado) : "Sin tarifa"}
               </p>
@@ -631,15 +631,15 @@ export function VentaView() {
           </p>
           <dl className="mt-2 grid w-full max-w-sm grid-cols-3 gap-2 text-sm">
             <div>
-              <dt className="text-xs text-navy/60">Total</dt>
+              <dt className="text-xs text-text-secondary">Total</dt>
               <dd className="font-semibold text-navy">{formatPrecio(Number(paso.venta.totalAmount))}</dd>
             </div>
             <div>
-              <dt className="text-xs text-navy/60">Recibido</dt>
+              <dt className="text-xs text-text-secondary">Recibido</dt>
               <dd className="font-semibold text-navy">{formatPrecio(paso.recibido)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-navy/60">Vuelto</dt>
+              <dt className="text-xs text-text-secondary">Vuelto</dt>
               <dd className="text-lg font-bold text-navy">{formatPrecio(Number(paso.venta.change))}</dd>
             </div>
           </dl>
