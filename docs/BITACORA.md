@@ -5,6 +5,34 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 05/11/2026 (cont. 5) · Flota y alertas contra svc-flota
+
+**Rama:** `feature/flota-y-alertas`, creada después de `git switch main` y `git pull` (main actualizado). Sin commits. Se conserva el cambio previo de `app/panel/layout.tsx` sin modificarlo en esta tarea.
+
+- Leídos CLAUDE.md, skill ecosem-design-system, ESTADO.md y FALLOS.md antes de cambiar archivos; revisados styleguide, componentes UI y guía local de Next. Contratos de `lib/types/contratos-panel.ts` y `contratos-frontend.ts` intactos: no se copian ni redeclaran tipos del backend.
+- `/panel/flota`, `/panel/flota/[placa]`, `/panel/conductores` y `/panel/alertas` usan el servicio `flota` con `conCuenta` y el token de Supabase. Se conservan sus tres layouts anidados de acceso exclusivo a supervisor. Esqueletos, estados de error y vacío, y actualización de consulta sin datos de respaldo mock.
+- Alertas leídas del backend en estado activa/atendida. Se muestran tipo, concepto, nivel, valor observado y emisión sin recalcularlos. Sin edición ni borrado. Atención con responsable y nota (máximo 500 caracteres, según el servicio), POST `/atencion` que ejecuta el UPDATE único; bloqueo mientras guarda y mensaje para `ALERT_ALREADY_ATTENDED`. La pantalla explica que atender no resuelve ni silencia y que el siguiente umbral puede emitir otra alerta.
+- Documentos: alta de primera versión, renovación/corrección explícitas, historial por tipo con periodo, motivo, registro y reemplazo; la versión sustituida mediante corrección se identifica como excluida de cobertura. Consulta GET de cobertura por fecha desde el servidor para fiscalización; no se infiere cobertura a partir del documento actual. Mensajes propios de renovación que no extiende vigencia y motivo requerido.
+- Umbral de kilometraje guardado con PUT de unidad; límite de horas individual guardado con PUT de conductor. Se preservan los demás campos del contrato, sin valores inventados. Si falta marca de unidad, se permite completar el dato requerido por el PUT. Vacío envía null para desactivar ese umbral. Nombres se presentan tal como llegan; un U+FFFD se señala como dato dañado en el servicio y no se sustituye ni maquilla.
+- Vencimientos actuales: 30–16 info, 15–8 warning, 7–1 error, 0 o menos vencido; fecha de Perú. UrgenciaPill usa AlertLevel del contrato y solo tokens semánticos; vencido reutiliza error con etiqueta propia.
+- Borrados `lib/mock/flota.ts`, `lib/mock/asientos.ts` y `lib/mock/compras.ts`: los dos últimos tampoco tenían consumidores.
+
+**Criterio lib/mock: queda abierto por consumidores reales ajenos a las cuatro pantallas.** No se renombraron mocks para aparentar su eliminación:
+- `lib/mock/viajes.ts`: resultados públicos, rutas populares, opciones de ciudad y etiquetas compartidas por venta, viajes y confirmación.
+- `lib/mock/precios.ts`: panel de precios, tablas, simulador e historial.
+- `lib/mock/sesion.ts`: usuario mock utilizado todavía por el panel de precios.
+- `lib/mock/tarifario.ts`: cotizador público de encomiendas y panel de tarifario.
+- `lib/mock/tarifarioStore.ts`: configuración en memoria consumida por cotizador y panel de tarifario.
+Borrarlos sin conectar esos otros módulos rompería funcionalidades existentes; la premisa de último módulo con mock no coincide con este main.
+
+**Verificación:** prueba local del adaptador: diez llamadas al servicio correcto, rutas e identificadores escapados, cuerpos y Unicode sin alteraciones, atención por POST sin DELETE, conflicto de atención y nueve fronteras de vencimiento (31/30/16/15/8/7/1/0/−1) incluyendo cambio de día UTC/Lima. Script local en `.qa-tmp/flota-contratos.mjs` (directorio ignorado). No se ejecutaron escrituras contra producción. Prueba autenticada de lectura/escritura y persistencia tras recargar pendiente de sesión de supervisor; no se pudo auditar si los nombres reales contienen U+FFFD.
+
+**Checks finales:** `npx.cmd tsc --noEmit && npx.cmd eslint . && npm.cmd run build` terminó con exit 0. ESLint: cero errores y tres advertencias preexistentes en `.qa-tmp/datepicker-scan.mjs` y `.qa-tmp/reglas-datepicker.mjs`. Build genera las cuatro rutas del módulo. `git diff --check` revisado; contratos sin diff.
+
+**Archivos nuevos de código que deben incluirse al commitear:** `components/panel/EstadoFlota.tsx`, `lib/api/flota.ts`, `lib/flota.ts`. Se verificará el estado final con `git status --short` y `--untracked-files=all`.
+
+---
+
 ## 05/11/2026 (cont. 4)
 
 **Contexto:** acceso de counter y presentación de auditoría de impresiones. Misma rama `docs/conflictos-y-contributing`, sin commits.
