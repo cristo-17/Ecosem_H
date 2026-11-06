@@ -1,79 +1,58 @@
 "use client";
-
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-
-export interface RecargoValorDeclaradoCardProps {
-  porcentaje: number | null;
-  onCambiar: (porcentaje: number) => void;
-}
-
-/** Recargo opcional por valor declarado (RNAT), un solo porcentaje global, pendiente hasta que comercial lo defina. */
-export function RecargoValorDeclaradoCard({ porcentaje, onCambiar }: RecargoValorDeclaradoCardProps) {
-  const [editando, setEditando] = useState(false);
+import { mensajeTarifario } from "@/lib/api/tarifario";
+import { leerMonto } from "@/lib/api/caja";
+import type { ParcelRatesResponse, SaveDeclaredValueSurchargeRequest } from "@/lib/types/contratos-panel";
+export function RecargoValorDeclaradoCard({ tarifario, onGuardar }: {
+  tarifario: ParcelRatesResponse;
+  onGuardar: (pedido: SaveDeclaredValueSurchargeRequest) => Promise<void>;
+}) {
+  const [abierto, setAbierto] = useState(false);
   const [valor, setValor] = useState("");
-  const [error, setError] = useState<string | undefined>();
-
-  function abrir() {
-    setValor(porcentaje !== null ? String(porcentaje) : "");
-    setError(undefined);
-    setEditando(true);
-  }
-
-  function guardar() {
-    const nuevo = Number(valor);
-    if (!valor.trim() || !Number.isFinite(nuevo) || nuevo <= 0 || nuevo > 100) {
-      setError("Ingresa un porcentaje válido entre 0 y 100");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  async function guardar() {
+    if (guardando)
+      return;
+    const percent = leerMonto(valor);
+    if (percent === null || percent < 0 || percent > 100) {
+      setError("Ingresa un porcentaje de 0 a 100, con hasta dos decimales.");
       return;
     }
-    onCambiar(nuevo);
-    setEditando(false);
+    setGuardando(true);
+    setError("");
+    try {
+      await onGuardar({ percent });
+      setAbierto(false);
+    }
+    catch (e) {
+      setError(mensajeTarifario(e).descripcion);
+    }
+    finally {
+      setGuardando(false);
+    }
   }
-
-  return (
-    <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h3 className="text-sm font-semibold text-navy">Recargo por valor declarado</h3>
-        <p className="mt-1 text-sm text-navy/70">
-          Opcional, alineado con el Reglamento Nacional de Administración de Transporte.
-        </p>
-        <p className="mt-1 text-sm">
-          {porcentaje !== null ? (
-            <span className="text-navy">{porcentaje}% del valor declarado</span>
-          ) : (
-            <span className="text-warning-text">Pendiente de aprobación comercial</span>
-          )}
-        </p>
+  return <Card className="space-y-4">
+    <h2 className="font-semibold text-navy">Recargo por valor declarado</h2>
+    <p>{tarifario.declaredValueSurchargePercent === null ? "La empresa todavía no definió el porcentaje. No se puede cotizar con valor declarado." : `${tarifario.declaredValueSurchargePercent}% del valor declarado`}</p>
+    {tarifario.declaredValueSurchargeFictitious && <p className="rounded-md bg-warning-fill p-3 text-warning-text">Porcentaje ficticio de prueba.</p>}
+    <Button variant="secundario" onClick={() => { setValor(tarifario.declaredValueSurchargePercent ?? ""); setError(""); setAbierto(true); }}>Editar porcentaje</Button>
+    <Modal open={abierto} title="Recargo por valor declarado" preventDismiss={guardando} onClose={() => {
+      if (!guardando)
+        setAbierto(false);
+    }} footer={<>
+      <Button variant="terciario" disabled={guardando} onClick={() => setAbierto(false)}>Cancelar</Button>
+      <Button isLoading={guardando} onClick={guardar}>Guardar porcentaje</Button>
+    </>}>
+      <div className="space-y-4">
+        <Input label="Porcentaje (%)" inputMode="decimal" value={valor} readOnly={guardando} onChange={e => setValor(e.target.value)} helperText="0 es válido: sin recargo. El porcentaje se guarda en el servidor." />
+        {tarifario.declaredValueSurchargeFictitious && <p className="text-warning-text">Guardar confirma el porcentaje como definido por la empresa y quita la marca de prueba.</p>}
+        {error && <p role="alert" className="text-error-text">{error}</p>}
       </div>
-      <Button variant="secundario" className="h-10 min-h-0 shrink-0 px-4 text-sm" onClick={abrir}>
-        Editar porcentaje
-      </Button>
-
-      <Modal
-        open={editando}
-        onClose={() => setEditando(false)}
-        title="Editar recargo por valor declarado"
-        footer={
-          <>
-            <Button variant="terciario" onClick={() => setEditando(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={guardar}>Guardar</Button>
-          </>
-        }
-      >
-        <Input
-          label="Porcentaje (%)"
-          inputMode="decimal"
-          value={valor}
-          onChange={(evento) => setValor(evento.target.value)}
-          errorText={error}
-          helperText="Se aplica sobre el valor declarado del envío."
-        />
-      </Modal>
-    </Card>
-  );
+    </Modal>
+  </Card>;
 }

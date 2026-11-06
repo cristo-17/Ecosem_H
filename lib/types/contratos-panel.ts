@@ -1171,7 +1171,33 @@ export interface SaveParcelRatesRequest {
   ranges: Array<{ toKg: number; price: number }>;
 }
 
-/** GET /v1/tarifario. Público: no tiene datos personales. */
+/** PUT /v1/tarifario/recargo-valor-declarado. Supervisor; porcentaje global. */
+export interface SaveDeclaredValueSurchargeRequest {
+  /** De 0 a 100. Guardar desde el panel quita la marca de ficticio (D-055). */
+  percent: number;
+}
+
+/** PUT /v1/tarifario/equipaje. Supervisor; reemplaza todos los escalones globales. */
+export interface SaveBaggageRatesRequest {
+  /** Vacío deja el tarifario sin definir. Límites explícitos, sin franquicia inventada. */
+  steps: Array<{ fromKg: number; toKg: number; surcharge: number | null }>;
+}
+
+/** GET /v1/tarifario/equipaje y respuesta de PUT /v1/tarifario/equipaje. */
+export interface BaggageRatesResponse {
+  steps: Array<{
+    fromKg: string;
+    toKg: string;
+    /** Nulo mientras comercial no haya definido el monto. */
+    surcharge: string | null;
+    fictitious: boolean;
+  }>;
+}
+
+/**
+ * GET /v1/tarifario. Público: no tiene datos personales.
+ * Respuesta de PUT /v1/tarifario/rutas y PUT /v1/tarifario/recargo-valor-declarado.
+ */
 export interface ParcelRatesResponse {
   routes: Array<{
     origin: string;

@@ -5,6 +5,32 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 05/11/2026 (cont. 7) · Tarifario y cotizador público contra EcosemH
+
+**Rama:** `feature/tarifario-encomiendas`, desde `main` actualizado (f06eda0). Árbol limpio al empezar. Sin commits.
+
+- Leídos CLAUDE.md, skill ecosem-design-system y ESTADO.md antes de modificar archivos; revisados styleguide, guía local de Next y rutas/validaciones del backend. Primera modificación después de crear la rama: copia literal de `../backend-ecosemh/generado/contratos-panel.ts` a `lib/types/contratos-panel.ts`, con los tres tipos nuevos. SHA-256 idéntico al inicio y al cierre: `07D0BA7B5B8A45B920913317C822E41EE0CC8A8D9E6C54D84D52D3A14F99DC88`. Sin tipos de contrato redeclarados ni cambios manuales del generado.
+- `/panel/tarifario` usa GET `/v1/tarifario` y el catálogo real de agencias/rutas; guarda conjuntos de rangos con PUT `/v1/tarifario/rutas` y porcentaje con PUT `/v1/tarifario/recargo-valor-declarado`. La respuesta real del PUT actualiza la vista; los errores conservan el formulario y no muestran un guardado ficticio. Porcentaje 0 válido. Marcas ficticias visibles y aviso de que guardar configura montos de la empresa y elimina la marca de prueba, según el comportamiento del backend. Se conserva la guardia anidada de supervisor.
+- Equipaje: consulta independiente GET `/v1/tarifario/equipaje`, para que un error allí no bloquee el resto. Edita un borrador con TODOS los escalones y envía el arreglo completo con PUT; el aviso y el botón dicen que guardar sustituye el conjunto entero. Quitar filas se aplica solo al guardar el conjunto. Conjunto vacío legítimo: «La empresa todavía no definió montos». Sin escalones ni recargos de ejemplo. Un recargo vacío conserva null. Errores de consulta no se presentan como montos sin definir.
+- `/encomiendas/enviar` utiliza agencias y rutas activas del catálogo. Solo valida el formulario y llama a `cotizar()` de `lib/api/encomiendas.ts`, la misma función usada por counter. No calcula peso volumétrico, rango, porcentaje ni total. Conserva la respuesta del servidor sin recalcularla; cambiar los datos invalida la cotización. Medidas: las tres o ninguna. El desglose de counter se extrajo a `components/encomiendas/DesgloseCotizacion.tsx` y lo comparten ambas pantallas, incluida la marca `fictitiousRate`.
+- `PARCEL_RATE_NOT_DEFINED` explica que no se puede cotizar ni registrar hasta que la empresa defina la tarifa; no hay precio alternativo ni cobro a ojo. Los errores no se ocultan tras un total local. No se inventó un historial de tarifario: cada encomienda conserva su cotización al registrarse.
+- Borrados `lib/mock/tarifario.ts` y `lib/mock/tarifarioStore.ts`. Búsqueda de sus consumidores y del cálculo local: sin referencias restantes en app/components/lib. Se actualizó F-008 con la conexión y la prueba real.
+
+**Verificación exigida, contra EcosemH (sin servicio de datos simulado):**
+- Navegador sobre las páginas reales `/encomiendas/enviar` y `/panel/encomiendas`, con el build de producción local. La sesión de supervisor se inició con el cliente oficial de Supabase y la cuenta de prueba de `.env.local`; sus cookies auténticas pasaron por las guardias y la verificación del token firmado. No se simularon roles ni se guardaron credenciales/tokens en artefactos.
+- EcosemH permite CORS para `http://localhost:3000`, pero no para 3017. Se usó un proxy exclusivamente para servir el build propio de 3017 bajo el origen autorizado 3000; ninguna llamada al backend fue interceptada o respondida por fixtures. Backend comprobado: `zhgyrnrhhwzksovqpsfb.supabase.co`.
+- Pedido idéntico capturado desde ambos formularios: `origin=lima`, `destination=huancayo`, `weightKg=4`, `lengthCm=50`, `widthCm=40`, `heightCm=30`, `declaredValue=100`.
+- Ambos POST reales devolvieron exactamente el mismo JSON: peso real `4.00`, volumétrico/facturable `12.00`, divisor `5000`, rango `5.00–20.00`, tarifa `20.00`, recargo `10.00` (10% sobre `100.00`), total `30.00 PEN`, `fictitiousRate=true`. Ambos desgloses mostraron **S/ 30.00** y la advertencia ficticia. También se comprobó repetición de cotización pública e invalidación al editar el peso; cero errores JS.
+- Evidencia local ignorada: `.qa-tmp/tarifario-ecosemh-resultado.json`, `tarifario-publico-real.png` y `tarifario-counter-real.png`; script `.qa-tmp/tarifario-ecosemh.mjs`. Solo datos del paquete y resultados públicos en el reporte; sin datos personales de remitente/destinatario. No se registró ni cobró ninguna encomienda ni se modificaron tarifas de EcosemH. Servidor propio de QA detenido después de la prueba.
+
+**Limitación externa comprobada:** GET `/v1/tarifario/equipaje` devuelve **404 NOT_FOUND** en EcosemH, aunque la ruta y el contrato nuevos existen en el repositorio del backend. Se consultó más de una vez. Falta que el servicio publicado exponga esa ruta antes de verificar su lectura/guardado real. El frontend muestra «Configuración no disponible», no afirma que ese 404 sea el vacío legítimo. No se probaron escrituras del tarifario real: guardar los importes ficticios existentes les quitaría la marca de prueba.
+
+**Incidencia del entorno de QA:** el formulario de ingreso del servidor local no completó la navegación durante la automatización; la cuenta sí se autenticó directamente en Supabase. La comparación requerida se completó con esa sesión real y las guardias activas, sin modificar el flujo de autenticación del producto.
+
+**Checks:** TypeScript, ESLint y build pasaron juntos con exit 0; tres advertencias preexistentes de datepicker en `.qa-tmp/`. `git diff --check` sin errores. La cadena de cierre se repitió después de la prueba real y terminó con exit 0; ESLint conserva solo las tres advertencias preexistentes. Se ejecutaron `git status --short` y `git status --short --untracked-files=all`, incluyendo eliminados y archivos nuevos en el informe final. Los dos archivos nuevos de código que deben incluirse al commitear son `lib/api/tarifario.ts` y `components/encomiendas/DesgloseCotizacion.tsx`, junto con el contrato copiado y los demás cambios.
+
+---
+
 ## 05/11/2026 (cont. 6) · Motor de precios conectado; tarifario sin guardados locales
 
 **Rama:** `feature/motor-de-precios`, desde `main` actualizado con `git pull` (8b0c44f). Árbol limpio al empezar. Sin commits.
