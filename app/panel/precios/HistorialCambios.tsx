@@ -1,45 +1,23 @@
 import { Card } from "@/components/ui/Card";
-import { formatFechaCorta, formatHora12 } from "@/lib/format";
-import type { CambioTarifa } from "@/lib/mock/precios";
-
-export function HistorialCambios({ historial }: { historial: CambioTarifa[] }) {
-  return (
-    <Card>
-      <h2 className="text-base font-semibold text-navy">Historial de cambios</h2>
-      <p className="mt-1 text-sm text-navy/70">
-        Cada edición de tarifa o factor queda registrada con quién, cuándo y el valor anterior.
+import type { PriceAuditResponse } from "@/lib/types/contratos-panel";
+export function HistorialCambios({ historial }: {
+  historial: PriceAuditResponse["changes"];
+}) {
+  return <Card className="space-y-4">
+    <h2 className="text-base font-semibold text-navy">Historial del servidor</h2>
+    <p className="text-sm text-text-secondary">Autor identificado por su userId real. Fecha y hora de Perú. Los valores anterior y posterior son los registros de auditoría del backend.</p>
+    {!historial.length ? <p>No hay cambios registrados en el servidor.</p> : <div className="space-y-4">{historial.map((c, i) => <article key={`${c.recordId}-${c.changedAt}-${i}`} className="space-y-3 border-t border-border-default py-4">
+      <p className="font-medium">{c.table === "tarifas_ruta" ? "Tarifa de ruta" : "Factor de precio"} · {c.recordId}</p>
+      <p>Usuario: <span className="break-all">{c.userId}</span>
       </p>
-
-      {historial.length === 0 ? (
-        <p className="mt-4 text-sm text-navy/60">Todavía no se hizo ningún cambio en esta sesión.</p>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left text-sm">
-            <thead>
-              <tr className="text-xs font-medium text-navy/60">
-                <th className="pb-2 font-medium">Fecha</th>
-                <th className="pb-2 font-medium">Usuario</th>
-                <th className="pb-2 font-medium">Campo</th>
-                <th className="pb-2 font-medium">Valor anterior</th>
-                <th className="pb-2 font-medium">Valor nuevo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historial.map((cambio) => (
-                <tr key={cambio.id} className="border-t border-navy/10">
-                  <td className="py-2 whitespace-nowrap text-navy/70">
-                    {formatFechaCorta(cambio.fecha)} {formatHora12(cambio.fecha)}
-                  </td>
-                  <td className="py-2 text-navy">{cambio.usuario}</td>
-                  <td className="py-2 text-navy">{cambio.campo}</td>
-                  <td className="py-2 text-navy/70">{cambio.valorAnterior}</td>
-                  <td className="py-2 font-medium text-navy">{cambio.valorNuevo}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </Card>
-  );
+      <time dateTime={c.changedAt}>{new Date(c.changedAt).toLocaleString("es-PE", { timeZone: "America/Lima", hour12: false })} · America/Lima</time>
+      <div className="grid gap-4 sm:grid-cols-2">{([["Antes", c.before], ["Después", c.after]] as const).map(([titulo, valor]) => <div key={titulo}>
+        <h3 className="font-medium">{titulo}</h3>
+        {valor === null ? <p>Sin registro</p> : <dl className="space-y-2">{Object.entries(valor).map(([campo, dato]) => <div key={campo} className="flex flex-wrap justify-between gap-3 text-sm">
+          <dt className="text-text-secondary">{campo}</dt>
+          <dd className="break-all">{dato === null ? "Sin valor" : typeof dato === "object" ? JSON.stringify(dato) : String(dato)}</dd>
+        </div>)}</dl>}
+      </div>)}</div>
+    </article>)}</div>}
+  </Card>;
 }

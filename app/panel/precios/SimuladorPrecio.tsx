@@ -1,133 +1,96 @@
 "use client";
-
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SearchOffIcon } from "@/components/ui/icons";
 import { formatPrecio } from "@/lib/format";
-import {
-  buscarRango,
-  calcularPrecio,
-  etiquetaRuta,
-  type TarifaRuta,
-  type RangoFactor,
-  type FactorTemporada,
-} from "@/lib/mock/precios";
-
-export interface SimuladorPrecioProps {
-  rutas: TarifaRuta[];
-  ocupacion: RangoFactor[];
-  anticipacion: RangoFactor[];
-  temporada: FactorTemporada[];
-}
-
-export function SimuladorPrecio({ rutas, ocupacion, anticipacion, temporada }: SimuladorPrecioProps) {
-  const [rutaId, setRutaId] = useState<string | null>(rutas[0]?.id ?? null);
-  const [ocupacionPct, setOcupacionPct] = useState("70");
-  const [diasAnticipacion, setDiasAnticipacion] = useState("5");
-  const [temporadaId, setTemporadaId] = useState<string | null>(temporada[0]?.id ?? null);
-
-  const ruta = rutas.find((r) => r.id === rutaId) ?? null;
-  const factorTemporada = temporada.find((t) => t.id === temporadaId) ?? null;
-
-  const ocupacionNum = Number(ocupacionPct);
-  const errorOcupacion = !ocupacionPct.trim()
-    ? "Ingresa un valor"
-    : !Number.isFinite(ocupacionNum) || ocupacionNum < 0
-      ? "Debe ser un número positivo"
-      : ocupacionNum > 100
-        ? "No puede superar 100%"
-        : undefined;
-  const rangoOcupacion = errorOcupacion ? undefined : buscarRango(ocupacion, ocupacionNum);
-
-  const diasNum = Number(diasAnticipacion);
-  const errorAnticipacion = !diasAnticipacion.trim()
-    ? "Ingresa un valor"
-    : !Number.isFinite(diasNum) || diasNum < 0
-      ? "Debe ser un número positivo"
-      : undefined;
-  const rangoAnticipacion = errorAnticipacion ? undefined : buscarRango(anticipacion, diasNum);
-
-  const opcionesRuta = rutas.map((r) => ({ value: r.id, label: etiquetaRuta(r) }));
-  const opcionesTemporada = temporada.map((t) => ({ value: t.id, label: t.etiqueta }));
-
-  const resultado =
-    ruta && rangoOcupacion && rangoAnticipacion && factorTemporada
-      ? calcularPrecio(ruta, rangoOcupacion.factor, rangoAnticipacion.factor, factorTemporada.factor)
-      : null;
-
-  return (
-    <Card className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-base font-semibold text-navy">Simulador</h2>
-        <p className="mt-1 text-sm text-navy/70">
-          Elige una ruta y las condiciones del viaje: así se explica cualquier tarifa, factor por
-          factor.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Select label="Ruta" options={opcionesRuta} value={rutaId} onChange={setRutaId} />
-        <Select label="Temporada" options={opcionesTemporada} value={temporadaId} onChange={setTemporadaId} />
-        <Input
-          label="Ocupación actual (%)"
-          inputMode="numeric"
-          value={ocupacionPct}
-          onChange={(evento) => setOcupacionPct(evento.target.value)}
-          errorText={errorOcupacion ?? (!rangoOcupacion ? "Fuera de los rangos configurados" : undefined)}
-        />
-        <Input
-          label="Días de anticipación"
-          inputMode="numeric"
-          value={diasAnticipacion}
-          onChange={(evento) => setDiasAnticipacion(evento.target.value)}
-          errorText={errorAnticipacion ?? (!rangoAnticipacion ? "Fuera de los rangos configurados" : undefined)}
-        />
-      </div>
-
-      {ruta && resultado && rangoOcupacion && rangoAnticipacion && factorTemporada ? (
-        <div className="rounded-modal bg-navy/5 p-4">
-          <p className="text-xs font-medium text-navy/60">Desglose</p>
-          <dl className="mt-2 flex flex-col gap-1.5 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt className="text-navy/70">Tarifa base ({etiquetaRuta(ruta)})</dt>
-              <dd className="shrink-0 text-navy">{formatPrecio(resultado.tarifaBase)}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-navy/70">Factor de ocupación ({rangoOcupacion.etiqueta})</dt>
-              <dd className="shrink-0 text-navy">×{resultado.factorOcupacion.toFixed(2)}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-navy/70">Factor de anticipación ({rangoAnticipacion.etiqueta})</dt>
-              <dd className="shrink-0 text-navy">×{resultado.factorAnticipacion.toFixed(2)}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-navy/70">Factor de temporada ({factorTemporada.etiqueta})</dt>
-              <dd className="shrink-0 text-navy">×{resultado.factorTemporada.toFixed(2)}</dd>
-            </div>
-            <div className="flex justify-between gap-3 border-t border-navy/10 pt-1.5 font-medium">
-              <dt className="text-navy">Subtotal</dt>
-              <dd className="shrink-0 text-navy">{formatPrecio(resultado.subtotal)}</dd>
-            </div>
-          </dl>
-
-          {resultado.ajustadoPor !== "ninguno" && (
-            <p className="mt-3 rounded-md bg-warning-fill px-3 py-2 text-xs text-warning-text">
-              Ajustado al tope {resultado.ajustadoPor === "minimo" ? "mínimo" : "máximo"} de la ruta
-              ({formatPrecio(resultado.ajustadoPor === "minimo" ? ruta.topeMinimo : ruta.topeMaximo)}
-              ): el cálculo {resultado.ajustadoPor === "minimo" ? "quedaba por debajo" : "superaba"}{" "}
-              ese límite configurado.
-            </p>
-          )}
-
-          <div className="mt-3 flex items-center justify-between border-t border-navy/10 pt-3">
-            <span className="text-sm font-semibold text-navy">Precio final</span>
-            <span className="text-2xl font-bold text-navy">{formatPrecio(resultado.precioFinal)}</span>
-          </div>
+import { viajesParaCotizar, cotizarViaje, mensajePrecios } from "@/lib/api/precios";
+import type { FareListResponse } from "@/lib/types/contratos-panel";
+import type { PriceQuoteResponse, TripListResponse } from "@/lib/types/contratos-frontend";
+export function SimuladorPrecio({ rutas }: {
+  rutas: FareListResponse["fares"];
+}) {
+  const [ruta, setRuta] = useState<string | null>(rutas[0]?.route ?? null);
+  const [fecha, setFecha] = useState("");
+  const [viajes, setViajes] = useState<TripListResponse["trips"] | null>(null);
+  const [viaje, setViaje] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<PriceQuoteResponse | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+  async function buscar() {
+    if (!ruta || !fecha || ocupado)
+      return;
+    setOcupado(true);
+    setError("");
+    setResultado(null);
+    setViajes(null);
+    setViaje(null);
+    try {
+      setViajes((await viajesParaCotizar(ruta, fecha)).trips);
+    }
+    catch (e) {
+      setError(mensajePrecios(e).descripcion);
+    }
+    finally {
+      setOcupado(false);
+    }
+  }
+  async function consultar() {
+    if (!viaje || ocupado)
+      return;
+    setOcupado(true);
+    setError("");
+    setResultado(null);
+    try {
+      setResultado(await cotizarViaje(viaje));
+    }
+    catch (e) {
+      setError(mensajePrecios(e).descripcion);
+    }
+    finally {
+      setOcupado(false);
+    }
+  }
+  function limpiar() { setViajes(null); setViaje(null); setResultado(null); setError(""); }
+  return <Card className="space-y-4">
+    <h2 className="text-base font-semibold text-navy">Simulador · cotización real de un viaje</h2>
+    <p className="text-sm text-text-secondary">Consulta el motor del servidor con la ocupación, anticipación y fecha de salida reales. No crea una reserva ni cobra. Vuelve a consultar después de cambiar la configuración.</p>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Select label="Ruta" disabled={ocupado} options={rutas.map(r => ({ value: r.route, label: r.route }))} value={ruta} onChange={v => { setRuta(v); limpiar(); }} />
+      <Input label="Fecha de salida" type="date" value={fecha} readOnly={ocupado} onChange={e => { setFecha(e.target.value); limpiar(); }} />
+    </div>
+    <Button variant="secundario" disabled={!ruta || !fecha} isLoading={ocupado} onClick={buscar}>Buscar viajes</Button>
+    {viajes && (viajes.length ? <div className="space-y-4">
+      <Select label="Viaje" disabled={ocupado} options={viajes.map(v => ({ value: v.id, label: `${new Date(v.departsAt).toLocaleString("es-PE", { timeZone: "America/Lima" })} · ${v.serviceType}` }))} value={viaje} onChange={v => { setViaje(v); setResultado(null); setError(""); }} />
+      <Button variant="secundario" disabled={!viaje} isLoading={ocupado} onClick={consultar}>Consultar precio vigente</Button>
+    </div> : <EmptyState icon={<SearchOffIcon className="size-8" />} title="Sin viajes para esa fecha" description="Elige otra fecha o ruta para consultar el motor con un viaje programado." actionLabel="Cambiar consulta" onAction={limpiar} />)}
+    {error && <p role="alert" className="text-error-text">{error}</p>}
+    {resultado && <div className="space-y-4 rounded-md bg-info-fill p-4 text-info-text">
+      {resultado.fictitious && <p className="rounded-md bg-warning-fill p-3 font-medium text-warning-text">Cotización ficticia: contiene tarifa o factores de prueba.</p>}
+      <dl className="space-y-3">
+        <div className="flex justify-between gap-3">
+          <dt>Tarifa base</dt>
+          <dd>{formatPrecio(Number(resultado.baseFare))}</dd>
         </div>
-      ) : (
-        <p className="text-sm text-navy/60">Corrige los campos marcados para ver el precio.</p>
-      )}
-    </Card>
-  );
+        {([["Ocupación", resultado.occupancy], ["Anticipación", resultado.advance], ["Temporada", resultado.season]] as const).map(([nombre, f]) => <div key={nombre} className="flex flex-wrap justify-between gap-3">
+          <dt>{nombre}: {f.configured ? f.label : "sin factor configurado"}</dt>
+          <dd>×{f.factor}</dd>
+        </div>)}
+        <div>Ocupación: {resultado.occupancy.occupancyPct}% · Anticipación: {resultado.advance.days} días</div>
+        <div className="flex justify-between gap-3">
+          <dt>Subtotal</dt>
+          <dd>{formatPrecio(Number(resultado.subtotal))}</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt>Topes mínimo / máximo</dt>
+          <dd>{formatPrecio(Number(resultado.minFare))} / {formatPrecio(Number(resultado.maxFare))}</dd>
+        </div>
+      </dl>
+      {resultado.adjustedTo !== "none" && <p>Ajustado al tope {resultado.adjustedTo === "min" ? "mínimo" : "máximo"}.</p>}
+      <p className="text-lg font-semibold">Precio vigente por asiento: {formatPrecio(Number(resultado.unitPrice))}</p>
+    </div>}
+  </Card>;
 }

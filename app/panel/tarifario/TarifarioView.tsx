@@ -1,50 +1,30 @@
 "use client";
-
+import { Card } from "@/components/ui/Card";
 import { RUTAS_ENCOMIENDA, etiquetaRutaEncomienda } from "@/lib/mock/tarifario";
-import { useTarifarioStore, actualizarRangosRuta, actualizarEscalonesEquipaje, actualizarPorcentajeRecargo } from "@/lib/mock/tarifarioStore";
-import { RangosEncomiendaCard } from "./RangosEncomiendaCard";
-import { EquipajeCard } from "./EquipajeCard";
-import { RecargoValorDeclaradoCard } from "./RecargoValorDeclaradoCard";
-
+import { useTarifarioStore } from "@/lib/mock/tarifarioStore";
+import { formatPrecio } from "@/lib/format";
+/** Sin formularios ni callbacks de escritura mientras faltan los contratos del servicio. */
 export function TarifarioView() {
   const { tarifario, escalonesEquipaje, porcentajeRecargoValorDeclarado } = useTarifarioStore();
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-navy sm:text-2xl">Tarifario</h1>
-        <p className="mt-1 text-sm text-navy/70">
-          Rangos de peso por ruta, exceso de equipaje y recargo por valor declarado. El cotizador de
-          encomiendas lee esta misma configuración.
-        </p>
-      </div>
-
-      <div>
-        <h2 className="text-base font-semibold text-navy">Encomiendas por ruta</h2>
-        <p className="mt-1 text-sm text-navy/70">
-          Se cobra por rango de peso, no por kilo exacto — el mayor entre peso real y volumétrico.
-        </p>
-        <div className="mt-3 flex flex-col gap-3">
-          {RUTAS_ENCOMIENDA.map((ruta) => {
-            const tarifarioRuta = tarifario.find((t) => t.rutaId === ruta.id);
-            return (
-              <RangosEncomiendaCard
-                key={ruta.id}
-                titulo={etiquetaRutaEncomienda(ruta)}
-                rangos={tarifarioRuta?.rangos ?? []}
-                onCambiar={(rangos) => actualizarRangosRuta(ruta.id, rangos)}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <EquipajeCard escalones={escalonesEquipaje} onCambiar={actualizarEscalonesEquipaje} />
-
-      <RecargoValorDeclaradoCard
-        porcentaje={porcentajeRecargoValorDeclarado}
-        onCambiar={actualizarPorcentajeRecargo}
-      />
+  return <div className="space-y-6">
+    <h1 className="text-xl font-semibold text-navy sm:text-2xl">Tarifario</h1>
+    <div role="status" className="space-y-3 rounded-md bg-warning-fill p-4 text-warning-text">
+      <p className="font-semibold">Pantalla todavía no conectada al backend. Edición y guardado no disponibles.</p>
+      <p>Los datos de abajo son una referencia local y no representan el tarifario vigente. Los cambios locales no se aplican al cobro real. El counter consulta el tarifario del servidor.</p>
     </div>
-  );
+    <section className="space-y-4">
+      <h2 className="text-lg font-semibold text-navy">Encomiendas por ruta · referencia local</h2>
+      {RUTAS_ENCOMIENDA.map(ruta => <Card key={ruta.id} className="space-y-3">
+        <h3 className="font-semibold">{etiquetaRutaEncomienda(ruta)}</h3>
+        {!tarifario.find(t => t.rutaId === ruta.id)?.rangos.length ? <p>Sin rangos locales. Consulta el tarifario vigente en counter.</p> : tarifario.find(t => t.rutaId === ruta.id)?.rangos.map(r => <p key={r.id}>Hasta {r.hastaKg} kg · {formatPrecio(r.precio)}</p>)}
+      </Card>)}
+    </section>
+    <Card className="space-y-3">
+      <h2 className="font-semibold">Exceso de equipaje · referencia local</h2>
+      <p>Hasta 20 kg: franquicia incluida.</p>{escalonesEquipaje.map(e => <p key={e.id}>{e.etiqueta}: {e.recargo === null ? "Sin definir en esta referencia" : formatPrecio(e.recargo)}</p>)}</Card>
+    <Card className="space-y-3">
+      <h2 className="font-semibold">Recargo por valor declarado · referencia local</h2>
+      <p>{porcentajeRecargoValorDeclarado === null ? "Sin definir en esta referencia" : `${porcentajeRecargoValorDeclarado}%`}</p>
+    </Card>
+  </div>;
 }
