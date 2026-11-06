@@ -24,17 +24,17 @@ export function PopularRoutes() {
               <Card className="flex items-center justify-between gap-3 transition hover:shadow-medium">
                 <div className="min-w-0">
                   {viajeReferencia && (
-                    <p className="text-xs font-semibold text-navy/60">{viajeReferencia.marca}</p>
+                    <p className="text-xs font-semibold text-text-secondary">{viajeReferencia.marca}</p>
                   )}
                   <p className="mt-0.5 truncate text-sm font-semibold text-navy">
                     {ruta.origen} → {ruta.destino}
                   </p>
-                  <p className="mt-1 text-xs text-navy/60">
+                  <p className="mt-1 text-xs text-text-secondary">
                     {viajeReferencia && `${formatDuracion(viajeReferencia.duracionMinutos)} · `}
                     Por tramo Desde {formatPrecio(ruta.precioDesde)}
                   </p>
                 </div>
-                <ChevronRightIcon className="!size-6 shrink-0 text-navy/40" />
+                <ChevronRightIcon className="!size-6 shrink-0 text-text-faint" />
               </Card>
             </Link>
           );

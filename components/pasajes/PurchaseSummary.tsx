@@ -42,19 +42,19 @@ export function PurchaseSummary({
         <p className="text-base font-semibold text-navy">
           {origen} → {destino}
         </p>
-        <p className="text-xs text-navy/60">
+        <p className="text-xs text-text-secondary">
           {formatFechaLarga(salida)} · {formatHora12(salida)} · {terminalOrigen}
         </p>
       </div>
 
       <div className="border-t border-navy/10 pt-3">
-        <p className="text-xs font-medium text-navy/60">Asientos</p>
+        <p className="text-xs font-medium text-text-secondary">Asientos</p>
         <p className="text-sm text-navy">{asientos.map(etiquetaAsiento).join(", ")}</p>
       </div>
 
       {pasajeros.some(Boolean) && (
         <div className="border-t border-navy/10 pt-3">
-          <p className="text-xs font-medium text-navy/60">Pasajeros</p>
+          <p className="text-xs font-medium text-text-secondary">Pasajeros</p>
           <ul className="text-sm text-navy">
             {pasajeros.map((nombre, indice) => (
               <li key={indice}>{nombre || `Pasajero ${indice + 1}`}</li>

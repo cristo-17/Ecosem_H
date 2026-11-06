@@ -1,4 +1,6 @@
 "use client";
+import { CENTRAL } from "@/lib/contacto";
+
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -206,7 +208,7 @@ export function ResultadosView({
             onAction={reintentar}
             footer={
               <div className="flex flex-col gap-1 text-sm text-navy/70">
-                <p>O llama a la central: +51 959 366 710</p>
+                <p>O llama a la central: {CENTRAL.telefono}</p>
                 {estado.falla.correlationId && (
                   <p className="text-xs">
                     Código de referencia: {estado.falla.correlationId.slice(0, 8)}

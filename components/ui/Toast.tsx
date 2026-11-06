@@ -152,7 +152,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
         type="button"
         aria-label="Cerrar notificación"
         onClick={onDismiss}
-        className="flex size-11 shrink-0 items-center justify-center rounded-field text-navy/50 transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="flex size-11 shrink-0 items-center justify-center rounded-field text-text-muted transition hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
       >
         <CloseIcon />
       </button>

@@ -43,7 +43,7 @@ export function Textarea({
         aria-describedby={helperText || errorText ? helperId : undefined}
         className={cn(
           "w-full resize-y rounded-field border bg-white px-4 py-3 text-base text-navy transition",
-          "placeholder:text-navy/40",
+          "placeholder:text-text-faint",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary",
           "disabled:cursor-not-allowed disabled:opacity-40",
           hasError ? "border-primary focus:border-primary" : "border-navy/20 focus:border-secondary",

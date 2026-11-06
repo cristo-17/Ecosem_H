@@ -1,4 +1,5 @@
 "use client";
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -199,16 +200,16 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
 
       <Card className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex items-center gap-2">
-          <SteeringWheelIcon className="!text-navy/50" />
+          <SteeringWheelIcon className="!text-text-muted" />
           <div>
-            <p className="text-xs text-navy/60">Unidad</p>
+            <p className="text-xs text-text-secondary">Unidad</p>
             <p className="text-sm font-semibold text-navy">
               {bus.unit} · {bus.plate}
             </p>
           </div>
         </div>
         <div>
-          <p className="text-xs text-navy/60">{drivers.length > 1 ? "Conductores" : "Conductor"}</p>
+          <p className="text-xs text-text-secondary">{drivers.length > 1 ? "Conductores" : "Conductor"}</p>
           <p className="text-sm font-semibold text-navy">
             {drivers.length
               ? drivers.map((d) => `${d.firstNames} ${d.lastNames}`).join(" / ")
@@ -219,7 +220,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
           )}
         </div>
         <div>
-          <p className="text-xs text-navy/60">Embarque (en esta versión)</p>
+          <p className="text-xs text-text-secondary">Embarque (en esta versión)</p>
           <p className="text-sm font-semibold text-navy">
             {embarcados}/{passengers.length} embarcados
             {infantsInArms.length > 0 ? ` · ${infantsInArms.length} en brazos` : ""}
@@ -231,7 +232,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-navy">Pasajeros</h2>
-            <p className="text-xs text-navy/60">
+            <p className="text-xs text-text-secondary">
               Versión {manifiesto.version} · {formatFechaCorta(generado)} {formatHora12(generado)}
               {manifiesto.generatedByName ? ` · ${manifiesto.generatedByName}` : ""}
             </p>
@@ -250,18 +251,18 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
             </Button>
           </div>
         </div>
-        <p className="mt-2 text-xs text-navy/60">
+        <p className="mt-2 text-xs text-text-secondary">
           El embarque que ves es el de esta versión. Genera una nueva para incluir lo último que
           sincronizaron los dispositivos.
         </p>
 
         {passengers.length === 0 ? (
-          <p className="mt-4 text-sm text-navy/60">Este viaje no tiene pasajeros vendidos.</p>
+          <p className="mt-4 text-sm text-text-secondary">Este viaje no tiene pasajeros vendidos.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <ScrollRegion label="Pasajeros del viaje" className="mt-4">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="text-xs font-medium text-navy/60">
+                <tr className="text-xs font-medium text-text-secondary">
                   <th className="pb-2 font-medium">Asiento</th>
                   <th className="pb-2 font-medium">Nombre completo</th>
                   <th className="pb-2 font-medium">Documento</th>
@@ -297,7 +298,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         )}
       </Card>
 
@@ -313,7 +314,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
                   className="flex justify-between gap-3 border-t border-navy/10 py-2 first:border-0"
                 >
                   <span className="text-navy">Versión {v.version}</span>
-                  <span className="text-navy/60">
+                  <span className="text-text-secondary">
                     {formatFechaCorta(new Date(v.generatedAt))} {formatHora12(new Date(v.generatedAt))}
                     {v.generatedByName ? ` · ${v.generatedByName}` : ""}
                     {"first" in v.changes ? "" : v.changes.unchanged ? " · sin cambios" : " · con cambios"}

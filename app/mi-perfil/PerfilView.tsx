@@ -36,7 +36,7 @@ export function PerfilView({
         </span>
         <div>
           <h1 className="text-xl font-semibold text-navy sm:text-2xl">{nombre ?? "Mi perfil"}</h1>
-          {correo && <p className="text-sm text-navy/60">{correo}</p>}
+          {correo && <p className="text-sm text-text-secondary">{correo}</p>}
         </div>
       </div>
 

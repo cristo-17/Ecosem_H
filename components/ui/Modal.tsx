@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
-import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import type { MouseEvent as ReactMouseEvent, ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
@@ -26,6 +26,8 @@ export interface ModalProps {
    */
   preventDismiss?: boolean;
   className?: string;
+  /** Ancla estable y etiquetada si el disparador desaparece al confirmar. */
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export function Modal({
@@ -36,6 +38,7 @@ export function Modal({
   footer,
   preventDismiss = false,
   className,
+  returnFocusRef,
 }: ModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -49,9 +52,11 @@ export function Modal({
   // en el cuerpo del componente ya no lo acepta el linter de hooks.
   const onCloseRef = useRef(onClose);
   const preventDismissRef = useRef(preventDismiss);
+  const fallbackRef = useRef(returnFocusRef);
   useEffect(() => {
     onCloseRef.current = onClose;
     preventDismissRef.current = preventDismiss;
+    fallbackRef.current = returnFocusRef;
   });
 
   const mounted = useIsMounted();
@@ -93,7 +98,11 @@ export function Modal({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocusedRef.current?.focus();
+      const previous = previouslyFocusedRef.current;
+      if (previous?.isConnected) previous.focus();
+      if (!previous?.isConnected || document.activeElement !== previous) {
+        fallbackRef.current?.current?.focus();
+      }
     };
   }, [open]);
 

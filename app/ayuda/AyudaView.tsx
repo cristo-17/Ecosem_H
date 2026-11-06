@@ -1,3 +1,4 @@
+import { CENTRAL } from "@/lib/contacto";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { AccordionItem } from "@/components/ui/Accordion";
@@ -36,8 +37,8 @@ export function AyudaView() {
             contacto@ecosemh.pe
           </a>{" "}
           o llámanos al{" "}
-          <a href="tel:+51987654321" className="text-secondary underline">
-            987 654 321
+          <a href={CENTRAL.href} className="text-secondary underline">
+            {CENTRAL.telefono}
           </a>
           . Si es un reclamo o una queja formal, tienes a disposición el{" "}
           <Link href={RUTAS.libroReclamaciones} className="text-secondary underline">
