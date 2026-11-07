@@ -5,6 +5,48 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 06/11/2026 · Textos legales y clases reales
+
+**Rama:** `feature/textos-legales-y-clases`, desde main actualizado (145c482).
+`git fetch --prune` y búsqueda remota de legal sin coincidencias. Sin commits.
+
+- Leídos primero CLAUDE.md y ecosem-design-system; consultados styleguide y
+  documentación local de Next. Ejecutivo, Confort y Suite centralizados con
+  sus prestaciones en lib/servicios.ts y publicados en /terminos. Se conservan
+  los códigos heredados economico/ejecutivo/vip para compatibilidad API,
+  respectivamente; confirmar correspondencia con operaciones antes de producción.
+- /terminos y /privacidad redactados, sin avisos naranjas. Se conservan las
+  condiciones de viaje preexistentes. Incluidos contacto y casa matriz dados
+  por el usuario, destinos, cancelación hasta 24 horas, 20 kg, pasaje completo
+  desde 5 años y prohibición de mascotas. FAQ de cancelación alineada.
+- Privacidad cubre datos/finalidades, documento obligatorio en boleto y
+  manifiesto, SUNAT/autoridad de transporte, proveedores, conservación tributaria,
+  derechos ARCO por ventas@ecosemh.com y seguridad sin garantías absolutas.
+  Sin prometer borrado ni reembolsos automáticos. Correo y teléfono reales
+  también en Ayuda/Footer; nombre comercial uniformado a Ecosem H.
+- Textos redactados pero **SIN revisión legal**, registrado en ESTADO.md con
+  fecha 06/11/2026. Revisar condiciones heredadas, plazos de datos no tributarios,
+  proveedores/transferencias reales y procedimiento operativo ARCO.
+- Corrección normativa: DS 003-2013-JUS es antecedente derogado; se cita como
+  vigente DS 016-2024-JUS, además de Ley 29733. No se inventan datos societarios.
+
+Fuentes normativas oficiales consultadas el 06/11/2026:
+- [Reglamento vigente y derogación del anterior, DS 016-2024-JUS](https://www3.congreso.gob.pe/Docs/DGP/DIDP/files/ds_016-2024-jus.pdf).
+- [RS 156-2003/SUNAT, boleto y manifiesto](https://www.sunat.gob.pe/legislacion/superin/2003/156.htm).
+- [RENAT, DS 017-2009-MTC](https://www.gob.pe/institucion/mtc/normas-legales/9895-017-2009-mtc).
+- [Ley 29571](https://www.leyes.congreso.gob.pe/DetLeyNume_1p.aspx?xNorma=6&xNumero=29571&xTipo=).
+- [DS 011-2011-PCM, Libro de Reclamaciones](https://www.gob.pe/institucion/presidencia/normas-legales/541080-011-2011-pcm).
+- [Código Tributario, artículo 87.7](https://www.sunat.gob.pe/legislacion/codigo/textoCompleto-TUO-CT.pdf).
+
+Verificación: `npx tsc --noEmit`, `npx eslint .` y `npm run build`
+aprobados (37 páginas generadas). `git diff --check` sin errores. Búsqueda
+confirma ausencia de etiquetas antiguas en pantallas y de avisos pendientes
+en ambas páginas legales. `git status --short` final completo: 14 archivos
+modificados, sin archivos nuevos ni commits.
+Incidencia de codificación corregida y registrada en FALLOS.md.
+
+---
+
 ## 06/11/2026 · Home conectada al catálogo, sin precios comerciales
 
 **Rama:** `feature/home-conectada`, desde main actualizado (e746329).

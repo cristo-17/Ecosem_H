@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 15/09/2026 (noche, cont. 4)
+Última actualización: 06/11/2026 (textos legales y clases)
 
 ## Resumen
 
@@ -107,17 +107,18 @@ declaración de equipaje en `/pasajes/comprar/datos` es solo informativa
 boleto, porque el monto de cada escalón todavía no está definido. Ver el
 requisito operativo de balanza digital en Riesgos abiertos.
 
-Específico de ayuda y legal (`docs/prompts/14-ayuda-faq.md`, actualizado
-por `docs/prompts/15-condiciones-contratacion.md`): `/privacidad` y la
-mayor parte de `/terminos` (7 de sus 9 secciones) siguen siendo solo
-estructura (encabezados + marcador de pendiente), nunca texto legal —
-publicarlas de verdad requiere que el área legal redacte y apruebe cada
-sección primero (ver Riesgos abiertos). Las respuestas de `/ayuda` que
-siguen sin política definida (qué pasa si se pierde el bus, cancelaciones,
-reembolsos, qué se puede enviar como encomienda, qué documento pide el
-destinatario) remiten a counter en vez de inventar una regla; si el área
-comercial las define, hay que volver a `app/ayuda/preguntasFrecuentes.tsx`
-y actualizar esas respuestas.
+Específico de ayuda y legal (06/11/2026): `/terminos` y `/privacidad`
+están redactados, pero **SIN revisión legal**. Se retiraron los marcadores
+públicos; queda pendiente revisión por un profesional antes de publicar.
+Cancelaciones de pasajes hasta 24 horas antes, solicitud por canales de atención;
+no se promete devolución automática ni eliminación automática de pasajeros.
+ARCO se solicita a ventas@ecosemh.com. La conservación tributaria se describe
+conforme al artículo 87.7 del Código Tributario; falta validar los plazos por
+categoría, procedimientos de atención, proveedores y transferencias efectivas.
+El DS 003-2013-JUS se cita como antecedente derogado por el DS 016-2024-JUS.
+Clases comerciales: Ejecutivo, Confort y Suite; se mantienen los códigos
+heredados economico/ejecutivo/vip de la API, respectivamente. Validar esta
+correspondencia con el catálogo operativo antes de producción.
 
 Específico de condiciones de contratación (`docs/prompts/15-condiciones-contratacion.md`):
 la lectura de "postergación por 15 días hábiles" como ventana de la nueva
@@ -154,7 +155,7 @@ de QA sin datos sensibles.
 | Foto de flota en hero | Pendiente material real del cliente |
 | Ícono de la PWA de embarque (`public/manifest.webmanifest`) reusa `icon.png`, que no es cuadrado (793×695) | Pedir al diseño un ícono cuadrado (192×192 y 512×512 mínimo) cuando exista |
 | Contratos vigentes con agregadores | Revisar exclusividades antes de reducir cupos |
-| `/privacidad` completa y 7 de las 9 secciones de `/terminos` (docs/prompts/14-ayuda-faq.md) solo tienen estructura — ningún texto legal fue redactado. Las Condiciones Generales del Contrato de Viaje sí son texto real (docs/prompts/15-condiciones-contratacion.md, D-038) | Requiere revisión y redacción del área legal para el resto antes de publicar el sitio; no habilitar esas secciones como definitivas hasta entonces |
-| Las respuestas de `/ayuda` sobre pérdida del bus, cancelaciones, reembolsos, qué se puede enviar como encomienda y qué documento pide el destinatario remiten a counter porque nadie definió esas políticas todavía | Área comercial/operaciones debe definir esas políticas; luego actualizar `app/ayuda/preguntasFrecuentes.tsx` |
+| `/terminos` y `/privacidad` redactados el 06/11/2026, SIN revisión legal | Revisión profesional pendiente, incluida conservación, proveedores, transferencias y condiciones heredadas del contrato de viaje |
+| Las respuestas de `/ayuda` sobre pérdida del bus, condiciones de reembolso, qué se puede enviar como encomienda y qué documento pide el destinatario remiten a counter porque nadie definió esas políticas todavía | Área comercial/operaciones debe definir esas políticas; luego actualizar `app/ayuda/preguntasFrecuentes.tsx` |
 | Interpretación de "postergación por 15 días hábiles" (D-039) no confirmada directamente por la empresa — es la lectura más razonable del texto, no un hecho verificado | Confirmar con la empresa antes de que esta interpretación respalde una disputa real con un pasajero |
 | El sistema de compra no distingue pasajeros adultos de niños desde 5 años (vacío funcional detectado en docs/prompts/15-condiciones-contratacion.md, punto 5 de las Condiciones) | Definir con el cliente si se requiere una tarifa o conteo diferenciado por edad antes de tocar el flujo de compra |

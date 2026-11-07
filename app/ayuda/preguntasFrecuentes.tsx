@@ -81,7 +81,7 @@ export const CATEGORIAS_FAQ: CategoriaFaq[] = [
       {
         id: "cancelar",
         pregunta: "¿Puedo cancelar mi pasaje?",
-        respuesta: "Todavía no tenemos una política publicada de cancelaciones ni reembolsos: consulta en counter.",
+        respuesta: "Puedes solicitar la cancelación hasta 24 horas antes de la salida. Escríbenos a ventas@ecosemh.com, llama al 953 249 763 o acude al punto de venta. Solicita la confirmación y las condiciones de devolución aplicables; no hay reembolso automático desde esta página.",
       },
       {
         id: "mascotas",
@@ -92,7 +92,7 @@ export const CATEGORIAS_FAQ: CategoriaFaq[] = [
         id: "ninos",
         pregunta: "¿Los niños pagan pasaje?",
         respuesta:
-          "Sí, desde los 5 años. Si el menor de edad viaja acompañado de un familiar, necesita permiso notarial de sus padres.",
+          "Sí, pagan el pasaje completo desde los 5 años. Si el menor de edad viaja acompañado de un familiar, necesita permiso notarial de sus padres.",
       },
     ],
   },

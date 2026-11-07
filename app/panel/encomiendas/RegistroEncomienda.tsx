@@ -415,7 +415,7 @@ export function RegistroEncomienda({ agencias, agenciaPropia, onVerEncomienda }:
         errores={errores}
       >
         <Checkbox
-          label="Acepta recibir por WhatsApp mensajes de ECOSEM H sobre esta encomienda."
+          label="Acepta recibir por WhatsApp mensajes de Ecosem H sobre esta encomienda."
           checked={whatsapp}
           onChange={(evento) => setWhatsapp(evento.target.checked)}
         />

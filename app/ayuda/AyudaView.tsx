@@ -33,8 +33,8 @@ export function AyudaView() {
         <h2 className="text-base font-semibold text-navy">¿No encontraste tu respuesta?</h2>
         <p className="text-sm text-navy/70">
           Escríbenos a{" "}
-          <a href="mailto:contacto@ecosemh.pe" className="text-secondary underline">
-            contacto@ecosemh.pe
+          <a href="mailto:ventas@ecosemh.com" className="text-secondary underline">
+            ventas@ecosemh.com
           </a>{" "}
           o llámanos al{" "}
           <a href={CENTRAL.href} className="text-secondary underline">

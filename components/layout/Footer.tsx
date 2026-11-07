@@ -120,10 +120,10 @@ export function Footer() {
             </li>
             <li>
               <a
-                href="mailto:contacto@ecosemh.pe"
+                href="mailto:ventas@ecosemh.com"
                 className="text-sm text-white/70 hover:text-white transition-colors duration-200"
               >
-                contacto@ecosemh.pe
+                ventas@ecosemh.com
               </a>
             </li>
           </ul>
