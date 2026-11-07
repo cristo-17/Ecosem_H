@@ -3,6 +3,8 @@ import { formatDuracion, formatHora12, formatPrecio } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
+import { AvisoTarifa } from "@/components/ui/AvisoTarifa";
+import type { TripSummary } from "@/lib/types/contratos-frontend";
 
 export interface TripCardProps {
   marca: string;
@@ -19,6 +21,7 @@ export interface TripCardProps {
   tipoAsiento: string;
   /** null si la ruta todavía no tiene tarifa: no se puede seleccionar. */
   precio: number | null;
+  fictitious: TripSummary["fictitious"];
   /** Tarjeta seleccionada: borde de color + elevación mayor (skill). */
   selected?: boolean;
   onSeleccionar?: () => void;
@@ -40,10 +43,12 @@ export function TripCard({
   asientosDisponibles,
   tipoAsiento,
   precio,
+  fictitious,
   selected = false,
   onSeleccionar,
   className,
 }: TripCardProps) {
+  const sinTarifa = fictitious === null || precio === null;
   const disponibilidadBaja = asientosDisponibles <= UMBRAL_DISPONIBILIDAD_BAJA;
   const textoDisponibilidad = disponibilidadBaja
     ? `Sólo ${asientosDisponibles} ${asientosDisponibles === 1 ? "asiento" : "asientos"}`
@@ -94,7 +99,7 @@ export function TripCard({
         <div>
           <p className="text-xs text-text-secondary">Precio</p>
           <p className="text-xl font-bold text-navy">
-            {precio !== null ? formatPrecio(precio) : "Sin tarifa"}
+            {!sinTarifa ? formatPrecio(precio!) : "Sin tarifa"}
           </p>
         </div>
         {/*
@@ -107,7 +112,7 @@ export function TripCard({
         <Button
           variant="secundario"
           onClick={onSeleccionar}
-          disabled={precio === null}
+          disabled={sinTarifa}
           className="min-w-32"
         >
           {selected ? (
@@ -120,6 +125,7 @@ export function TripCard({
           )}
         </Button>
       </div>
+      <AvisoTarifa fictitious={sinTarifa ? null : fictitious} className="mt-2" />
     </Card>
   );
 }

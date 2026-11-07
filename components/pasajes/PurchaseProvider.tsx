@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type {
   DocumentKind,
   ReservationResponse,
+  StartPaymentResponse,
   TripSummary,
 } from "@/lib/types/contratos-frontend";
 import { liberarReserva } from "@/lib/api/compra";
@@ -68,6 +69,8 @@ interface PurchaseState {
    * desde el navegador: el usuario puede estar pagando en Yape.
    */
   pagoIniciado: boolean;
+  /** Marca congelada devuelta al iniciar el pago; solo en memoria. */
+  pago: Pick<StartPaymentResponse, "reservationId" | "fictitious"> | null;
   borradores: BorradorPasajero[];
   contacto: BorradorContacto;
 }
@@ -79,7 +82,7 @@ interface PurchaseContextValue extends PurchaseState {
   soltarReserva: () => void;
   /** La reserva venció o ya no existe en el backend: se olvida sin liberar. */
   olvidarReserva: () => void;
-  marcarPagoIniciado: () => void;
+  marcarPagoIniciado: (pago: StartPaymentResponse) => void;
   setBorradores: (borradores: BorradorPasajero[]) => void;
   setContacto: (contacto: BorradorContacto) => void;
 }
@@ -89,6 +92,7 @@ const ESTADO_INICIAL: PurchaseState = {
   pasajerosCount: 1,
   reserva: null,
   pagoIniciado: false,
+  pago: null,
   borradores: [],
   contacto: CONTACTO_VACIO,
 };
@@ -168,24 +172,25 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   }, [liberarActual]);
 
   const fijarReserva = useCallback((reserva: ReservationResponse) => {
-    setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false }));
+    setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false, pago: null }));
   }, []);
 
   const soltarReserva = useCallback(() => {
     liberarActual();
     estadoRef.current = { ...estadoRef.current, reserva: null };
-    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
+    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false, pago: null }));
   }, [liberarActual]);
 
   const olvidarReserva = useCallback(() => {
-    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
+    setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false, pago: null }));
   }, []);
 
-  const marcarPagoIniciado = useCallback(() => {
+  const marcarPagoIniciado = useCallback((respuesta: StartPaymentResponse) => {
+    const pago = { reservationId: respuesta.reservationId, fictitious: respuesta.fictitious };
     // Al instante, sin esperar al render: si el usuario sale justo después de
     // pagar, la limpieza no debe liberar la reserva.
-    estadoRef.current = { ...estadoRef.current, pagoIniciado: true };
-    setEstado((prev) => ({ ...prev, pagoIniciado: true }));
+    estadoRef.current = { ...estadoRef.current, pagoIniciado: true, pago };
+    setEstado((prev) => ({ ...prev, pagoIniciado: true, pago }));
   }, []);
 
   const setBorradores = useCallback((borradores: BorradorPasajero[]) => {

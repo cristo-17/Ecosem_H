@@ -223,6 +223,8 @@ export interface TripSummary {
    * devuelve la reserva, que queda congelado.
    */
   unitPrice: string | null;
+  /** true si la tarifa o algún factor aplicado es ficticio. Nulo si no hay tarifa. */
+  fictitious: boolean | null;
 }
 
 /** Un factor del precio, tal como se aplicó.
@@ -392,6 +394,8 @@ export interface StartPaymentResponse {
   reservationId: string;
   /** El precio congelado de la reserva. */
   amount: string;
+  /** Marca del precio congelado, aunque la tarifa haya cambiado después. */
+  fictitious: boolean;
   currency: 'PEN';
   provider: string;
   /** Depende de la pasarela. */
