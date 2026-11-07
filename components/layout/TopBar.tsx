@@ -328,10 +328,7 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
               */}
               {haySesion && (
                 <div
-                  className="mt-auto border-t border-white/10 pt-4 pb-8"
-                  style={{
-                    paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
-                  }}
+                  className="mt-auto border-t border-white/10 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]"
                 >
                   <button
                     type="button"

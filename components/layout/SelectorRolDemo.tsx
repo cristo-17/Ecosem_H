@@ -75,8 +75,7 @@ export function SelectorRolDemo({ estadoActual }: SelectorRolDemoProps) {
       id="selector-rol-demo"
       role="group"
       aria-label="Selector de rol (solo desarrollo)"
-      className="fixed inset-x-0 bottom-0 z-30 flex flex-wrap items-center justify-center gap-2 border-t border-warning-text/30 bg-warning-fill px-3 py-2"
-      style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+      className="fixed inset-x-0 bottom-0 z-30 flex flex-wrap items-center justify-center gap-2 border-t border-warning-text/30 bg-warning-fill px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     >
       <span className="text-xs font-semibold text-warning-text">Cuenta de prueba (solo desarrollo):</span>
       {OPCIONES.map((opcion) => (

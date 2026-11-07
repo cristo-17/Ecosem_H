@@ -15,7 +15,31 @@ const PREFIJOS_CON_SESION = ["/panel", "/embarque", "/mi-perfil"];
  *    verificar y los servicios verifican el token por su cuenta.
  */
 export async function proxy(request: NextRequest) {
-  let respuesta = NextResponse.next({ request });
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).origin;
+  const csp = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    // next/image genera estos dos atributos: color transparente y geometría
+    // de fill. Un nonce no autoriza atributos; limitar a sus hashes exactos.
+    "style-src-attr 'unsafe-hashes' 'sha256-zlqnbDt84zf1iSefLU/ImC54isoprH/MRiVZGskwexk=' 'sha256-ZDrxqUOB4m/L0JWL/+gS52g1CRH0l/qwMhjTw5Z/Fsc='",
+    `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, "ws")}`,
+    `img-src 'self' data: blob: ${supabaseOrigin}`,
+    "font-src 'self'", "object-src 'none'", "base-uri 'self'",
+    "form-action 'self'", "frame-ancestors 'none'", "frame-src 'none'",
+  ].join("; ");
+  const requestHeaders = new Headers(request.headers);
+  // Sobrescribir siempre: un cliente no puede elegir el nonce ni la política.
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+  const continuar = () => {
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("Content-Security-Policy", csp);
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  };
+  let respuesta = continuar();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +49,8 @@ export async function proxy(request: NextRequest) {
         getAll: () => request.cookies.getAll(),
         setAll(porEscribir, cabeceras) {
           for (const { name, value } of porEscribir) request.cookies.set(name, value);
-          respuesta = NextResponse.next({ request });
+          requestHeaders.set("cookie", request.headers.get("cookie") ?? "");
+          respuesta = continuar();
           for (const { name, value, options } of porEscribir) {
             respuesta.cookies.set(name, value, options);
           }
@@ -50,6 +75,8 @@ export async function proxy(request: NextRequest) {
     destino.pathname = "/ingresar";
     destino.search = new URLSearchParams({ siguiente: `${pathname}${search}` }).toString();
     const redireccion = NextResponse.redirect(destino);
+    redireccion.headers.set("Content-Security-Policy", csp);
+    redireccion.headers.set("Cache-Control", "private, no-store");
     for (const cookie of respuesta.cookies.getAll()) redireccion.cookies.set(cookie);
     return redireccion;
   }

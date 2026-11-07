@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
+import { headers } from "next/headers";
 import { ShellPublico } from "@/components/layout/ShellPublico";
 import { SelectorRolDemo } from "@/components/layout/SelectorRolDemo";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   // Sesión verificada en el servidor (token firmado). Lo que se muestra con
   // ella (menú de personal, "Mi perfil") es comodidad visual: cada sección
   // protegida vuelve a exigir el rol en su propio layout.
@@ -42,7 +44,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           React 19 exige que un <script> síncrono declarado fuera de <head>
           tenga async, o vaya dentro de <head> — de ahí el <head> explícito.
         */}
-        <Script id="strip-extension-attrs" strategy="beforeInteractive">
+        <Script id="strip-extension-attrs" strategy="beforeInteractive" nonce={nonce}>
           {`
             (function () {
               var ATTR = "bis_skin_checked";

@@ -315,6 +315,22 @@ export interface ReservationResponse {
   passengersCopied?: number;
 }
 
+/** GET /v1/reservas/:id. Solo el titular; respuesta privada, sin caché.
+ * Datos completos exclusivamente para reanudar la edición, nunca en listados.
+ */
+export interface ReservationRecoveryResponse {
+  reservation: ReservationResponse;
+  status: 'active' | 'expired' | 'purchased';
+  paymentStarted: boolean;
+  trip: TripSummary;
+  origin: string;
+  destination: string;
+  originTerminal: string;
+  date: string;
+  passengers: Array<PassengerData & { seat: string }>;
+  contact: SaveContactRequest | null;
+}
+
 /** DELETE /v1/reservas/:id, con la sesión que la reservó. */
 export interface ReleaseReservationResponse {
   reservationId: string;

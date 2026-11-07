@@ -1,0 +1,105 @@
+--- a/supabase/functions/ventas/app.ts
++++ b/supabase/functions/ventas/app.ts
+@@ -1,4 +1,5 @@
+ // svc-ventas: inventario, reservas, pagos, boleto, manifiesto, embarque.
++import { recoverReservation } from './recuperacion.ts';
+ import {
+   AppError,
+   createDatabase,
+@@ -497,6 +498,19 @@
+ const passengerRoutes: Route[] = [
+   {
+     method: 'GET',
++    path: '/v1/reservas/:id',
++    handler: async (c) => {
++      const holder = await tryIdentifyHolder(c.request);
++      const identity = await c.auth.optional();
++      const result = await recoverReservation(db, uuidParam(c.params.id), holder, identity);
++      const response = c.json(result);
++      response.headers.set('Cache-Control', 'private, no-store');
++      response.headers.set('Vary', 'x-session-token, Authorization');
++      return response;
++    },
++  },
++  {
++    method: 'GET',
+     path: '/v1/reservas/:id/pasajeros',
+     handler: async (c) => {
+       const holder = await tryIdentifyHolder(c.request);
+--- /dev/null
++++ b/supabase/functions/ventas/recuperacion.ts
+@@ -0,0 +1,74 @@
++// Consulta privada para reanudar la edición de una compra. No reserva,
++// libera ni confirma nada. Los listados siguen enmascarando documentos.
++import { AppError, type Database, type Identity } from '../_shared/comun/mod.ts';
++import type { PassengerData } from '../_shared/contratos/mod.ts';
++import type { Holder } from './sesion.ts';
++import { toBreakdown } from './precios.ts';
++
++export async function recoverReservation(
++  db: Database,
++  reservationId: string,
++  holder: Holder | null,
++  identity: Identity | null,
++) {
++  if (!holder && !identity) throw new AppError('SESSION_REQUIRED');
++  const [r] = await db.run((sql) => sql`
++    select r.id, r.viaje_id, r.codigos_asientos, r.expira_en, r.monto_total,
++           r.desglose_precio, r.estado,
++           ru.codigo as ruta, v.tipo_servicio, v.salida_programada,
++           v.llegada_estimada, v.llegada_provisional,
++           o.ciudad as origen, d.ciudad as destino, o.nombre as terminal_origen,
++           to_char(v.salida_programada at time zone 'America/Lima', 'YYYY-MM-DD') as fecha,
++           exists(select 1 from ventas.solicitudes_pago s where s.reserva_id = r.id) as pago_iniciado,
++           (select count(*)::int from ventas.asientos_viaje a where a.viaje_id = v.id) as total_asientos,
++           (select count(*)::int from ventas.asientos_disponibilidad a
++             where a.viaje_id = v.id and a.estado = 'libre') as disponibles,
++           k.correo, k.celular, k.whatsapp_autorizado_en is not null as whatsapp,
++           coalesce((select jsonb_agg(jsonb_build_object(
++             'seat', a.codigo, 'documentType', p.tipo_documento,
++             'documentNumber', p.numero_documento,
++             'firstNames', p.nombres, 'lastNames', p.apellidos,
++             'birthDate', to_char(p.fecha_nacimiento, 'YYYY-MM-DD'),
++             'companion', case when p.acompanante_nombre is not null then
++                jsonb_build_object('name', p.acompanante_nombre,
++                                   'relationship', p.acompanante_parentesco) end
++           ) order by a.codigo)
++           from ventas.pasajeros p
++           join ventas.asientos_viaje a on a.id = p.asiento_viaje_id
++           where p.reserva_id = r.id), '[]') as pasajeros
++    from ventas.reservas r
++    join ventas.viajes v on v.id = r.viaje_id
++    join ventas.rutas ru on ru.id = v.ruta_id
++    join ventas.terminales o on o.id = ru.origen_terminal_id
++    join ventas.terminales d on d.id = ru.destino_terminal_id
++    left join ventas.contactos_reserva k on k.reserva_id = r.id
++    where r.id = ${reservationId}
++      and (r.titular = ${holder?.session ?? null} or r.usuario_id = ${identity?.userId ?? null})
++  `);
++  // Mismo 404 para inexistente y ajena: no filtrar existencia ni datos.
++  if (!r) throw new AppError('NOT_FOUND');
++  const expiresAt = new Date(r.expira_en).toISOString();
++  const breakdown = toBreakdown(r.desglose_precio);
++  return {
++    reservation: {
++      reservationId: r.id, tripId: r.viaje_id, seats: r.codigos_asientos,
++      expiresAt, totalAmount: r.monto_total, currency: 'PEN' as const,
++      priceBreakdown: breakdown,
++    },
++    status: r.estado === 'confirmada' ? 'purchased' :
++      r.estado === 'activa' && Date.parse(expiresAt) > Date.now() ? 'active' : 'expired',
++    paymentStarted: r.pago_iniciado,
++    trip: {
++      id: r.viaje_id, route: r.ruta, serviceType: r.tipo_servicio,
++      departsAt: new Date(r.salida_programada).toISOString(),
++      arrivesAt: r.llegada_estimada ? new Date(r.llegada_estimada).toISOString() : null,
++      arrivalProvisional: r.llegada_provisional,
++      availableSeats: r.disponibles, totalSeats: r.total_asientos, unitPrice: breakdown.unitPrice,
++    },
++    origin: r.origen, destination: r.destino, originTerminal: r.terminal_origen, date: r.fecha,
++    passengers: r.pasajeros as Array<PassengerData & { seat: string }>,
++    contact: r.correo || r.celular ? {
++      email: r.correo, phone: r.celular, whatsappOptIn: r.whatsapp,
++    } : null,
++  };
++}
