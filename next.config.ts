@@ -1,19 +1,33 @@
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
+// Las cabeceras de endurecimiento valen para todo: no dependen de la respuesta.
+const CABECERAS_ENDURECIMIENTO = [
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=()" },
+];
+
+// La CSP tiene UN solo dueno: proxy.ts, que la emite por respuesta con el nonce
+// de esa respuesta. No se repite aqui para documentos. Cuando se repetia, en
+// Cloudflare Workers ganaba esta sobre la del proxy y el sitio salia sin CSS,
+// sin fuentes, sin imagenes y sin JS: todo caia en default-src 'none'.
+const CSP_ESTATICOS = "default-src 'none'; base-uri 'none'; frame-ancestors 'none'";
+
 const nextConfig = (fase: string): NextConfig => ({
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: [
-      { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
-      { key: "X-Frame-Options", value: "DENY" },
-      { key: "X-Content-Type-Options", value: "nosniff" },
-      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=()" },
-      // Los documentos reciben la política con nonce en proxy.ts. Los recursos
-      // que no pasan por el proxy conservan esta política restrictiva.
-      { key: "Content-Security-Policy", value: "default-src 'none'; base-uri 'none'; frame-ancestors 'none'" },
-    ] }];
+    return [
+      { source: "/:path*", headers: CABECERAS_ENDURECIMIENTO },
+      // Los estaticos no pasan por proxy.ts: su matcher los excluye, asi que
+      // no reciben nonce. Aqui si corresponde la politica cerrada.
+      {
+        source: "/_next/static/:path*",
+        headers: [{ key: "Content-Security-Policy", value: CSP_ESTATICOS }],
+      },
+    ];
   },
   devIndicators: false,
   images: {
