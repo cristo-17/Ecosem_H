@@ -3,6 +3,24 @@
 Entrada por sesión de trabajo. Lo más reciente arriba.
 Formato: fecha · qué se hizo · qué quedó abierto.
 
+## 07/11/2026 · Redirección al pago real (D-065)
+
+- Copiado literalmente el contrato frontend regenerado del backend; SHA-256
+  idéntico al origen. `PagoView` consume solo `redirectUrl`, sin consultar
+  metadatos ni claves específicas del proveedor.
+- Se exige URL absoluta HTTPS sin credenciales. Si falta o es inválida, se
+  muestra un error claro, se permite reintentar y no se marca pago iniciado.
+  La navegación usa asignación de `window.location.href`; no se modificó la CSP
+  ni `proxy.ts`. La confirmación sigue dependiendo del estado del backend,
+  actualizado por el webhook, nunca de los parámetros del retorno.
+- Prueba aislada en `.qa-tmp/pago-redireccion.mjs`: destino válido, 14 destinos
+  inválidos, reintento, doble clic, reserva vencida y PASSENGERS_REQUIRED.
+  TypeScript, lint del código fuente (`app`, `components`, `lib`, `proxy.ts`
+  y `next.config.ts`) y build pasan. El script de prueba también pasa lint.
+- Verificación de aceptación pendiente en Cloudflare Workers con consola
+  abierta: falta URL de preview y mecanismo de despliegue sin commits.
+  No se da por validado con pruebas locales. Sin commits ni atribuciones.
+
 ---
 
 ## 07/11/2026 · Recuperar compra con el endpoint desplegado

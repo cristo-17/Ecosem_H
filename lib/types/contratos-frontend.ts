@@ -420,7 +420,9 @@ export interface StartPaymentResponse {
   fictitious: boolean;
   currency: 'PEN';
   provider: string;
-  /** Depende de la pasarela. */
+  /** URL de pago lista para navegar, independiente del proveedor y del ambiente. */
+  redirectUrl: string;
+  /** Metadatos del proveedor; no se necesitan para completar el pago. */
   checkout: Record<string, unknown>;
 }
 

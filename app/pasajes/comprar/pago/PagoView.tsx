@@ -100,15 +100,36 @@ export function PagoView({ reservationId }: { reservationId: string }) {
     pagandoRef.current = true;
     setProcesando(true);
     try {
-      await iniciarPago(reserva!.reservationId, {
+      const pago = await iniciarPago(reserva!.reservationId, {
         method: metodo,
         billTo: sustentarGasto ? { ruc: ruc.trim(), name: nombre.trim() } : null,
       });
-      // Iniciar el pago NO confirma la compra: la confirma solo el webhook de
-      // la pasarela en el backend. Desde aquí la pantalla de confirmación
-      // espera y consulta el estado real.
+      let destino: URL | null = null;
+      try {
+        // Sin base: una ruta relativa no es una URL de pasarela utilizable.
+        if (typeof pago.redirectUrl === "string" && pago.redirectUrl.trim()) {
+          const url = new URL(pago.redirectUrl);
+          if (url.protocol === "https:" && url.hostname && !url.username && !url.password) {
+            destino = url;
+          }
+        }
+      } catch {
+        // Una respuesta inválida no debe bloquear un nuevo intento de pago.
+      }
+      if (!destino) {
+        pagandoRef.current = false;
+        setProcesando(false);
+        showToast({
+          type: "error",
+          title: "No pudimos abrir la pasarela de pago",
+          description: "No recibimos una dirección de pago válida. Vuelve a intentarlo.",
+        });
+        return;
+      }
+      // La navegación completa evita formularios, frames y conexiones a la
+      // pasarela bloqueados por la CSP. Solo el webhook confirma la compra.
+      window.location.href = destino.href;
       purchase.marcarPagoIniciado();
-      router.push(rutaCompraConfirmacion(reserva!.reservationId));
     } catch (error) {
       pagandoRef.current = false;
       setProcesando(false);
