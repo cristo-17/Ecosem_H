@@ -100,14 +100,14 @@ export function PagoView({ reservationId }: { reservationId: string }) {
     pagandoRef.current = true;
     setProcesando(true);
     try {
-      await iniciarPago(reserva!.reservationId, {
+      const pago = await iniciarPago(reserva!.reservationId, {
         method: metodo,
         billTo: sustentarGasto ? { ruc: ruc.trim(), name: nombre.trim() } : null,
       });
       // Iniciar el pago NO confirma la compra: la confirma solo el webhook de
       // la pasarela en el backend. Desde aquí la pantalla de confirmación
       // espera y consulta el estado real.
-      purchase.marcarPagoIniciado();
+      purchase.marcarPagoIniciado(pago);
       router.push(rutaCompraConfirmacion(reserva!.reservationId));
     } catch (error) {
       pagandoRef.current = false;
@@ -147,6 +147,11 @@ export function PagoView({ reservationId }: { reservationId: string }) {
         pasajeros={nombres}
         precioAsiento={reserva.priceBreakdown.unitPrice}
         total={reserva.totalAmount}
+        // Antes de iniciar: el desglose congelado. Después: la respuesta del
+        // pago de esta reserva. Nunca la tarifa actual de la búsqueda.
+        fictitious={purchase.pago?.reservationId === reserva.reservationId
+          ? purchase.pago.fictitious
+          : reserva.priceBreakdown.fictitious}
         className="mt-4"
       />
 

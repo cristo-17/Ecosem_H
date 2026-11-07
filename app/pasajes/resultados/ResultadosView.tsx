@@ -269,6 +269,7 @@ export function ResultadosView({
                 tipoAsiento={labelTipoServicio(viaje.serviceType)}
                 // Informativo: el precio que vale es el que congela la reserva.
                 precio={viaje.unitPrice !== null ? Number(viaje.unitPrice) : null}
+                fictitious={viaje.fictitious}
                 selected={seleccionadoId === viaje.id}
                 onSeleccionar={() => setSeleccionadoId(viaje.id)}
               />

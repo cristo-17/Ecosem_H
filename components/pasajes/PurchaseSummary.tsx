@@ -2,6 +2,7 @@ import { cn } from "@/lib/cn";
 import { Card } from "@/components/ui/Card";
 import { formatFechaLarga, formatHora12, formatPrecio } from "@/lib/format";
 import { etiquetaAsiento } from "@/lib/asientos";
+import { AvisoTarifa } from "@/components/ui/AvisoTarifa";
 
 export interface PurchaseSummaryProps {
   origen: string;
@@ -15,6 +16,8 @@ export interface PurchaseSummaryProps {
   precioAsiento: string;
   /** Total congelado de la reserva (`totalAmount`). Es lo que se cobra. */
   total: string;
+  /** Marca del precio congelado de la reserva o de su respuesta de pago. */
+  fictitious: boolean;
   className?: string;
 }
 
@@ -34,6 +37,7 @@ export function PurchaseSummary({
   pasajeros,
   precioAsiento,
   total,
+  fictitious,
   className,
 }: PurchaseSummaryProps) {
   return (
@@ -71,6 +75,7 @@ export function PurchaseSummary({
         <span className="text-sm font-medium text-navy/70">Total</span>
         <span className="text-xl font-bold text-navy">{soles(total)}</span>
       </div>
+      <AvisoTarifa fictitious={fictitious} />
     </Card>
   );
 }

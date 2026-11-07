@@ -441,6 +441,7 @@ export function VentaView() {
                   asientosDisponibles={encontrado.viaje.availableSeats}
                   tipoAsiento={labelTipoServicio(encontrado.viaje.serviceType)}
                   precio={encontrado.viaje.unitPrice !== null ? Number(encontrado.viaje.unitPrice) : null}
+                  fictitious={encontrado.viaje.fictitious}
                   selected={viaje?.viaje.id === encontrado.viaje.id}
                   onSeleccionar={() => elegirViaje(encontrado)}
                 />

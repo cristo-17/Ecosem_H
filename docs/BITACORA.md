@@ -5,6 +5,40 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 06/11/2026 · Marcas de tarifas ficticias en búsqueda y pago
+
+- Copia literal de `../backend-ecosemh/generado/contratos-frontend.ts` a
+  `lib/types/contratos-frontend.ts`, sin editar tipos generados. SHA-256:
+  `44ED82853E757699B66AAAD2E90539F38C1A74B03907B244091819B95C406955`.
+  TripSummary incorpora fictitious boolean|null y StartPaymentResponse
+  incorpora fictitious boolean para el precio congelado.
+- AvisoTarifa compartido: true muestra «Precio de prueba. No es una tarifa
+  real.» junto al importe; false no muestra marca de prueba; null explica
+  que la ruta no tiene tarifa definida. Sin coerciones de null a false ni
+  mensajes que afirmen que una tarifa ausente es real. Tipografía de 14px y
+  tokens warning-text/warning-fill, contraste WCAG calculado de 4.68:1.
+- TripCard recibe la marca obligatoria del contrato en resultados públicos
+  y en búsqueda de counter. Una tarifa null muestra «Sin tarifa» y bloquea
+  Seleccionar; no se sustituye por cero ni se publica un importe con esa marca.
+- PurchaseSummary muestra la marca del desglose congelado de la reserva,
+  nunca la cotización actual del viaje. Al iniciar el pago se consume
+  StartPaymentResponse y se conserva su reservationId/fictitious en el
+  proveedor de compra, solo en memoria. Su marca prevalece para esa reserva,
+  incluido false explícito; se limpia al cambiar u olvidar la reserva.
+  La confirmación sigue dependiendo del webhook y no se altera el monto.
+
+**Validación:** TypeScript, ESLint y build pasan. Chromium con componentes y
+adaptadores HTTP reales y respuestas locales de prueba en 360, 768 y 1440px:
+tres estados en resultados, sin precio y con selección bloqueada para null;
+en pago, reserva true frente a búsqueda false y viceversa, y respuesta de pago
+opuesta a la reserva para comprobar precedencia y false explícito. Comprobado
+que desmontar la compra después de iniciar el pago no libera los asientos.
+Sin errores de navegador; sin escrituras ni cobros contra producción.
+Evidencia local ignorada: `.qa-tmp/tarifas-marca-resultado.json` y scripts
+tarifas-marca-*. Sin commits. Pendiente preview con backend desplegado.
+
+---
+
 ## 06/11/2026 · Home conectada al catálogo, sin precios comerciales
 
 **Rama:** `feature/home-conectada`, desde main actualizado (e746329).
