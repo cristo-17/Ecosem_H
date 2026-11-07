@@ -6,8 +6,8 @@
  * - Confirmar una compra. La confirma solo el webhook de la pasarela en el
  *   backend; el cliente únicamente consulta el estado (`consultarReserva`).
  * - Calcular precios. El monto es el que devolvió la reserva, congelado.
- * - Guardar el estado de la reserva en el navegador. Lo único que se guarda
- *   es el token de la sesión de compra (ver `sesionCompra`).
+ * - Guardar el estado de la reserva en el navegador. Solo se guardan el token
+ *   de la sesión de compra y el identificador para volver a consultarla.
  */
 import type {
   ReleaseReservationResponse,
@@ -20,17 +20,18 @@ import type {
   StartPaymentRequest,
   StartPaymentResponse,
   TicketsResponse,
-  ReservationRecoveryResponse,
+  RecoverReservationResponse,
 } from "@/lib/types/contratos-frontend";
 import { ApiError, ahoraServidor, pedirJson, type OpcionesPeticion } from "@/lib/api/cliente";
 import { etiquetaAsiento } from "@/lib/asientos";
+import { tokenDeAcceso } from "@/lib/supabase/navegador";
 
 // El token de la sesión de compra va en sessionStorage, no en memoria: la
 // pasarela puede devolver al usuario con una recarga completa de la página, y
 // sin el token la pantalla de retorno no podría consultar el estado de su
 // compra. No es estado de la reserva ni dato personal: es un identificador
-// anónimo firmado por el servidor (D-013), muere al cerrar la pestaña y no
-// sirve en otro navegador. Asientos, precio, vencimiento y estado se piden
+// anónimo firmado por el servidor (D-013), muere al cerrar la pestaña y debe
+// mantenerse privado. Asientos, precio, vencimiento y estado se piden
 // siempre al backend.
 const CLAVE_SESION = "ecosemh.sesionCompra";
 const CLAVE_RESERVA = "ecosemh.reservaId";
@@ -48,12 +49,8 @@ export function reservaRecordada(): string | null {
 }
 
 export function recuperarReserva(id: string, opciones: OpcionesPeticion = {}) {
-  const token = tokenSesionCompraGuardado();
-  if (!token) return Promise.reject(new ApiError("servidor", "La sesión de compra venció. Vuelve a buscar tus pasajes.", "SESSION_REQUIRED"));
   // No rotar la sesión al recuperar: una nueva sesión no es dueña de la reserva.
-  return pedirJson<ReservationRecoveryResponse>("ventas", `/v1/reservas/${encodeURIComponent(id)}`, {
-    ...opciones, cabeceras: { "x-session-token": token },
-  });
+  return conSesion<RecoverReservationResponse>(`/v1/reservas/${encodeURIComponent(id)}`, opciones);
 }
 
 function leerSesion(): SessionResponse | null {
@@ -114,10 +111,19 @@ async function sesionCompra(nueva = false): Promise<string> {
 }
 
 async function conSesion<T>(ruta: string, opciones: OpcionesPeticion = {}): Promise<T> {
-  const token = await sesionCompra();
+  let token = tokenSesionCompraGuardado();
+  if (!token && ruta === "/v1/reservas" && opciones.metodo === "POST") token = await sesionCompra();
+  const cuenta = await tokenDeAcceso();
+  const credenciales: Record<string, string> = {
+    ...(token ? { "x-session-token": token } : {}),
+    ...(cuenta ? { authorization: `Bearer ${cuenta}` } : {}),
+  };
+  if (!token && !cuenta) {
+    throw new ApiError("servidor", "Tu sesión de compra terminó. Ingresa con la cuenta propietaria o busca otro viaje.", "SESSION_REQUIRED");
+  }
   return pedirJson<T>("ventas", ruta, {
     ...opciones,
-    cabeceras: { ...opciones.cabeceras, "x-session-token": token },
+    cabeceras: { ...opciones.cabeceras, ...credenciales },
   });
 }
 
@@ -293,10 +299,15 @@ export function mensajeCompra(error: unknown): MensajeError {
         descripcion: "La pasarela no respondió. Tu reserva sigue separada: intenta nuevamente en unos segundos.",
       };
     case "SESSION_REQUIRED":
+    case "UNAUTHENTICATED":
+      return {
+        titulo: "No tienes acceso a esta reserva",
+        descripcion: "Necesitas la sesión con la que reservaste o ingresar con la cuenta propietaria. Tu sesión puede haber terminado.",
+      };
     case "NOT_FOUND":
       return {
-        titulo: "No encontramos tu reserva",
-        descripcion: "Puede que haya vencido o que la hayas empezado en otra pestaña o navegador.",
+        titulo: "Reserva no encontrada o sin acceso",
+        descripcion: "Esta reserva no existe o pertenece a otra sesión o cuenta. Ábrela desde la pestaña original o ingresa con la cuenta propietaria.",
       };
   }
   switch (error.tipo) {

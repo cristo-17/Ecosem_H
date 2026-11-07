@@ -6,13 +6,16 @@ import type {
   DocumentKind,
   ReservationResponse,
   TripSummary,
+  PassengerView,
 } from "@/lib/types/contratos-frontend";
 import { liberarReserva, recuperarReserva, recordarReserva, reservaRecordada, mensajeCompra, type MensajeError } from "@/lib/api/compra";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClockIcon, ExclamationIcon } from "@/components/ui/icons";
 import { RUTAS, rutaCompraConfirmacion } from "@/lib/routes";
+import { ApiError } from "@/lib/api/cliente";
 
 /** El viaje elegido en resultados, con lo necesario para volver a esa búsqueda. */
 export interface ViajeCompra {
@@ -75,6 +78,8 @@ interface PurchaseState {
   pagoIniciado: boolean;
   borradores: BorradorPasajero[];
   contacto: BorradorContacto;
+  pasajerosGuardados: PassengerView[];
+  contactoGuardado: boolean;
 }
 
 interface PurchaseContextValue extends PurchaseState {
@@ -87,6 +92,7 @@ interface PurchaseContextValue extends PurchaseState {
   marcarPagoIniciado: () => void;
   setBorradores: (borradores: BorradorPasajero[]) => void;
   setContacto: (contacto: BorradorContacto) => void;
+  registrarDatosGuardados: (pasajeros: PassengerView[], contactoGuardado: boolean) => void;
 }
 
 const ESTADO_INICIAL: PurchaseState = {
@@ -96,6 +102,8 @@ const ESTADO_INICIAL: PurchaseState = {
   pagoIniciado: false,
   borradores: [],
   contacto: CONTACTO_VACIO,
+  pasajerosGuardados: [],
+  contactoGuardado: false,
 };
 
 const PurchaseContext = createContext<PurchaseContextValue | null>(null);
@@ -132,20 +140,23 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<PurchaseState>(ESTADO_INICIAL);
   const estadoRef = useRef(estado);
   const router = useRouter();
-  const [recuperacion, setRecuperacion] = useState<"cargando" | "lista" | "vencida" | MensajeError>("cargando");
+  const pathname = usePathname();
+  const consulta = useSearchParams().toString();
+  const [recuperacion, setRecuperacion] = useState<"cargando" | "lista" | "vencida" | (MensajeError & { sinAcceso?: boolean })>("cargando");
   const [intento, setIntento] = useState(0);
 
   useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    const seleccion = window.location.pathname.endsWith("/asientos");
+    const query = new URLSearchParams(consulta);
+    const seleccion = pathname.endsWith("/asientos");
     const id = query.get("reserva") || (seleccion ? reservaRecordada() : null);
     // Confirmación ya consulta el backend, incluso mientras espera el webhook.
-    if (!id || window.location.pathname.endsWith("/confirmacion")) {
+    if (!id || pathname.endsWith("/confirmacion") || estadoRef.current.reserva?.reservationId === id) {
       // La URL y sessionStorage solo están disponibles después de hidratar.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecuperacion("lista");
       return;
     }
+    // Sincronizar la pantalla con un cambio de reserva en la URL del navegador.
+    setRecuperacion("cargando");
     const controller = new AbortController();
     recuperarReserva(id, { signal: controller.signal }).then((datos) => {
       if (controller.signal.aborted) return;
@@ -169,23 +180,23 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
         pasajerosCount: datos.reservation.seats.length,
         reserva: datos.reservation,
         pagoIniciado: datos.paymentStarted,
-        borradores: datos.reservation.seats.map((seat) => {
-          const p = datos.passengers.find((p) => p.seat === seat);
-          return p ? { ...p, companionName: p.companion?.name ?? "",
-            companionRelationship: p.companion?.relationship ?? "" } : { ...PASAJERO_VACIO };
-        }),
-        contacto: { email: datos.contact?.email ?? "", phone: datos.contact?.phone ?? "",
-          whatsappOptIn: datos.contact?.whatsappOptIn ?? false, dataAuthorization: false },
+        // La proyección enmascarada jamás se convierte en un formulario.
+        borradores: datos.reservation.seats.map(() => ({ ...PASAJERO_VACIO })),
+        contacto: { ...CONTACTO_VACIO },
+        pasajerosGuardados: datos.passengers,
+        contactoGuardado: datos.contactSaved,
       };
       estadoRef.current = restaurado;
       setEstado(restaurado);
       recordarReserva(id);
       setRecuperacion("lista");
     }, (error: unknown) => {
-      if (!controller.signal.aborted) setRecuperacion(mensajeCompra(error));
+      if (!controller.signal.aborted) setRecuperacion({ ...mensajeCompra(error),
+        sinAcceso: error instanceof ApiError && ["SESSION_REQUIRED", "UNAUTHENTICATED", "NOT_FOUND"].includes(error.codigo ?? ""),
+      });
     });
     return () => controller.abort();
-  }, [router, intento]);
+  }, [router, intento, pathname, consulta]);
 
   // Al salir del flujo (se desmonta el layout) se libera lo que siga
   // retenido. El ref deja leer el estado más reciente desde la limpieza.
@@ -229,7 +240,7 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
 
   const fijarReserva = useCallback((reserva: ReservationResponse) => {
     recordarReserva(reserva.reservationId);
-    setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false }));
+    setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false, pasajerosGuardados: [], contactoGuardado: false }));
   }, []);
 
   const soltarReserva = useCallback(() => {
@@ -259,6 +270,10 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
     setEstado((prev) => ({ ...prev, contacto }));
   }, []);
 
+  const registrarDatosGuardados = useCallback((pasajeros: PassengerView[], contactoGuardado: boolean) => {
+    setEstado((prev) => ({ ...prev, pasajerosGuardados: pasajeros, contactoGuardado }));
+  }, []);
+
   const value = useMemo<PurchaseContextValue>(
     () => ({
       ...estado,
@@ -269,6 +284,7 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
       marcarPagoIniciado,
       setBorradores,
       setContacto,
+      registrarDatosGuardados,
     }),
     [
       estado,
@@ -279,11 +295,12 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
       marcarPagoIniciado,
       setBorradores,
       setContacto,
+      registrarDatosGuardados,
     ],
   );
 
   if (recuperacion === "cargando") return <div role="status" aria-label="Recuperando tu compra" className="mx-auto max-w-3xl p-4"><SkeletonShape variant="card" className="h-48" /></div>;
   if (recuperacion === "vencida") return <EmptyState icon={<ClockIcon />} title="Tu reserva venció" description="Se acabó el tiempo para completar la compra y los asientos se liberaron. Busca un viaje para volver a reservar." actionLabel="Buscar pasajes" onAction={() => router.push(RUTAS.inicio)} />;
-  if (typeof recuperacion === "object") return <EmptyState icon={<ExclamationIcon />} title={recuperacion.titulo} description={recuperacion.descripcion} actionLabel="Reintentar" onAction={() => { setRecuperacion("cargando"); setIntento((n) => n + 1); }} />;
+  if (typeof recuperacion === "object") return <EmptyState icon={<ExclamationIcon />} title={recuperacion.titulo} description={recuperacion.descripcion} actionLabel={recuperacion.sinAcceso ? "Buscar pasajes" : "Reintentar"} onAction={() => { if (recuperacion.sinAcceso) router.push(RUTAS.inicio); else { setRecuperacion("cargando"); setIntento((n) => n + 1); } }} footer={recuperacion.sinAcceso ? <Link className="inline-flex min-h-11 items-center font-medium text-secondary underline" href={`${RUTAS.ingresar}?${new URLSearchParams({ siguiente: `${pathname}?${consulta}` })}`}>Ingresar con mi cuenta</Link> : undefined} />;
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }

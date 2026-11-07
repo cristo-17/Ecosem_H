@@ -5,6 +5,65 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 07/11/2026 · Recuperar compra con el endpoint desplegado
+
+**Rama:** `feature/recuperar-compra`, desde `main` actualizado a 08404a0.
+`git fetch --prune` y búsqueda remota de recuperar sin coincidencias. Sin commits.
+Leídos CLAUDE.md, ecosem-design-system y
+`backend-ecosemh/docs/RECUPERACION-RESERVA.md` antes de implementar.
+
+- Copiados literalmente los contratos generados del backend. Se usa
+  `RecoverReservationResponse`, con pasajeros enmascarados, missingSeats y
+  contactSaved; no se solicitan documentos completos, nacimientos,
+  acompañantes ni contacto. SHA256 iguales a los archivos originales.
+  El contrato nuevo también trae las clases `ejecutivo`, `confort`, `suite`:
+  sincronizado contratos-panel y corregidos sus códigos en lib/servicios.
+- Recuperación mediante GET /v1/reservas/:id con el token original o la cuenta
+  propietaria, sin crear otra sesión al recuperar. Las demás operaciones de
+  una reserva recuperada y la confirmación también admiten la cuenta. La URL
+  se vuelve a observar al navegar dentro del layout persistente.
+- En Datos elegimos resumen de pasajeros guardados con documento enmascarado,
+  separado de los formularios completos de pasajeros pendientes. Se puede
+  continuar sin reenviar lo guardado. Cambiar un pasajero exige ingresar todos
+  sus campos nuevamente y permite cancelar para conservar la versión guardada.
+  El contacto se muestra como «Contacto guardado», sin inventar correo/celular;
+  solo se reemplaza si el usuario lo elige. La autorización se pide cuando se
+  envían datos nuevos. Los borradores no enviados no sobreviven a la recarga,
+  y la pantalla lo explica. Pago toma nombres de la vista guardada y montos
+  exclusivamente de reservation.totalAmount/priceBreakdown.
+- Acceso: SESSION_REQUIRED/UNAUTHENTICATED muestran «No tienes acceso a esta
+  reserva»; NOT_FOUND muestra «Reserva no encontrada o sin acceso», sin
+  afirmar que existe una reserva ajena. Acciones para ingresar con la cuenta
+  propietaria o buscar pasajes. Solo errores transitorios ofrecen reintento.
+  Una reserva vencida muestra «Tu reserva venció» y «Buscar pasajes».
+- Pruebas en Chromium móvil 390×844 contra **EcosemH real**, sin interceptar
+  respuestas del backend, usando el build de producción en localhost:3000:
+  recarga en Búsqueda, Selección, Datos y Pago; Selección conserva el asiento
+  reservado. Datos recupera el resumen enmascarado y continúa a Pago sin PUT
+  de pasajeros/contacto guardados. Precio congelado de S/60.00 comprobado
+  después de cambiar desde **/panel/precios** la tarifa de lima-huancayo a
+  S/73.00: el motor cotizó S/73.00 y Pago recargado siguió mostrando S/60.00.
+  Tarifa original restaurada desde el mismo panel y reserva de prueba liberada.
+- Otra sesión de compra: GET real devuelve 404 y la pantalla informa falta
+  de acceso, sin mensaje de red. GET sin credencial: 401. Cuenta de pasajero
+  propietaria, sin token de compra local: recupera Datos/Pago/Confirmación.
+  Reserva con dos pasajeros, uno guardado y otro pendiente: un único PUT para
+  el pendiente, sin enviar el documento enmascarado ni sobrescribir contacto.
+  Cancelar la edición conserva datos guardados. Cero errores JS/CSP en el
+  recorrido principal y cero errores JS en la prueba de cuenta.
+- Vencimiento natural real: se dejó pasar el plazo de diez minutos de una
+  reserva separada, sin cambiar relojes ni simular respuestas. GET devolvió
+  `expired`; Datos mostró «Tu reserva venció» y el botón «Buscar pasajes».
+- `npx tsc --noEmit`, `npx eslint .` y `npm run build`: correctos, sin
+  advertencias en la ejecución final. `git diff --check` correcto.
+- Evidencias sin datos personales ni credenciales en
+  `.qa-tmp/recuperar-real-resultado.json` y
+  `.qa-tmp/recuperar-cuenta-resultado.json`, con sus scripts. No se inició
+  ningún cobro ni se confirmó una compra desde el navegador. El parche de
+  backend de la entrada anterior queda obsoleto: usar el contrato desplegado.
+
+---
+
 ## 06/11/2026 · Compra al recargar y cabeceras de seguridad (en curso)
 
 **Rama:** `fix/compra-y-seguridad`, desde `main` actualizado a ddafa04.

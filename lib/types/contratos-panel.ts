@@ -56,6 +56,7 @@ export type ErrorCode =
   | 'NOT_FOUND'
   // Falta el token de sesión de compra, es inválido o venció. Se pide otro.
   | 'SESSION_REQUIRED'
+  | 'LINK_PASSENGER_REQUIRED'
   // Inventario (B-03).
   | 'TRIP_UNAVAILABLE'
   | 'SEAT_UNAVAILABLE'
@@ -82,6 +83,7 @@ export type ErrorCode =
   // Programación de viajes (B-13).
   | 'TRIP_NOT_MODIFIABLE'
   | 'BUS_CHANGE_REJECTED'
+  | 'BUS_OVERLAP'
   // QR y embarque (B-07).
   | 'BOARDING_KEY_UNAVAILABLE'
   // Facturación (B-06).
@@ -187,7 +189,7 @@ export interface ErrorBody {
 // ----- De _shared/contratos/ventas.ts
 
 /** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
-export type ServiceType = 'economico' | 'ejecutivo' | 'vip';
+export type ServiceType = 'confort' | 'ejecutivo' | 'suite';
 
 /** GET /v1/tarifas */
 export interface FareListResponse {
@@ -895,7 +897,7 @@ export interface ManifestContent {
     id: string;
     origin: string;
     destination: string;
-    serviceType: 'economico' | 'ejecutivo' | 'vip';
+    serviceType: 'confort' | 'ejecutivo' | 'suite';
     departsAt: string;
     estimatedArrival: string | null;
     arrivalProvisional: boolean;

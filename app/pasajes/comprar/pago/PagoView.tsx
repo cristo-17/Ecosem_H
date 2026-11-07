@@ -122,7 +122,9 @@ export function PagoView({ reservationId }: { reservationId: string }) {
   }
 
   const salida = new Date(viaje.viaje.departsAt);
-  const nombres = reserva.seats.map((_, i) => {
+  const nombres = reserva.seats.map((seat, i) => {
+    const guardado = purchase.pasajerosGuardados.find((p) => p.seat === seat);
+    if (guardado) return `${guardado.firstNames} ${guardado.lastNames}`.trim();
     const p = purchase.borradores[i];
     return p ? `${p.firstNames} ${p.lastNames}`.trim() : "";
   });

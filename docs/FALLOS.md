@@ -7,6 +7,18 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 
 ---
 
+## 07/11/2026 · Contratos regenerados y códigos de clase
+
+Al copiar contratos-frontend del backend, TypeScript detectó códigos de clase
+antiguos en lib/servicios y discrepancias con contratos-panel. El backend ya
+publica `ejecutivo`, `confort`, `suite`; no correspondía ampliar el tipo nuevo
+para aceptar códigos retirados. Se copió también el contrato generado del panel
+y se alinearon las opciones de servicio, conservando sus textos comerciales.
+Verificar ambos contratos y ejecutar tsc al regenerar, no corregir a mano el
+archivo generado ni forzar conversiones de tipo.
+
+---
+
 ## 06/11/2026 · CSP estricta y estilos generados por next/image
 
 La primera navegación del build mostró violaciones style-src-attr en imágenes,
