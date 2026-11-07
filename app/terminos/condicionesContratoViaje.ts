@@ -2,10 +2,8 @@
  * Condiciones Generales del Contrato de Viaje (docs/prompts/15-condiciones-contratacion.md):
  * texto oficial ya publicado por la empresa, incorporado literal — sin
  * reescribir ni "mejorar" la redacción, rarezas incluidas ("S/. 5.00
- * soles"). No confundir con las 9 secciones de /terminos que siguen
- * pendientes de redacción legal (docs/DECISIONES.md, D-036/D-038): este es
- * un documento operativo distinto (reglas del día de viaje), no la
- * cobertura completa de un contrato de términos y condiciones.
+ * soles"). Se complementa con las secciones redactadas en /terminos
+ * el 06/11/2026, todavía sin revisión legal.
  */
 export interface CondicionContratoViaje {
   texto: string;

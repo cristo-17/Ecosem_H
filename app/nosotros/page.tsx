@@ -152,7 +152,7 @@ export default function NosotrosPage() {
           Nuestra historia
         </h2>
         <p className="mt-3 text-sm text-navy/70 sm:text-base">
-          ECOSEM H se constituyó jurídicamente en{" "}
+          Ecosem H se constituyó jurídicamente en{" "}
           <strong className="font-semibold text-navy">noviembre de 2015</strong>{" "}
           bajo la razón social EMPCOSEM S.A., e inició operaciones con esa razón
           social en{" "}

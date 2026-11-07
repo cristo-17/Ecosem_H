@@ -7,6 +7,15 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 
 ---
 
+## 06/11/2026 · Codificación al escribir texto desde PowerShell
+
+El pipe de PowerShell a Python sustituyó caracteres españoles por signos de
+interrogación. Se fijó OutputEncoding a UTF-8 y se corrigieron los textos.
+Una sustitución amplia alteró una propiedad opcional de TypeScript; tsc la
+detectó y se restauró. Verificar codificación, diff y tsc tras escribir textos.
+
+---
+
 ## F-008 · Precios y tarifario aparentaban guardar cambios que no llegaban al cobro
 
 **Estado:** precios y tarifario conectados (05/11/2026); GET de equipaje pendiente de disponibilidad en EcosemH (404 observado).

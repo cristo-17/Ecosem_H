@@ -217,7 +217,7 @@ export function DatosView({ reservationId }: { reservationId: string }) {
             />
           </div>
           <Checkbox
-            label="Acepto recibir por WhatsApp mensajes de ECOSEM H sobre esta compra y este viaje."
+            label="Acepto recibir por WhatsApp mensajes de Ecosem H sobre esta compra y este viaje."
             checked={contacto.whatsappOptIn}
             onChange={(evento) => actualizarContacto("whatsappOptIn", evento.target.checked)}
           />
