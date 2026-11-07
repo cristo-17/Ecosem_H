@@ -54,6 +54,7 @@ export type ErrorCode =
   | 'NOT_FOUND'
   // Falta el token de sesión de compra, es inválido o venció. Se pide otro.
   | 'SESSION_REQUIRED'
+  | 'LINK_PASSENGER_REQUIRED'
   // Inventario (B-03).
   | 'TRIP_UNAVAILABLE'
   | 'SEAT_UNAVAILABLE'
@@ -80,6 +81,7 @@ export type ErrorCode =
   // Programación de viajes (B-13).
   | 'TRIP_NOT_MODIFIABLE'
   | 'BUS_CHANGE_REJECTED'
+  | 'BUS_OVERLAP'
   // QR y embarque (B-07).
   | 'BOARDING_KEY_UNAVAILABLE'
   // Facturación (B-06).
@@ -185,7 +187,7 @@ export interface ErrorBody {
 // ----- De _shared/contratos/ventas.ts
 
 /** @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta. */
-export type ServiceType = 'economico' | 'ejecutivo' | 'vip';
+export type ServiceType = 'confort' | 'ejecutivo' | 'suite';
 
 /** Estado de un asiento. La disponibilidad que devuelve esta API es la única fuente de verdad.
  * @noExpuesto Forma auxiliar compartida; no se expone como contrato autónomo de una ruta.
@@ -223,6 +225,8 @@ export interface TripSummary {
    * devuelve la reserva, que queda congelado.
    */
   unitPrice: string | null;
+  /** true si la tarifa o algún factor aplicado es ficticio. Nulo si no hay tarifa. */
+  fictitious: boolean | null;
 }
 
 /** Un factor del precio, tal como se aplicó.
@@ -315,20 +319,23 @@ export interface ReservationResponse {
   passengersCopied?: number;
 }
 
-/** GET /v1/reservas/:id. Solo el titular; respuesta privada, sin caché.
- * Datos completos exclusivamente para reanudar la edición, nunca en listados.
+/**
+ * GET /v1/reservas/:id. Exige x-session-token correspondiente o cuenta propietaria.
+ * El id solo no autoriza. Sin documentos completos, nacimiento, acompañantes ni contacto.
+ * No modifica la reserva ni confirma pagos. Cache-Control: private, no-store.
  */
-export interface ReservationRecoveryResponse {
+export interface RecoverReservationResponse {
   reservation: ReservationResponse;
   status: 'active' | 'expired' | 'purchased';
   paymentStarted: boolean;
+  contactSaved: boolean;
   trip: TripSummary;
   origin: string;
   destination: string;
   originTerminal: string;
   date: string;
-  passengers: Array<PassengerData & { seat: string }>;
-  contact: SaveContactRequest | null;
+  passengers: ReservationPassengersResponse['passengers'];
+  missingSeats: string[];
 }
 
 /** DELETE /v1/reservas/:id, con la sesión que la reservó. */
@@ -341,7 +348,8 @@ export interface ReleaseReservationResponse {
  * POST /v1/sesiones/vincular, con el token de acceso y `x-session-token`.
  *
  * Tras iniciar sesión: lo reservado o comprado con la sesión de compra pasa a
- * ser del usuario. No cambia el precio ni la expiración.
+ * ser del usuario pasajero. Personal: 403 LINK_PASSENGER_REQUIRED
+ * (D-061). No cambia el precio ni la expiración.
  */
 export interface LinkReservationsResponse {
   linkedReservations: number;
@@ -408,6 +416,8 @@ export interface StartPaymentResponse {
   reservationId: string;
   /** El precio congelado de la reserva. */
   amount: string;
+  /** Marca del precio congelado, aunque la tarifa haya cambiado después. */
+  fictitious: boolean;
   currency: 'PEN';
   provider: string;
   /** Depende de la pasarela. */

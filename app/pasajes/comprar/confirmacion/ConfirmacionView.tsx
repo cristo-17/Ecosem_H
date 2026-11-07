@@ -24,7 +24,6 @@ import type { TicketsResponse } from "@/lib/types/contratos-frontend";
 import { ahoraServidor } from "@/lib/api/cliente";
 import {
   consultarReserva,
-  haySesionCompra,
   mensajeCompra,
   obtenerBoletos,
   type MensajeError,
@@ -74,7 +73,8 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
   // sessionStorage no existe en el servidor: se lee recién montado en el
   // cliente, para no romper la hidratación.
   const montado = useIsMounted();
-  const sesion = montado && reservationId ? haySesionCompra() : false;
+  // La API también admite la cuenta propietaria sin token de compra local.
+  const sesion = montado && Boolean(reservationId);
 
   useEffect(() => {
     if (!reservationId || !sesion) return;

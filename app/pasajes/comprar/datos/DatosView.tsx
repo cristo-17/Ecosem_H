@@ -35,6 +35,7 @@ import {
   mensajeCompra,
 } from "@/lib/api/compra";
 import { RUTAS, rutaCompraConfirmacion, rutaCompraPago } from "@/lib/routes";
+import { etiquetaAsiento } from "@/lib/asientos";
 
 type ErroresContacto = Partial<Record<keyof BorradorContacto, string>>;
 
@@ -68,6 +69,8 @@ export function DatosView({ reservationId }: { reservationId: string }) {
   const [erroresPasajeros, setErroresPasajeros] = useState<ErroresPasajeroReserva[]>([]);
   const [erroresContacto, setErroresContacto] = useState<ErroresContacto>({});
   const [enviando, setEnviando] = useState(false);
+  const [editando, setEditando] = useState<string[]>([]);
+  const [editandoContacto, setEditandoContacto] = useState(false);
   // Un guardado devolvió "reserva no vigente" antes de que la consulta
   // periódica lo notara: se trata igual que vencida.
   const [vencidaAlGuardar, setVencidaAlGuardar] = useState(false);
@@ -82,6 +85,9 @@ export function DatosView({ reservationId }: { reservationId: string }) {
 
   const salida = new Date(viaje.viaje.departsAt);
   const borradores = reserva.seats.map((_, i) => purchase.borradores[i] ?? PASAJERO_VACIO);
+  const necesitaPasajero = (seat: string) => editando.includes(seat) || !purchase.pasajerosGuardados.some((p) => p.seat === seat);
+  const necesitaContacto = !purchase.contactoGuardado || editandoContacto;
+  const hayCambios = necesitaContacto || reserva.seats.some(necesitaPasajero);
 
   function volverAEmpezar() {
     // Lo escrito queda en memoria y vuelve a aparecer con la nueva reserva.
@@ -113,8 +119,9 @@ export function DatosView({ reservationId }: { reservationId: string }) {
     event.preventDefault();
     if (enviandoRef.current) return;
 
-    const nuevosErroresPasajeros = borradores.map((p) => validarPasajeroReserva(p, salida));
-    const nuevosErroresContacto = validarContacto(purchase.contacto);
+    const nuevosErroresPasajeros = borradores.map((p, i) => necesitaPasajero(reserva!.seats[i]) ? validarPasajeroReserva(p, salida) : {});
+    const nuevosErroresContacto = necesitaContacto ? validarContacto(purchase.contacto)
+      : hayCambios && !purchase.contacto.dataAuthorization ? { dataAuthorization: "Necesitamos esta declaración para guardar los datos" } : {};
     setErroresPasajeros(nuevosErroresPasajeros);
     setErroresContacto(nuevosErroresContacto);
     if (!nuevosErroresPasajeros.every(sinErrores) || !sinErrores(nuevosErroresContacto)) return;
@@ -124,8 +131,9 @@ export function DatosView({ reservationId }: { reservationId: string }) {
     try {
       // Un PUT por asiento: el backend guarda y valida cada pasajero contra la
       // fecha del viaje. Ningún dato personal va en la URL, solo el asiento.
-      await Promise.all(
-        reserva!.seats.map((seat, i) => {
+      const respuestas = await Promise.all(
+        reserva!.seats.flatMap((seat, i) => {
+          if (!necesitaPasajero(seat)) return [];
           const p = borradores[i];
           const menor = p.companionName.trim() || p.companionRelationship.trim();
           return guardarPasajero(reserva!.reservationId, seat, {
@@ -142,11 +150,21 @@ export function DatosView({ reservationId }: { reservationId: string }) {
         }),
       );
       const { email, phone, whatsappOptIn } = purchase.contacto;
-      await guardarContacto(reserva!.reservationId, {
+      if (necesitaContacto) await guardarContacto(reserva!.reservationId, {
         email: email.trim() || null,
         phone: phone.trim() || null,
         whatsappOptIn,
       });
+      // Son las vistas enmascaradas devueltas por los PUT, no documentos de un borrador.
+      const guardados = new Map(purchase.pasajerosGuardados.map((p) => [p.seat, p]));
+      const asientosEditados = reserva!.seats.filter(necesitaPasajero);
+      respuestas.forEach((respuesta, i) => {
+        const pasajero = respuesta.passengers.find((p) => p.seat === asientosEditados[i]);
+        if (pasajero) guardados.set(pasajero.seat, pasajero);
+      });
+      purchase.registrarDatosGuardados([...guardados.values()], true);
+      setEditando([]);
+      setEditandoContacto(false);
       router.push(rutaCompraPago(reserva!.reservationId));
     } catch (error) {
       if (esReservaNoVigente(error)) {
@@ -169,8 +187,7 @@ export function DatosView({ reservationId }: { reservationId: string }) {
     <Pantalla>
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">Datos de los pasajeros</h1>
       <p className="mt-1 text-sm text-navy/70">
-        {viaje.origen} → {viaje.destino} · Ingresa los datos de cada pasajero tal como figuran en su
-        documento.
+        {viaje.origen} → {viaje.destino} · Completa los pasajeros pendientes tal como figuran en su documento. Los datos guardados se conservan en el servidor; lo que aún no enviaste debe ingresarse de nuevo al recargar.
       </p>
 
       <ReservationTimer
@@ -180,9 +197,23 @@ export function DatosView({ reservationId }: { reservationId: string }) {
       />
 
       <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
-        {reserva.seats.map((seat, indice) => (
+        {reserva.seats.map((seat, indice) => {
+          const guardado = purchase.pasajerosGuardados.find((p) => p.seat === seat);
+          if (guardado && !necesitaPasajero(seat)) return (
+            <Card key={seat} className="flex flex-col gap-3">
+              <h2 className="text-base font-semibold text-navy">Pasajero · Asiento {etiquetaAsiento(seat)}</h2>
+              <p className="text-sm text-navy">{guardado.firstNames} {guardado.lastNames} · {guardado.documentType.toUpperCase()} {guardado.documentNumberMasked}</p>
+              <p className="text-sm text-text-secondary">Datos guardados. Por privacidad, el documento completo, nacimiento y acompañante no se muestran al volver. Puedes continuar con los datos del servidor.</p>
+              {guardado.infantInArms && <p className="text-sm text-text-secondary">Incluye un menor en brazos con datos guardados.</p>}
+              <Button type="button" variant="secundario" className="self-start" onClick={() => {
+                actualizarPasajero(indice, { ...PASAJERO_VACIO });
+                setEditando((actual) => [...actual, seat]);
+              }}>Cambiar datos del asiento {etiquetaAsiento(seat)}</Button>
+            </Card>
+          );
+          return <div key={seat} className="flex flex-col gap-3">
+          {guardado && <p className="text-sm text-text-secondary">Para reemplazar los datos guardados, ingresa nuevamente todos los campos del pasajero.</p>}
           <PasajeroReservaForm
-            key={seat}
             indice={indice}
             asiento={seat}
             valor={borradores[indice]}
@@ -190,9 +221,16 @@ export function DatosView({ reservationId }: { reservationId: string }) {
             salida={salida}
             onChange={(valor) => actualizarPasajero(indice, valor)}
           />
-        ))}
+          {guardado && <Button type="button" variant="terciario" className="self-start" onClick={() => setEditando((actual) => actual.filter((s) => s !== seat))}>Conservar datos guardados</Button>}
+          </div>;
+        })}
 
         <Card className="flex flex-col gap-4">
+          {!necesitaContacto ? <>
+            <h2 className="text-base font-semibold text-navy">Contacto guardado</h2>
+            <p className="text-sm text-text-secondary">Tus boletos se enviarán al contacto registrado. Por privacidad, no se muestra al volver.</p>
+            <Button type="button" variant="secundario" className="self-start" onClick={() => setEditandoContacto(true)}>Cambiar contacto</Button>
+          </> : <>
           <div>
             <h2 className="text-base font-semibold text-navy">¿A dónde te enviamos los boletos?</h2>
             <p className="text-sm text-navy/70">Un correo, un celular o ambos.</p>
@@ -221,7 +259,9 @@ export function DatosView({ reservationId }: { reservationId: string }) {
             checked={contacto.whatsappOptIn}
             onChange={(evento) => actualizarContacto("whatsappOptIn", evento.target.checked)}
           />
-          <Checkbox
+          {purchase.contactoGuardado && <Button type="button" variant="terciario" className="self-start" onClick={() => setEditandoContacto(false)}>Conservar contacto guardado</Button>}
+          </>}
+          {hayCambios && <Checkbox
             label={
               <>
                 Declaro que tengo autorización de cada pasajero para registrar sus datos personales
@@ -235,7 +275,7 @@ export function DatosView({ reservationId }: { reservationId: string }) {
             checked={contacto.dataAuthorization}
             onChange={(evento) => actualizarContacto("dataAuthorization", evento.target.checked)}
             errorText={erroresContacto.dataAuthorization}
-          />
+          />}
         </Card>
 
         <Button type="submit" isLoading={enviando} className="min-w-40 self-end">
