@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Ingresar — Ecosem H",
+  description: "Ingresa a tu cuenta de Ecosem H para consultar tus compras y administrar tus datos.",
+};
+
 import { redirect } from "next/navigation";
 import { obtenerSesion } from "@/lib/auth/sesion";
 import { rutaInterna } from "@/lib/auth/rutas";
