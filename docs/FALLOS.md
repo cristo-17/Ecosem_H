@@ -7,6 +7,18 @@ Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez
 
 ---
 
+## 06/11/2026 · CSP estricta y estilos generados por next/image
+
+La primera navegación del build mostró violaciones style-src-attr en imágenes,
+aunque nuestros componentes ya no tenían atributos style. next/image genera
+`color:transparent` y una geometría fija para fill. Un nonce no autoriza
+atributos de estilo: se habilitaron solo sus dos hashes exactos mediante
+style-src-attr/unsafe-hashes, sin unsafe-inline. Volver a recorrer las rutas
+con securitypolicyviolation y consola: cero violaciones en las 34 rutas
+comprobadas sin sesión. Los scripts siguen usando nonce por respuesta.
+
+---
+
 ## 06/11/2026 · Codificación al escribir texto desde PowerShell
 
 El pipe de PowerShell a Python sustituyó caracteres españoles por signos de

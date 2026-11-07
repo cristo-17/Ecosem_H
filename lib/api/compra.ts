@@ -20,6 +20,7 @@ import type {
   StartPaymentRequest,
   StartPaymentResponse,
   TicketsResponse,
+  ReservationRecoveryResponse,
 } from "@/lib/types/contratos-frontend";
 import { ApiError, ahoraServidor, pedirJson, type OpcionesPeticion } from "@/lib/api/cliente";
 import { etiquetaAsiento } from "@/lib/asientos";
@@ -32,8 +33,28 @@ import { etiquetaAsiento } from "@/lib/asientos";
 // sirve en otro navegador. Asientos, precio, vencimiento y estado se piden
 // siempre al backend.
 const CLAVE_SESION = "ecosemh.sesionCompra";
-// Una sesión a punto de vencer no se reutiliza: una compra puede durar más.
-const MARGEN_SESION_MS = 60 * 60 * 1000;
+const CLAVE_RESERVA = "ecosemh.reservaId";
+
+/** Solo el identificador; inventario, precio y datos se recuperan del servidor. */
+export function recordarReserva(id: string | null) {
+  try {
+    if (id) sessionStorage.setItem(CLAVE_RESERVA, id);
+    else sessionStorage.removeItem(CLAVE_RESERVA);
+  } catch { /* El almacenamiento puede estar bloqueado. */ }
+}
+
+export function reservaRecordada(): string | null {
+  try { return sessionStorage.getItem(CLAVE_RESERVA); } catch { return null; }
+}
+
+export function recuperarReserva(id: string, opciones: OpcionesPeticion = {}) {
+  const token = tokenSesionCompraGuardado();
+  if (!token) return Promise.reject(new ApiError("servidor", "La sesión de compra venció. Vuelve a buscar tus pasajes.", "SESSION_REQUIRED"));
+  // No rotar la sesión al recuperar: una nueva sesión no es dueña de la reserva.
+  return pedirJson<ReservationRecoveryResponse>("ventas", `/v1/reservas/${encodeURIComponent(id)}`, {
+    ...opciones, cabeceras: { "x-session-token": token },
+  });
+}
 
 function leerSesion(): SessionResponse | null {
   try {
@@ -66,6 +87,7 @@ export function tokenSesionCompraGuardado(): string | null {
  * después no debe poder consultar lo que compró la persona anterior.
  */
 export function olvidarSesionCompra() {
+  recordarReserva(null);
   sesionEnMemoria = null;
   try {
     sessionStorage.removeItem(CLAVE_SESION);
@@ -81,7 +103,7 @@ export function haySesionCompra(): boolean {
 
 async function sesionCompra(nueva = false): Promise<string> {
   const actual = nueva ? null : (sesionEnMemoria ?? leerSesion());
-  if (actual && Date.parse(actual.expiresAt) - ahoraServidor() > MARGEN_SESION_MS) {
+  if (actual && Date.parse(actual.expiresAt) > ahoraServidor()) {
     sesionEnMemoria = actual;
     return actual.sessionToken;
   }

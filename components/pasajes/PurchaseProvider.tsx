@@ -7,7 +7,12 @@ import type {
   ReservationResponse,
   TripSummary,
 } from "@/lib/types/contratos-frontend";
-import { liberarReserva } from "@/lib/api/compra";
+import { liberarReserva, recuperarReserva, recordarReserva, reservaRecordada, mensajeCompra, type MensajeError } from "@/lib/api/compra";
+import { useRouter } from "next/navigation";
+import { SkeletonShape } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ClockIcon, ExclamationIcon } from "@/components/ui/icons";
+import { RUTAS, rutaCompraConfirmacion } from "@/lib/routes";
 
 /** El viaje elegido en resultados, con lo necesario para volver a esa búsqueda. */
 export interface ViajeCompra {
@@ -100,8 +105,8 @@ const PurchaseContext = createContext<PurchaseContextValue | null>(null);
  * localStorage: la reserva vive en el servidor (CLAUDE.md), y los datos de
  * los pasajeros son datos personales que no se guardan en el navegador ni
  * viajan por la URL (Ley 29733). Vive en el layout de /pasajes/comprar, así
- * que sobrevive a la navegación entre pasos y se pierde al recargar: cada
- * pantalla maneja ese caso consultando el estado real al backend.
+ * que sobrevive a la navegación entre pasos. Al recargar se reconstruye con
+ * la reserva del backend y el token original, nunca con un carrito local.
  *
  * Qué pasa con una reserva viva (docs/BITACORA.md, 17/10/2026):
  * - Retroceder dentro del flujo (pago → datos → asientos): se conserva.
@@ -125,10 +130,65 @@ function liberarSinEsperar(reservationId: string) {
 
 export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [estado, setEstado] = useState<PurchaseState>(ESTADO_INICIAL);
+  const estadoRef = useRef(estado);
+  const router = useRouter();
+  const [recuperacion, setRecuperacion] = useState<"cargando" | "lista" | "vencida" | MensajeError>("cargando");
+  const [intento, setIntento] = useState(0);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const seleccion = window.location.pathname.endsWith("/asientos");
+    const id = query.get("reserva") || (seleccion ? reservaRecordada() : null);
+    // Confirmación ya consulta el backend, incluso mientras espera el webhook.
+    if (!id || window.location.pathname.endsWith("/confirmacion")) {
+      // La URL y sessionStorage solo están disponibles después de hidratar.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRecuperacion("lista");
+      return;
+    }
+    const controller = new AbortController();
+    recuperarReserva(id, { signal: controller.signal }).then((datos) => {
+      if (controller.signal.aborted) return;
+      if (seleccion && datos.reservation.tripId !== query.get("viajeId")) {
+        setRecuperacion("lista");
+        return;
+      }
+      if (datos.status === "purchased") {
+        router.replace(rutaCompraConfirmacion(id));
+        setRecuperacion("lista");
+        return;
+      }
+      if (datos.status === "expired") {
+        recordarReserva(null);
+        setRecuperacion("vencida");
+        return;
+      }
+      const restaurado: PurchaseState = {
+        viaje: { viaje: datos.trip, origen: datos.origin, destino: datos.destination,
+          terminalOrigen: datos.originTerminal, fecha: datos.date },
+        pasajerosCount: datos.reservation.seats.length,
+        reserva: datos.reservation,
+        pagoIniciado: datos.paymentStarted,
+        borradores: datos.reservation.seats.map((seat) => {
+          const p = datos.passengers.find((p) => p.seat === seat);
+          return p ? { ...p, companionName: p.companion?.name ?? "",
+            companionRelationship: p.companion?.relationship ?? "" } : { ...PASAJERO_VACIO };
+        }),
+        contacto: { email: datos.contact?.email ?? "", phone: datos.contact?.phone ?? "",
+          whatsappOptIn: datos.contact?.whatsappOptIn ?? false, dataAuthorization: false },
+      };
+      estadoRef.current = restaurado;
+      setEstado(restaurado);
+      recordarReserva(id);
+      setRecuperacion("lista");
+    }, (error: unknown) => {
+      if (!controller.signal.aborted) setRecuperacion(mensajeCompra(error));
+    });
+    return () => controller.abort();
+  }, [router, intento]);
 
   // Al salir del flujo (se desmonta el layout) se libera lo que siga
   // retenido. El ref deja leer el estado más reciente desde la limpieza.
-  const estadoRef = useRef(estado);
   useEffect(() => {
     estadoRef.current = estado;
   });
@@ -168,16 +228,19 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   }, [liberarActual]);
 
   const fijarReserva = useCallback((reserva: ReservationResponse) => {
+    recordarReserva(reserva.reservationId);
     setEstado((prev) => ({ ...prev, reserva, pagoIniciado: false }));
   }, []);
 
   const soltarReserva = useCallback(() => {
+    recordarReserva(null);
     liberarActual();
     estadoRef.current = { ...estadoRef.current, reserva: null };
     setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
   }, [liberarActual]);
 
   const olvidarReserva = useCallback(() => {
+    recordarReserva(null);
     setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
   }, []);
 
@@ -219,5 +282,8 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
     ],
   );
 
+  if (recuperacion === "cargando") return <div role="status" aria-label="Recuperando tu compra" className="mx-auto max-w-3xl p-4"><SkeletonShape variant="card" className="h-48" /></div>;
+  if (recuperacion === "vencida") return <EmptyState icon={<ClockIcon />} title="Tu reserva venció" description="Se acabó el tiempo para completar la compra y los asientos se liberaron. Busca un viaje para volver a reservar." actionLabel="Buscar pasajes" onAction={() => router.push(RUTAS.inicio)} />;
+  if (typeof recuperacion === "object") return <EmptyState icon={<ExclamationIcon />} title={recuperacion.titulo} description={recuperacion.descripcion} actionLabel="Reintentar" onAction={() => { setRecuperacion("cargando"); setIntento((n) => n + 1); }} />;
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }

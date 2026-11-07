@@ -5,6 +5,53 @@ Formato: fecha · qué se hizo · qué quedó abierto.
 
 ---
 
+## 06/11/2026 · Compra al recargar y cabeceras de seguridad (en curso)
+
+**Rama:** `fix/compra-y-seguridad`, desde `main` actualizado a ddafa04.
+`git fetch --prune` y búsqueda remota de compra-y-seguridad sin coincidencias.
+Sin commits ni despliegues.
+
+- Seguridad: `poweredByHeader: false` y cabeceras HSTS, X-Frame-Options,
+  X-Content-Type-Options, Referrer-Policy, Permissions-Policy en next.config.
+  Cámara permitida solo al mismo origen, necesaria para embarque.
+- CSP por respuesta en proxy, con nonce aleatorio en la petición interna y
+  respuesta, también en redirecciones y al renovar cookies de Supabase.
+  El layout lee el nonce y lo pasa a su Script. Páginas dinámicas y
+  `private, no-store`: no reutilizar documentos con nonce desde una CDN.
+  Sin unsafe-inline; unsafe-eval solo en desarrollo. Conexiones e imágenes
+  externas limitadas al proyecto Supabase configurado. Dos hashes de atributos
+  de estilo autorizan exclusivamente los valores generados por next/image;
+  estilos propios migrados a clases.
+- Recuperación **preparada en frontend, todavía no operativa con el backend
+  desplegado**: token original e ID de reserva, sin serializar viaje, precio,
+  pasajeros ni contacto. Se reconstruye el contexto desde una consulta privada,
+  con estado explícito de vencimiento y reintento de errores de red.
+  Una sesión aún vigente ya no se rota al faltarle una hora: eso cambiaba el
+  titular de las peticiones de una reserva existente.
+- Dependencia encontrada: el backend solo ofrece la lista de pasajeros
+  enmascarados; no existe GET /v1/reservas/:id con viaje, inventario, precio
+  congelado, contacto y datos editables. Se preparó el contrato frontend y el
+  [parche de endpoint](patches/recuperacion-reserva-backend.patch), **sin aplicar
+  ni validar contra PostgreSQL**. El repositorio vecino está en
+  `fix/vinculacion-y-solape-de-bus` con cambios ajenos sin guardar; no se tocó.
+  Queda pendiente respuesta sobre incluir ese repositorio, implementar sus
+  pruebas de titularidad y comprobar los cuatro pasos con su API real.
+- Verificación: `npx tsc --noEmit`, `npx eslint .` y `npm run build` correctos.
+  `curl.exe -sI http://localhost:3019` contra `next start`: las seis cabeceras
+  presentes y x-powered-by ausente. Nonces distintos entre peticiones, presentes
+  en el HTML, sin unsafe-inline y sin caché de documentos.
+- Playwright sobre producción local, viewport 390×844: 34 rutas públicas o
+  accesos sin sesión (incluida 404), cero errores JS y cero violaciones CSP.
+  Las secciones protegidas se comprobaron solo hasta su redirección al ingreso;
+  falta recorrer su contenido con sesiones de personal.
+- Recarga real del navegador en Búsqueda/resultados, Selección, Datos y Pago,
+  usando respuestas de API interceptadas: mantiene asiento y monto congelado
+  de S/70 aunque la tarifa del viaje sea S/99; restaura pasajero y muestra
+  reserva vencida. **Estas pruebas no equivalen a probar el backend real ni
+  un pago en Yape/Plin.** Evidencia y scripts en `.qa-tmp/compra-*`.
+
+---
+
 ## 06/11/2026 · Textos legales y clases reales
 
 **Rama:** `feature/textos-legales-y-clases`, desde main actualizado (145c482).
