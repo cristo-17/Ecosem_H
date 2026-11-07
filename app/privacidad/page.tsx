@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Política de privacidad — Ecosem H",
+  description: "Conoce cómo Ecosem H trata tus datos personales, para qué los utiliza y cómo ejercer tus derechos de protección de datos.",
+};
+
 import Link from "next/link";
 
 const SECCIONES = [

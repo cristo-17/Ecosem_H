@@ -14,6 +14,7 @@ export interface CheckboxProps
 export function Checkbox({ label, errorText, id, ...props }: CheckboxProps) {
   const reactId = useId();
   const inputId = id ?? reactId;
+  const labelId = `${inputId}-label`;
   const errorId = `${inputId}-error`;
   const hasError = Boolean(errorText);
 
@@ -26,6 +27,7 @@ export function Checkbox({ label, errorText, id, ...props }: CheckboxProps) {
         <input
           id={inputId}
           type="checkbox"
+          aria-labelledby={labelId}
           aria-invalid={hasError}
           aria-describedby={hasError ? errorId : undefined}
           className={cn(
@@ -35,7 +37,7 @@ export function Checkbox({ label, errorText, id, ...props }: CheckboxProps) {
           )}
           {...props}
         />
-        <span className="text-sm text-text-primary">{label}</span>
+        <span id={labelId} className="text-sm text-text-primary">{label}</span>
       </label>
       {hasError && (
         <p id={errorId} className="text-sm text-error-text">

@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Términos y condiciones — Ecosem H",
+  description: "Consulta las condiciones de compra de pasajes y contratación de encomiendas de Ecosem H, y los derechos y obligaciones del servicio.",
+};
+
 import Link from "next/link";
 import { CONDICIONES_CONTRATO_VIAJE } from "./condicionesContratoViaje";
 import { TIPOS_SERVICIO } from "@/lib/servicios";
