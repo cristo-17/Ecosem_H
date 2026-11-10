@@ -23,7 +23,7 @@ import {
 import type { TicketsResponse } from "@/lib/types/contratos-frontend";
 import { ahoraServidor } from "@/lib/api/cliente";
 import {
-  consultarReserva,
+  recuperarReserva,
   mensajeCompra,
   obtenerBoletos,
   type MensajeError,
@@ -38,7 +38,7 @@ import { useIsMounted } from "@/lib/useIsMounted";
 
 type Estado =
   | { tipo: "consultando" }
-  | { tipo: "esperando"; expiresAt: string }
+  | { tipo: "esperando"; expiresAt: string; pagoIniciado: boolean }
   | { tipo: "vencida" }
   | { tipo: "comprada"; boletos: TicketsResponse | null }
   | { tipo: "error"; mensaje: MensajeError };
@@ -84,7 +84,7 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
 
     async function consultar() {
       try {
-        const { status, expiresAt } = await consultarReserva(reservationId);
+        const { status, paymentStarted, reservation } = await recuperarReserva(reservationId);
         if (!vigente) return;
         if (status === "purchased") {
           setEstado({ tipo: "comprada", boletos: null });
@@ -95,8 +95,8 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
           if (vigente) setEstado({ tipo: "comprada", boletos });
           return;
         }
-        if (status === "expired") return setEstado({ tipo: "vencida" });
-        setEstado({ tipo: "esperando", expiresAt });
+        if (status === "expired" && !paymentStarted) return setEstado({ tipo: "vencida" });
+        setEstado({ tipo: "esperando", expiresAt: reservation.expiresAt, pagoIniciado: paymentStarted });
       } catch (error) {
         if (!vigente) return;
         // Sin red mientras se espera: se sigue intentando sin decidir nada.
@@ -171,16 +171,16 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
           <span className="flex size-14 items-center justify-center rounded-full bg-info-fill">
             <ClockIcon className="!size-6 text-info-text" />
           </span>
-          <h1 className="text-xl font-semibold text-navy sm:text-2xl">Esperando la confirmación del pago</h1>
+          <h1 className="text-xl font-semibold text-navy sm:text-2xl">Estamos confirmando tu pago</h1>
           <p className="max-w-md text-sm text-navy/70">
             Tu compra todavía no está confirmada. Se confirma cuando la pasarela nos avisa que el
             pago se aprobó. Esta página se actualiza sola.
           </p>
         </div>
-        <ReservationTimer
+        {!estado.pagoIniciado && <ReservationTimer
           restanteMs={Math.max(0, Date.parse(estado.expiresAt) - ahora)}
           className="mt-4"
-        />
+        />}
         <p className="mt-4 text-center text-xs text-text-secondary">Referencia de tu reserva: {referencia}</p>
       </Pantalla>
     );
@@ -191,8 +191,8 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
       <Pantalla>
         <EmptyState
           icon={<ClockIcon className="!size-12 !text-warning-text" />}
-          title="No se confirmó el pago a tiempo"
-          description="La reserva venció sin que la pasarela confirmara el pago, y los asientos se liberaron. Tu compra no está confirmada. Si se hizo un cargo en tu cuenta, llama a la central con la referencia de abajo."
+          title="Tu reserva venció"
+          description="La reserva venció sin que se iniciara un pago. Busca un viaje para volver a reservar."
           actionLabel="Buscar pasajes"
           onAction={() => router.push(RUTAS.inicio)}
           footer={

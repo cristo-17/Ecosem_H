@@ -173,3 +173,8 @@ archivo presente en disco.
 **Aprendizaje:** el chequeo es sensible a mayúsculas y extensión exacta. En
 Cloudflare Pages (Linux) el sistema de archivos es case-sensitive aunque en
 Windows local no lo parezca.
+
+
+## 2026-11-10
+
+Nosotros leía archivos durante cada petición: Workers no dispone de esos archivos y mostraba marcadores. Se reemplazó por imports estáticos y se retiró el lector sin consumidores. El retorno de pago trataba expired como definitivo sin consultar paymentStarted: ahora espera al webhook cuando existe un pago iniciado.
