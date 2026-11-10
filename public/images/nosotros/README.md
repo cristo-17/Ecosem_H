@@ -1,28 +1,19 @@
 # Imágenes de /nosotros
 
-Archivos esperados por la página "Nosotros" (`app/nosotros/page.tsx`).
-Mientras un archivo no exista aquí, la sección que lo usa cae a su
-alternativa sólida (skeleton en el carrusel, `--color-navy` sólido en el
-encabezado) — nunca a un hueco ni a una imagen rota.
+Las fotos se importan estáticamente desde `app/nosotros/page.tsx`.
+Su existencia y dimensiones se verifican al compilar; no se lee el sistema
+de archivos durante las peticiones en Cloudflare Workers.
 
-## Carrusel de flota (se muestra completa, sin recortar)
+## Carrusel de flota
 
 - `flota-01.jpg`
-- `flota-02.jpg`
+- `flota-02.png`
 - `flota-03.png`
 - `personal-01.png`
 
-Sin resolución mínima obligatoria (D-013 en `docs/DECISIONES.md`): cada foto
-se muestra completa y nunca por encima de su tamaño real, así que una foto
-chica simplemente se ve más chica dentro del carrusel, nunca borrosa. Si se
-quiere que se vea grande, conviene subirla a un ancho cercano a 736px (el
-contenedor en desktop) — pero no es obligatorio.
+Cada foto se muestra completa, sin recortar y sin superar su tamaño real.
+Al reemplazarla, conserva el formato real y actualiza el import si cambia
+el nombre. Una foto requerida ausente hace fallar la compilación.
 
-## Encabezado ("Conoce Ecosem H")
-
-- `header-bg.jpg` — imagen de fondo a todo el ancho, cubierta por un
-  overlay `--color-navy` semitransparente. Si no existe, el encabezado
-  se queda con el fondo `--color-navy` sólido actual.
-
-Resolución recomendada: al menos 1600×500 px (ancho completo de
-viewport, encabezado de baja altura).
+El encabezado usa fondo navy sólido; no hay `header-bg.jpg` en el proyecto.
+Para incorporar una foto de encabezado, agrégala mediante un import estático.

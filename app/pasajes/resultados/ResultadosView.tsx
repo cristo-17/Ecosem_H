@@ -4,13 +4,11 @@ import { CENTRAL } from "@/lib/contacto";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/cn";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TripCard } from "@/components/ui/TripCard";
 import { Stepper } from "@/components/ui/Stepper";
-import { Button } from "@/components/ui/Button";
 import { SearchOffIcon, ExclamationIcon } from "@/components/ui/icons";
 import { franjaHoraria, FRANJAS_HORARIAS } from "@/lib/horarios";
 import { labelTipoServicio, TIPOS_SERVICIO } from "@/lib/servicios";
@@ -139,12 +137,7 @@ export function ResultadosView({
   const fechaLegible = formatFechaLarga(fechaDesdeBusqueda(fecha));
 
   return (
-    <main
-      className={cn(
-        "mx-auto max-w-3xl px-4 py-6 sm:py-8",
-        seleccionadoId && "pb-28",
-      )}
-    >
+    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
       <Stepper currentStep={1} className="mb-6" />
 
       <h1 className="text-xl font-semibold text-navy sm:text-2xl">
@@ -271,35 +264,24 @@ export function ResultadosView({
                 precio={viaje.unitPrice !== null ? Number(viaje.unitPrice) : null}
                 selected={seleccionadoId === viaje.id}
                 onSeleccionar={() => setSeleccionadoId(viaje.id)}
+                onContinuar={() =>
+                  router.push(
+                    `${RUTAS.compraAsientos}?${new URLSearchParams({
+                      viajeId: viaje.id,
+                      pasajeros: String(pasajerosCount),
+                      // La búsqueda viaja con el viaje: si se recarga la página de
+                      // asientos, se vuelve a pedir y se encuentra el viaje por id.
+                      origen,
+                      destino,
+                      fecha,
+                    }).toString()}`,
+                  )
+                }
               />
             );
           })}
       </div>
 
-      {seleccionadoId && (
-        <div className="fixed inset-x-0 bottom-[var(--alto-barra-dev,0px)] z-20 border-t border-navy/10 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto max-w-3xl">
-            <Button
-              className="w-full"
-              onClick={() =>
-                router.push(
-                  `${RUTAS.compraAsientos}?${new URLSearchParams({
-                    viajeId: seleccionadoId,
-                    pasajeros: String(pasajerosCount),
-                    // La búsqueda viaja con el viaje: si se recarga la página de
-                    // asientos, se vuelve a pedir y se encuentra el viaje por id.
-                    origen,
-                    destino,
-                    fecha,
-                  }).toString()}`,
-                )
-              }
-            >
-              Continuar
-            </Button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

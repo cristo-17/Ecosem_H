@@ -5,16 +5,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeftIcon, ChevronRightIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
-import type { DimensionesImagen } from "@/lib/imagenNatural";
 
 export interface FleetSlide {
   filename: string;
   alt: string;
   /**
-   * Ancho/alto reales leídos en el servidor (lib/imagenNatural.ts), o null
+   * Ancho/alto reales extraídos al compilar, o null
    * si el archivo no existe — muestra placeholder sin romper el layout.
    */
-  dimensiones: DimensionesImagen | null;
+  dimensiones: { width: number; height: number } | null;
 }
 
 export interface FleetCarouselProps {

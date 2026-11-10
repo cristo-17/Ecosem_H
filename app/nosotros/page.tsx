@@ -1,7 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import {
@@ -18,7 +15,10 @@ import {
   ScaleIcon,
 } from "@/components/ui/icons";
 import { RUTAS } from "@/lib/routes";
-import { leerDimensionesImagen } from "@/lib/imagenNatural";
+import flota01 from "@/public/images/nosotros/flota-01.jpg";
+import flota02 from "@/public/images/nosotros/flota-02.png";
+import flota03 from "@/public/images/nosotros/flota-03.png";
+import personal01 from "@/public/images/nosotros/personal-01.png";
 
 export const metadata: Metadata = {
   title: "Nosotros — Ecosem H",
@@ -26,72 +26,19 @@ export const metadata: Metadata = {
     "Misión, visión, historia y flota de Ecosem H: transporte interprovincial de pasajeros entre Lima, Cerro de Pasco y Huancayo.",
 };
 
-const GALERIA: Omit<FleetSlide, "dimensiones">[] = [
-  { filename: "flota-01.jpg", alt: "Bus de la flota de Ecosem H" },
-  { filename: "flota-02.jpg", alt: "Interior de un bus de Ecosem H" },
-  { filename: "flota-03.png", alt: "Bus de Ecosem H en terminal" },
-  { filename: "personal-01.png", alt: "Personal de Ecosem H" },
+// Los imports verifican existencia y extraen dimensiones al compilar.
+const galeria: FleetSlide[] = [
+  { filename: "flota-01.jpg", alt: "Bus de la flota de Ecosem H", dimensiones: flota01 },
+  { filename: "flota-02.png", alt: "Interior de un bus de Ecosem H", dimensiones: flota02 },
+  { filename: "flota-03.png", alt: "Bus de Ecosem H en terminal", dimensiones: flota03 },
+  { filename: "personal-01.png", alt: "Personal de Ecosem H", dimensiones: personal01 },
 ];
 
-// Chequeo en el servidor (build/request), no onError de next/image en
-// cliente: con imágenes locales en public/ ese evento no es confiable para
-// decidir si el archivo existe.
-function archivoExiste(filename: string): boolean {
-  const ruta = path.join(
-    process.cwd(),
-    "public",
-    "images",
-    "nosotros",
-    filename,
-  );
-  return fs.existsSync(ruta);
-}
-
-function rutaGaleria(filename: string): string {
-  return path.join(process.cwd(), "public", "images", "nosotros", filename);
-}
-
 export default function NosotrosPage() {
-  // dimensiones === null: no hay archivo, o el archivo no se pudo leer como
-  // PNG/JPEG. En ambos casos el carrusel cae al mismo placeholder — sin
-  // saber el tamaño real no hay forma de mostrarla sin escalarla a ciegas.
-  const galeria: FleetSlide[] = GALERIA.map((slide) => ({
-    ...slide,
-    dimensiones: leerDimensionesImagen(rutaGaleria(slide.filename)),
-  }));
-  const encabezadoTieneImagen = archivoExiste("header-bg.jpg");
-
   return (
     <main>
       <section className="relative overflow-hidden bg-navy px-4 py-8 text-white sm:py-10">
-        {encabezadoTieneImagen && (
-          <>
-            <Image
-              src="/images/nosotros/header-bg.jpg"
-              alt="Flota de Ecosem H"
-              fill
-              priority
-              sizes="100vw"
-              quality={90}
-              className="object-cover"
-            />
-            {/*
-              navy/75, no el navy/50 del scrim de Modal: ese 50% está pensado
-              para atenuar contenido detrás de un modal, no para garantizar
-              contraste de texto. El H1 (texto grande, negrita) necesita 3:1
-              AA incluso si la foto tiene zonas muy claras detrás del texto;
-              con /50 ese peor caso no lo cumple.
-            */}
-            <div aria-hidden="true" className="absolute inset-0 bg-navy/75" />
-          </>
-        )}
         <div className="relative mx-auto max-w-3xl">
-          {/*
-            white/80 (no white/60): el breadcrumb original usaba /60 sobre
-            navy sólido, donde sí pasaba AA. Sobre una foto con overlay ese
-            margen se reduce, así que se sube a /80 en ambos casos (con y sin
-            imagen) para no bifurcar el estilo del encabezado.
-          */}
           <nav
             aria-label="Ruta de navegación"
             className="text-sm text-white/80"

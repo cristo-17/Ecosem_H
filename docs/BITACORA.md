@@ -2014,3 +2014,10 @@ cookie de sesión de `lib/auth/`. Detalle completo en D-016 de
 - `/libro-de-reclamaciones` con formulario funcional.
 - Cotizador y rastreo de encomiendas (mock).
 - Mis Viajes con descarga de PDF (mock).
+
+
+## 2026-11-10
+
+Retorno de pago: consulta de reserva con paymentStarted; espera al webhook incluso con plazo vencido. Recuperación de pasos redirige a confirmación si el pago se inició. Resultados: acción primaria Elegir asientos dentro de la tarjeta elegida. Nosotros: imports estáticos y flota-02.png con extensión correcta. Auditoría frontend sin otros usos de fs/process.cwd por petición. Verificación desplegada pendiente; sin commits.
+
+Validación local auxiliar: compilación de producción y TypeScript correctos; prueba de sondeo cubre active/expired con pago iniciado, purchased posterior y expired sin pago. No sustituye la verificación desplegada pendiente de URL y mecanismo de preview sin commits.

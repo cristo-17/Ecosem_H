@@ -164,7 +164,7 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
         setRecuperacion("lista");
         return;
       }
-      if (datos.status === "purchased") {
+      if (datos.status === "purchased" || datos.paymentStarted) {
         router.replace(rutaCompraConfirmacion(id));
         setRecuperacion("lista");
         return;

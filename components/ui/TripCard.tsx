@@ -22,6 +22,7 @@ export interface TripCardProps {
   /** Tarjeta seleccionada: borde de color + elevación mayor (skill). */
   selected?: boolean;
   onSeleccionar?: () => void;
+  onContinuar?: () => void;
   className?: string;
 }
 
@@ -42,6 +43,7 @@ export function TripCard({
   precio,
   selected = false,
   onSeleccionar,
+  onContinuar,
   className,
 }: TripCardProps) {
   const disponibilidadBaja = asientosDisponibles <= UMBRAL_DISPONIBILIDAD_BAJA;
@@ -112,7 +114,7 @@ export function TripCard({
         >
           {selected ? (
             <>
-              <CheckIcon className="!text-white" />
+              <CheckIcon className="!text-secondary" />
               Seleccionado
             </>
           ) : (
@@ -120,6 +122,13 @@ export function TripCard({
           )}
         </Button>
       </div>
+      {selected && onContinuar && (
+        <div className="mt-4 border-t border-border-default pt-4">
+          <Button className="w-full" onClick={onContinuar}>
+            Elegir asientos
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
