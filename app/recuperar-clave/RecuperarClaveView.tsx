@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
 import { enviarRecuperacion } from "@/lib/auth/acciones";
-import { REGEX_CORREO } from "@/lib/auth/tipos";
+import { validarCorreo } from "@/lib/validacion";
 import { RUTAS } from "@/lib/routes";
 
 export function RecuperarClaveView() {
@@ -20,12 +20,9 @@ export function RecuperarClaveView() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
-    if (!correo) {
-      setError("Este campo es obligatorio");
-      return;
-    }
-    if (!REGEX_CORREO.test(correo)) {
-      setError("Ingresa un correo electrónico válido");
+    const errorCorreo = validarCorreo(correo);
+    if (errorCorreo) {
+      setError(errorCorreo);
       return;
     }
 

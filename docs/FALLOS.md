@@ -252,3 +252,15 @@ solo entrega salida y vigencia del paquete, sin apertura/cierre de embarque.
 Se detiene esa parte hasta que el backend defina la regla. La PWA actual ya
 verifica ECDSA P-256; la mención histórica al HMAC en CLAUDE.md no describe
 la implementación activa de /embarque.
+
+### 2026-11-11 — Reglas de formulario inconsistentes
+
+Había patrones de correo duplicados y los nombres solo comprobaban que no
+estuvieran vacíos; personal concentraba los errores en un mensaje general.
+lib/validacion.ts centraliza reglas y mensajes para todos los consumidores,
+incluidas las Server Actions de autenticación. Los campos de personas rechazan
+números/símbolos, los correos aplican el patrón solicitado y crear/restablecer
+contraseña comparte el mínimo de ocho caracteres. Input y Select anuncian
+sus errores y los asocian al campo. Se conserva la excepción de razón social
+con RUC. Las pruebas de reglas y navegador cubren Unicode, separadores,
+correos, contraseñas y corrección tras un intento inválido.

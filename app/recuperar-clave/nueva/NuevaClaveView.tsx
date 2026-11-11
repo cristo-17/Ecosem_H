@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ExclamationIcon } from "@/components/ui/icons";
 import { useToast } from "@/components/ui/Toast";
 import { cambiarContrasena } from "@/lib/auth/acciones";
-import { LARGO_MINIMO_CONTRASENA } from "@/lib/auth/tipos";
+import { LARGO_MINIMO_CONTRASENA, validarContrasena } from "@/lib/validacion";
 import { RUTAS } from "@/lib/routes";
 
 export function NuevaClaveView({ conSesion }: { conSesion: boolean }) {
@@ -39,9 +39,8 @@ export function NuevaClaveView({ conSesion }: { conSesion: boolean }) {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const nuevos: typeof errores = {};
-    if (contrasena.length < LARGO_MINIMO_CONTRASENA)
-      nuevos.contrasena = `Debe tener al menos ${LARGO_MINIMO_CONTRASENA} caracteres`;
-    else if (contrasena.length > 72) nuevos.contrasena = "Máximo 72 caracteres";
+    const errorContrasena = validarContrasena(contrasena);
+    if (errorContrasena) nuevos.contrasena = errorContrasena;
     if (confirmar !== contrasena) nuevos.confirmar = "Las contraseñas no coinciden";
     setErrores(nuevos);
     setErrorGeneral(null);

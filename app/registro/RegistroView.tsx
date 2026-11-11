@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
 import { registrar } from "@/lib/auth/acciones";
-import { LARGO_MINIMO_CONTRASENA, REGEX_CORREO } from "@/lib/auth/tipos";
+import { LARGO_MINIMO_CONTRASENA, validarNombre, validarCorreo, validarContrasena } from "@/lib/validacion";
 import { vincularComprasDeEstaPestana } from "@/lib/api/cuenta";
 import { RUTAS } from "@/lib/routes";
 
@@ -34,16 +34,12 @@ type Errores = Partial<Record<keyof FormState, string>>;
 
 function validar(datos: FormState): Errores {
   const errores: Errores = {};
-  if (!datos.nombre.trim()) errores.nombre = "Este campo es obligatorio";
-  else if (datos.nombre.trim().length > 100) errores.nombre = "Máximo 100 caracteres";
-
-  if (!datos.correo.trim()) errores.correo = "Este campo es obligatorio";
-  else if (!REGEX_CORREO.test(datos.correo.trim())) errores.correo = "Ingresa un correo electrónico válido";
-
-  if (!datos.contrasena) errores.contrasena = "Este campo es obligatorio";
-  else if (datos.contrasena.length < LARGO_MINIMO_CONTRASENA)
-    errores.contrasena = `Debe tener al menos ${LARGO_MINIMO_CONTRASENA} caracteres`;
-  else if (datos.contrasena.length > 72) errores.contrasena = "Máximo 72 caracteres";
+  const nombre = validarNombre(datos.nombre, 100);
+  const correo = validarCorreo(datos.correo);
+  const contrasena = validarContrasena(datos.contrasena);
+  if (nombre) errores.nombre = nombre;
+  if (correo) errores.correo = correo;
+  if (contrasena) errores.contrasena = contrasena;
 
   if (!datos.confirmarContrasena) errores.confirmarContrasena = "Este campo es obligatorio";
   else if (datos.confirmarContrasena !== datos.contrasena)

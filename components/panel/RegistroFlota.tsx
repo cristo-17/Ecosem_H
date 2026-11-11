@@ -10,6 +10,7 @@ import { mensajeFlota, registrarConductor, registrarUnidad } from "@/lib/api/flo
 import type { MensajeError } from "@/lib/api/compra";
 import type { SaveDriverRequest, SaveUnitRequest } from "@/lib/types/contratos-panel";
 import { TIPOS_SERVICIO } from "@/lib/servicios";
+import { validarNombre } from "@/lib/validacion";
 
 interface RegistroProps {
   onClose: () => void;
@@ -18,9 +19,10 @@ interface RegistroProps {
 }
 
 /** Los campos sensibles solo viajan en el cuerpo del POST autenticado. */
-function FormularioRegistro({ titulo, guardar, children, onClose, onRegistered, returnFocusRef, puedeGuardar = true }: RegistroProps & {
+function FormularioRegistro({ titulo, guardar, validar, children, onClose, onRegistered, returnFocusRef, puedeGuardar = true }: RegistroProps & {
   titulo: string;
   guardar: (datos: FormData) => Promise<unknown>;
+  validar?: (datos: FormData) => boolean;
   children: ReactNode;
   puedeGuardar?: boolean;
 }) {
@@ -34,6 +36,8 @@ function FormularioRegistro({ titulo, guardar, children, onClose, onRegistered, 
     event.preventDefault();
     if (bloqueo.current) return;
     const datos = new FormData(event.currentTarget);
+    if (validar && !validar(datos)) return;
+    if (validar && !event.currentTarget.reportValidity()) return;
     bloqueo.current = true;
     setGuardando(true);
     setError(null);
@@ -58,7 +62,7 @@ function FormularioRegistro({ titulo, guardar, children, onClose, onRegistered, 
         <Button type="submit" form={formId} isLoading={guardando} disabled={!puedeGuardar}>Guardar registro</Button>
       </>}
     >
-      <form id={formId} onSubmit={enviar} className="flex flex-col gap-4">
+      <form id={formId} onSubmit={enviar} noValidate={Boolean(validar)} className="flex flex-col gap-4">
         <p className="text-sm text-text-secondary">Los campos indicados como opcionales se pueden dejar vacíos.</p>
         {error && <div role="alert" className="rounded-field bg-error-fill p-4 text-error-text"><p className="font-semibold">{error.titulo}</p><p>{error.descripcion}</p></div>}
         <fieldset disabled={guardando} className="flex min-w-0 flex-col gap-4">{children}</fieldset>
@@ -98,8 +102,14 @@ export function RegistroUnidad(props: RegistroProps) {
 }
 
 export function RegistroConductor(props: RegistroProps) {
+  const [errores, setErrores] = useState<{ firstNames?: string; lastNames?: string }>({});
   return (
-    <FormularioRegistro {...props} titulo="Registrar conductor" guardar={datos => {
+    <FormularioRegistro {...props} titulo="Registrar conductor" validar={datos => {
+      const firstNames = validarNombre(texto(datos, "firstNames"), 100);
+      const lastNames = validarNombre(texto(datos, "lastNames"), 100);
+      setErrores({ firstNames, lastNames });
+      return !firstNames && !lastNames;
+    }} guardar={datos => {
       const cuerpo: SaveDriverRequest = {
         firstNames: texto(datos, "firstNames"),
         lastNames: texto(datos, "lastNames"),
@@ -109,8 +119,8 @@ export function RegistroConductor(props: RegistroProps) {
       };
       return registrarConductor(cuerpo);
     }}>
-      <Input label="Nombres" name="firstNames" required maxLength={100} autoComplete="off" />
-      <Input label="Apellidos" name="lastNames" required maxLength={100} autoComplete="off" />
+      <Input label="Nombres" name="firstNames" required maxLength={100} autoComplete="off" errorText={errores.firstNames} />
+      <Input label="Apellidos" name="lastNames" required maxLength={100} autoComplete="off" errorText={errores.lastNames} />
       <Input label="Número de licencia" name="licenseNumber" required minLength={5} maxLength={20} pattern="[A-Za-z0-9\-]{5,20}" autoComplete="off" helperText="De 5 a 20 letras, números o guiones." />
       <Input label="Vencimiento de la licencia" name="licenseExpiresOn" type="date" required />
       <Input label="Límite de horas de conducción (opcional)" name="drivingHoursLimit" type="number" min={0} max={100000} step="any" onInput={e => e.currentTarget.setCustomValidity(e.currentTarget.value !== "" && Number(e.currentTarget.value) <= 0 ? "Ingresa un límite mayor que cero o déjalo vacío." : "")} helperText="Horas acumuladas a partir de las cuales se alerta. Vacío: sin alerta por horas." />

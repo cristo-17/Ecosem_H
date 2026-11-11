@@ -11,6 +11,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TicketIcon } from "@/components/ui/icons";
+import { validarNombre, validarCorreo } from "@/lib/validacion";
 
 type Persona = StaffListResponse["staff"][number];
 const VACIO: CreateStaffRequest = { email: "", firstName: "", lastName: "", role: "counter", terminal: "" };
@@ -25,6 +26,7 @@ export default function PersonalView() {
   const [modal, setModal] = useState<"alta" | "editar" | "baja" | null>(null);
   const [persona, setPersona] = useState<Persona | null>(null);
   const [form, setForm] = useState(VACIO);
+  const [erroresCampos, setErroresCampos] = useState<Partial<Record<keyof CreateStaffRequest, string>>>({});
   const [ocupado, setOcupado] = useState(false);
   const bloqueo = useRef(false);
   const [aviso, setAviso] = useState("");
@@ -51,15 +53,22 @@ export default function PersonalView() {
 
   function abrir(tipo: "alta" | "editar" | "baja", p: Persona | null = null) {
     setPersona(p); setForm(p ? { email: "", firstName: p.firstName, lastName: p.lastName, role: p.role, terminal: p.terminal ?? "" } : VACIO);
-    setErrorModal(null); setModal(tipo); setAviso("");
+    setErrorModal(null); setErroresCampos({}); setModal(tipo); setAviso("");
   }
   async function confirmar() {
     if (bloqueo.current) return;
-    if (modal !== "baja" && form.role !== "supervisor" && !form.terminal) {
-      setErrorModal({ titulo: "Selecciona una agencia", descripcion: "Counter y embarque necesitan una agencia para operar. Elige la agencia de esta persona antes de confirmar." }); return;
-    }
-    if (modal !== "baja" && (!form.firstName.trim() || !form.lastName.trim() || (form.role !== "supervisor" && !form.terminal) || (modal === "alta" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())))) {
-      setErrorModal({ titulo: "Completa los datos", descripcion: "Ingresa nombres, apellidos, un correo válido para el alta y agencia para counter o embarque." }); return;
+    if (modal !== "baja") {
+      const errores: typeof erroresCampos = {};
+      const nombres = validarNombre(form.firstName);
+      const apellidos = validarNombre(form.lastName);
+      const correo = modal === "alta" ? validarCorreo(form.email) : undefined;
+      if (nombres) errores.firstName = nombres;
+      if (apellidos) errores.lastName = apellidos;
+      if (correo) errores.email = correo;
+      if (form.role !== "supervisor" && !form.terminal) errores.terminal = "Selecciona una agencia";
+      setErroresCampos(errores);
+      setErrorModal(null);
+      if (Object.keys(errores).length > 0) return;
     }
     bloqueo.current = true; setOcupado(true); setErrorModal(null);
     try {
@@ -81,12 +90,12 @@ export default function PersonalView() {
     <Modal open={modal !== null} onClose={() => { if (!ocupado) setModal(null); }} preventDismiss={ocupado} title={modal === "alta" ? "Dar de alta por correo" : modal === "baja" ? "Dar de baja" : "Editar personal"} footer={<><Button variant="terciario" disabled={ocupado} onClick={() => setModal(null)}>Cancelar</Button><Button variant={modal === "baja" ? "destructivo" : "principal"} isLoading={ocupado} onClick={confirmar}>Confirmar</Button></>}>
       <div className="flex flex-col gap-4">
         {modal === "baja" ? <p>Se quitará el acceso de {persona?.firstName} {persona?.lastName} y se cerrarán sus sesiones. Tendrá que volver a iniciar sesión.</p> : <>
-          {modal === "alta" && <Input label="Correo de la cuenta registrada" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} helperText="Si no tiene cuenta, debe registrarse primero. Verifica el correo antes de confirmar." />}
-          <Input label="Nombres" value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} />
-          <Input label="Apellidos" value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} />
+          {modal === "alta" && <Input label="Correo de la cuenta registrada" type="email" value={form.email} errorText={erroresCampos.email} onChange={e => setForm({ ...form, email: e.target.value })} helperText="Si no tiene cuenta, debe registrarse primero. Verifica el correo antes de confirmar." />}
+          <Input label="Nombres" value={form.firstName} errorText={erroresCampos.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} />
+          <Input label="Apellidos" value={form.lastName} errorText={erroresCampos.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} />
           <Select label="Rol" options={ROLES} value={form.role} onChange={role => setForm({ ...form, role: role as StaffRole })} />
           <p className="text-sm text-text-secondary">{form.role === "embarque" ? "Solo puede entrar a /embarque: descargar el paquete del viaje, escanear y sincronizar. No puede vender ni acceder a caja, tarifas, personal o manifiestos." : form.role === "supervisor" ? "Puede administrar personal, tarifas y operaciones. No exige agencia." : "Puede vender y operar caja y viajes de su agencia."}</p>
-          {form.role !== "supervisor" && <Select label="Agencia (obligatoria)" options={agencias} value={form.terminal || null} onChange={terminal => setForm({ ...form, terminal })} />}
+          {form.role !== "supervisor" && <Select label="Agencia (obligatoria)" errorText={erroresCampos.terminal} options={agencias} value={form.terminal || null} onChange={terminal => setForm({ ...form, terminal })} />}
           {modal === "editar" && <p className="rounded-md bg-warning-fill p-4 text-sm text-warning-text">Cambiar el rol cierra las sesiones de esta persona. Tendrá que volver a iniciar sesión. Confirma los permisos antes de guardar.</p>}
         </>}
         {errorModal && <div role="alert" className="text-error-text"><h3>{errorModal.titulo}</h3><p>{errorModal.descripcion}</p></div>}

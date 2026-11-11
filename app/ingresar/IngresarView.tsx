@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { iniciarSesion } from "@/lib/auth/acciones";
-import { REGEX_CORREO } from "@/lib/auth/tipos";
+import { validarCorreo } from "@/lib/validacion";
 import { vincularComprasDeEstaPestana } from "@/lib/api/cuenta";
 import { RUTAS } from "@/lib/routes";
 
@@ -21,9 +21,8 @@ const FORM_VACIO: FormState = { correo: "", contrasena: "" };
 
 function validar(datos: FormState): Partial<Record<keyof FormState, string>> {
   const errores: Partial<Record<keyof FormState, string>> = {};
-  const correo = datos.correo.trim();
-  if (!correo) errores.correo = "Este campo es obligatorio";
-  else if (!REGEX_CORREO.test(correo)) errores.correo = "Ingresa un correo electrónico válido";
+  const correo = validarCorreo(datos.correo);
+  if (correo) errores.correo = correo;
   if (!datos.contrasena) errores.contrasena = "Este campo es obligatorio";
   return errores;
 }

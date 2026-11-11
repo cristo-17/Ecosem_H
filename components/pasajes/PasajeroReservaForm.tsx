@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import type { DocumentKind } from "@/lib/types/contratos-frontend";
 import type { BorradorPasajero } from "@/components/pasajes/PurchaseProvider";
 import { etiquetaAsiento } from "@/lib/asientos";
+import { validarNombre } from "@/lib/validacion";
 
 const OPCIONES_DOCUMENTO: SelectOption[] = [
   { value: "dni", label: "DNI" },
@@ -41,10 +42,10 @@ export function validarPasajeroReserva(p: BorradorPasajero, salida: Date): Error
   else if (p.documentType !== "dni" && !/^[A-Za-z0-9]{4,20}$/.test(numero))
     errores.documentNumber = "Entre 4 y 20 letras o números, sin espacios";
 
-  if (!p.firstNames.trim()) errores.firstNames = "Este campo es obligatorio";
-  else if (p.firstNames.trim().length > 100) errores.firstNames = "Máximo 100 caracteres";
-  if (!p.lastNames.trim()) errores.lastNames = "Este campo es obligatorio";
-  else if (p.lastNames.trim().length > 100) errores.lastNames = "Máximo 100 caracteres";
+  const nombres = validarNombre(p.firstNames, 100);
+  const apellidos = validarNombre(p.lastNames, 100);
+  if (nombres) errores.firstNames = nombres;
+  if (apellidos) errores.lastNames = apellidos;
 
   const edad = edadAlViaje(p.birthDate, salida);
   if (!p.birthDate) errores.birthDate = "Este campo es obligatorio";
@@ -53,6 +54,10 @@ export function validarPasajeroReserva(p: BorradorPasajero, salida: Date): Error
 
   if (edad !== null && edad >= 0 && edad < MAYORIA_DE_EDAD) {
     if (!p.companionName.trim()) errores.companionName = "Obligatorio para un menor de edad";
+    else {
+      const nombre = validarNombre(p.companionName);
+      if (nombre) errores.companionName = nombre;
+    }
     if (!p.companionRelationship.trim())
       errores.companionRelationship = "Obligatorio para un menor de edad";
   }

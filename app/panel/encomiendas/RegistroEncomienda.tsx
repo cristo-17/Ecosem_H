@@ -1,4 +1,5 @@
 "use client";
+import { validarNombre } from "@/lib/validacion";
 
 import { useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
@@ -163,6 +164,10 @@ export function RegistroEncomienda({ agencias, agenciaPropia, onVerEncomienda }:
   function validarPersona(p: Persona, prefijo: string, e: Errores) {
     if (!p.nombre.trim()) e[`${prefijo}Nombre`] = "Este campo es obligatorio";
     else if (p.nombre.trim().length > 200) e[`${prefijo}Nombre`] = "Máximo 200 caracteres";
+    if (p.tipo !== "ruc") {
+      const nombre = validarNombre(p.nombre, 200);
+      if (nombre) e[`${prefijo}Nombre`] = nombre;
+    }
     const doc = errorDocumento(p.tipo, p.numero);
     if (doc) e[`${prefijo}Numero`] = doc;
     if (p.celular.trim() && !/^\d{9}$/.test(p.celular.trim()))
