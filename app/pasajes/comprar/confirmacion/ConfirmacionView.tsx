@@ -21,7 +21,7 @@ import {
   InfoIcon,
 } from "@/components/ui/icons";
 import type { TicketsResponse } from "@/lib/types/contratos-frontend";
-import { ahoraServidor } from "@/lib/api/cliente";
+import { ApiError, ahoraServidor } from "@/lib/api/cliente";
 import {
   recuperarReserva,
   mensajeCompra,
@@ -77,6 +77,17 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
   const sesion = montado && Boolean(reservationId);
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const query = new URLSearchParams();
+    if (reservationId) query.set("reserva", reservationId);
+    const busqueda = query.toString();
+    const destino = busqueda ? `?${busqueda}` : "";
+    if (url.search !== destino) {
+      window.history.replaceState(null, "", `${url.pathname}${destino}${url.hash}`);
+    }
+  }, [reservationId]);
+
+  useEffect(() => {
     if (!reservationId || !sesion) return;
     let vigente = true;
     let temporizador: ReturnType<typeof setTimeout> | undefined;
@@ -99,9 +110,16 @@ export function ConfirmacionView({ reservationId }: { reservationId: string }) {
         setEstado({ tipo: "esperando", expiresAt: reservation.expiresAt, pagoIniciado: paymentStarted });
       } catch (error) {
         if (!vigente) return;
+        const mensaje = error instanceof ApiError &&
+          (error.codigo === "SESSION_REQUIRED" || error.codigo === "UNAUTHENTICATED")
+          ? {
+              titulo: "Vuelve a la pestaña donde hiciste la compra",
+              descripcion: "Abre la confirmación en la pestaña del navegador donde iniciaste la compra. Si pagaste, tu compra se confirma igual aunque esta pantalla no pueda mostrarla.",
+            }
+          : mensajeCompra(error);
         // Sin red mientras se espera: se sigue intentando sin decidir nada.
         setEstado((anterior) =>
-          anterior.tipo === "esperando" ? anterior : { tipo: "error", mensaje: mensajeCompra(error) },
+          anterior.tipo === "esperando" ? anterior : { tipo: "error", mensaje },
         );
       }
       if (vigente) {
