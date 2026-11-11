@@ -25,5 +25,4 @@ export interface ResultadoAuth {
   requiereConfirmacion?: boolean;
 }
 
-export const LARGO_MINIMO_CONTRASENA = 8;
-export const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export { LARGO_MINIMO_CONTRASENA, REGEX_CORREO } from "@/lib/validacion";

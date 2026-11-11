@@ -1,4 +1,5 @@
 "use client";
+import { validarNombre, validarCorreo } from "@/lib/validacion";
 
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -75,9 +76,10 @@ export function LibroDeReclamacionesView() {
     if (form.celular && !/^\d{9}$/.test(form.celular)) {
       nuevosErrores.celular = "Debe contener exactamente 9 dígitos";
     }
-    if (form.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo)) {
-      nuevosErrores.correo = "Ingrese un correo electrónico válido";
-    }
+    const nombre = validarNombre(form.nombres);
+    const correo = validarCorreo(form.correo);
+    if (nombre) nuevosErrores.nombres = nombre;
+    if (correo) nuevosErrores.correo = correo;
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;

@@ -69,7 +69,7 @@ export function Input({
         )}
       </div>
       {hasError ? (
-        <p id={helperId} className="text-sm text-error-text">
+        <p id={helperId} role="alert" aria-atomic="true" className="text-sm text-error-text">
           {errorText}
         </p>
       ) : helperText ? (

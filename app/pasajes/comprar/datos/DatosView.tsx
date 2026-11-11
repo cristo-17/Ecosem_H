@@ -1,4 +1,5 @@
 "use client";
+import { validarCorreo } from "@/lib/validacion";
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
@@ -39,14 +40,14 @@ import { etiquetaAsiento } from "@/lib/asientos";
 
 type ErroresContacto = Partial<Record<keyof BorradorContacto, string>>;
 
-const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validarContacto(c: BorradorContacto): ErroresContacto {
   const errores: ErroresContacto = {};
   const correo = c.email.trim();
   const celular = c.phone.trim();
   if (!correo && !celular) errores.email = "Indica un correo o un celular para enviarte tus boletos";
-  if (correo && !REGEX_CORREO.test(correo)) errores.email = "Ingresa un correo electrónico válido";
+  const errorCorreo = validarCorreo(correo, false);
+  if (errorCorreo) errores.email = errorCorreo;
   if (celular && !/^\d{9}$/.test(celular)) errores.phone = "Debe contener exactamente 9 dígitos";
   if (c.whatsappOptIn && !celular) errores.phone = "Para recibir WhatsApp, indica tu celular";
   if (!c.dataAuthorization) errores.dataAuthorization = "Necesitamos esta declaración para emitir los boletos";

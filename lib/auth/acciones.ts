@@ -4,28 +4,13 @@ import { headers } from "next/headers";
 import type { AuthError } from "@supabase/supabase-js";
 import { clienteSupabaseServidor } from "@/lib/supabase/servidor";
 import {
-  LARGO_MINIMO_CONTRASENA,
-  REGEX_CORREO,
   type CredencialesIngreso,
   type DatosRegistro,
   type ResultadoAuth,
 } from "@/lib/auth/tipos";
 import { rutaInterna } from "@/lib/auth/rutas";
 import { RUTAS } from "@/lib/routes";
-
-// Lo que llega a una Server Action viene del navegador: se vuelve a validar
-// aquí, aunque el formulario ya lo haya hecho.
-function correoValido(correo: unknown): correo is string {
-  return typeof correo === "string" && correo.length <= 254 && REGEX_CORREO.test(correo.trim());
-}
-
-function contrasenaValida(contrasena: unknown): contrasena is string {
-  return (
-    typeof contrasena === "string" &&
-    contrasena.length >= LARGO_MINIMO_CONTRASENA &&
-    contrasena.length <= 72
-  );
-}
+import { validarNombre, validarCorreo, validarContrasena } from "@/lib/validacion";
 
 async function origen(): Promise<string> {
   const h = await headers();
@@ -42,7 +27,7 @@ function mensaje(error: AuthError): string {
     case "email_not_confirmed":
       return "Todavía no confirmaste tu correo. Revisa tu bandeja de entrada (y la de spam).";
     case "weak_password":
-      return "La contraseña es muy débil. Usa al menos 8 caracteres combinando letras y números.";
+      return "El servicio no aceptó esa contraseña. Elige otra.";
     case "over_request_rate_limit":
     case "over_email_send_rate_limit":
       return "Hiciste demasiados intentos seguidos. Espera unos minutos y vuelve a intentarlo.";
@@ -55,8 +40,11 @@ function mensaje(error: AuthError): string {
   }
 }
 
+// Se reutilizan las reglas del formulario sin confiar en la validación del cliente.
 export async function iniciarSesion(credenciales: CredencialesIngreso): Promise<ResultadoAuth> {
-  if (!correoValido(credenciales?.correo) || typeof credenciales?.contrasena !== "string") {
+  const errorCorreo = validarCorreo(credenciales?.correo);
+  if (errorCorreo) return { error: errorCorreo };
+  if (typeof credenciales?.contrasena !== "string") {
     return { error: "Correo o contraseña incorrectos." };
   }
   const supabase = await clienteSupabaseServidor();
@@ -69,15 +57,12 @@ export async function iniciarSesion(credenciales: CredencialesIngreso): Promise<
 
 export async function registrar(datos: DatosRegistro): Promise<ResultadoAuth> {
   const nombre = typeof datos?.nombre === "string" ? datos.nombre.trim() : "";
-  if (!nombre || nombre.length > 100) return { error: "Revisa tu nombre." };
-  if (!correoValido(datos.correo)) return { error: "Ingresa un correo electrónico válido." };
-  if (!contrasenaValida(datos.contrasena)) {
-    return { error: `La contraseña debe tener entre ${LARGO_MINIMO_CONTRASENA} y 72 caracteres.` };
-  }
+  const error = validarNombre(nombre, 100) ?? validarCorreo(datos?.correo) ?? validarContrasena(datos?.contrasena);
+  if (error) return { error };
 
   const siguiente = rutaInterna(datos.siguiente, RUTAS.miPerfil);
   const supabase = await clienteSupabaseServidor();
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error: errorRegistro } = await supabase.auth.signUp({
     email: datos.correo.trim(),
     password: datos.contrasena,
     options: {
@@ -87,7 +72,7 @@ export async function registrar(datos: DatosRegistro): Promise<ResultadoAuth> {
       emailRedirectTo: `${await origen()}/auth/confirmar?${new URLSearchParams({ siguiente })}`,
     },
   });
-  if (error) return { error: mensaje(error) };
+  if (errorRegistro) return { error: mensaje(errorRegistro) };
   // Sin sesión: el proyecto pide confirmar el correo. Supabase responde igual
   // si el correo ya tenía cuenta, para no revelar quién está registrado.
   return data.session ? {} : { requiereConfirmacion: true };
@@ -100,7 +85,8 @@ export async function cerrarSesion(): Promise<void> {
 }
 
 export async function enviarRecuperacion(correo: string): Promise<ResultadoAuth> {
-  if (!correoValido(correo)) return { error: "Ingresa un correo electrónico válido." };
+  const errorCorreo = validarCorreo(correo);
+  if (errorCorreo) return { error: errorCorreo };
   const supabase = await clienteSupabaseServidor();
   const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), {
     redirectTo: `${await origen()}/auth/confirmar?${new URLSearchParams({
@@ -114,9 +100,8 @@ export async function enviarRecuperacion(correo: string): Promise<ResultadoAuth>
 
 /** Tras volver del enlace de recuperación, con la sesión que abrió ese enlace. */
 export async function cambiarContrasena(contrasena: string): Promise<ResultadoAuth> {
-  if (!contrasenaValida(contrasena)) {
-    return { error: `La contraseña debe tener entre ${LARGO_MINIMO_CONTRASENA} y 72 caracteres.` };
-  }
+  const errorContrasena = validarContrasena(contrasena);
+  if (errorContrasena) return { error: errorContrasena };
   const supabase = await clienteSupabaseServidor();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims?.sub) {

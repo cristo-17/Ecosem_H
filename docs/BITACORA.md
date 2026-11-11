@@ -2175,3 +2175,38 @@ Pruebas y resultados reproducibles en .qa-tmp/embarque-*. No acredita Safari
 real, cámara física ni backend de producción. TypeScript, lint de la app
 (excluyendo los artefactos y scripts temporales de .qa-tmp) y build verificados.
 Sin commits ni despliegue.
+
+### 2026-11-11 — Validación compartida de nombres, correo y contraseña
+
+lib/validacion.ts define las reglas y mensajes para cliente y Server Actions.
+Nombres: letras Unicode, marcas combinantes propias de otros alfabetos,
+espacio, apóstrofo recto/tipográfico y guion solo entre palabras. Se recortan
+los espacios exteriores y se comprueba la forma NFC; no se filtran ni borran
+caracteres mientras se escribe. Mensaje: «El nombre solo debe contener letras».
+El correo usa el patrón solicitado y el mensaje «Ingresa un correo electrónico
+válido». Crear/restablecer contraseña exige ocho caracteres y usa «La
+contraseña debe tener al menos 8 caracteres». Se conserva el máximo previo
+de 72 y los límites de longitud ya existentes de cada formulario.
+
+Se aplicó a registro, ingreso, recuperación y nueva contraseña; pasajeros y
+acompañantes del formulario compartido por compra web y venta de counter;
+contacto de compra web; alta y edición de personal; registro de conductores;
+Libro de Reclamaciones; remitente y destinatario de encomiendas que no usen
+RUC. Las razones sociales con RUC conservan números y signos. El perfil solo
+muestra los datos de sesión y no ofrece edición, por lo que no se añadió un
+formulario nuevo. El registro de conductores valida nombres antes de ejecutar
+la validación nativa de licencia/fecha. El registro de unidades conserva su
+validación nativa. Los mensajes de personal pasan de un error general a sus
+campos. Input y Select anuncian errores con role=alert y aria-atomic, además
+de aria-invalid y aria-describedby.
+
+Pruebas: node --test tests/validacion.test.mjs (cuatro casos, diez nombres
+Unicode admitidos, once entradas inválidas, correos y límites 7/8/72/73).
+Chromium desktop y perfil iPhone 13 emulado con formularios reales y servicios
+simulados: mensajes de campo, asociaciones ARIA, bloqueo de envíos inválidos,
+corrección de datos, alta/edición de personal, acompañantes y razones sociales.
+Las Server Actions reales se probaron con cliente Supabase simulado: no llaman
+al servicio al recibir datos inválidos y admiten ocho caracteres. Harness y
+resultados en .qa-tmp/validacion-*. TypeScript, lint de código fuente (sin los
+artefactos temporales de .qa-tmp) y build correctos. No se crearon cuentas ni
+se escribieron datos de negocio en servicios reales. Sin commits ni despliegue.
