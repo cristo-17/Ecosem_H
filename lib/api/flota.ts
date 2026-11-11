@@ -7,6 +7,8 @@ const pedir = <T>(ruta: string) => conCuenta<T>(ruta, {}, "flota");
 const guardar = <T = void>(ruta: string, cuerpo: unknown, metodo: "PUT" | "POST" = "PUT") => conCuenta<T>(ruta, { metodo, cuerpo }, "flota");
 export const listarUnidades = () => pedir<UnitsResponse>("/v1/unidades");
 export const listarConductores = () => pedir<DriversResponse>("/v1/conductores");
+export const registrarUnidad = (cuerpo: SaveUnitRequest) => guardar<unknown>("/v1/unidades", cuerpo, "POST");
+export const registrarConductor = (cuerpo: SaveDriverRequest) => guardar<unknown>("/v1/conductores", cuerpo, "POST");
 export const listarAlertas = (estado: "activa" | "atendida") => pedir<AlertsResponse>(`/v1/alertas?estado=${estado}`);
 export const guardarUnidad = (unidad: string, cuerpo: SaveUnitRequest) => guardar(`/v1/unidades/${id(unidad)}`, cuerpo);
 export const guardarConductor = (conductor: string, cuerpo: SaveDriverRequest) => guardar(`/v1/conductores/${id(conductor)}`, cuerpo);
