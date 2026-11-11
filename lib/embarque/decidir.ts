@@ -11,6 +11,11 @@ import { leerQr, verificarFirma, type QrBoleto } from "./qr";
 export type MotivoRechazoLocal =
   | "formato"
   | "paquete_vencido"
+  | "paquete_incompleto"
+  | "embarque_sin_configurar"
+  | "embarque_no_abierto"
+  | "embarque_cerrado"
+  | "incidencia_reloj"
   | "otro_viaje"
   | "viaje_cancelado"
   | "clave_desconocida"
@@ -43,7 +48,25 @@ const mismoBoleto = (a: BoletoDeViaje) => (b: BoletoDeViaje) =>
   a.purchaseCode === b.purchaseCode && a.seat === b.seat;
 
 export function paqueteVencido(paquete: PaqueteEmbarque, ahora: Date): boolean {
-  return Date.parse(paquete.validUntil) <= ahora.getTime();
+  const limite = Date.parse(paquete.validUntil);
+  return !Number.isFinite(limite) || limite < ahora.getTime();
+}
+
+/** No deducir márgenes de la salida ni de la vigencia técnica del paquete. */
+export function impedimentoTemporal(paquete: PaqueteEmbarque, ahora: Date): MotivoRechazoLocal | null {
+  const emision = Date.parse(paquete.issuedAt);
+  const vencimiento = Date.parse(paquete.validUntil);
+  if (!paquete.packageId || !Number.isFinite(emision) || !Number.isFinite(vencimiento) ||
+      !Number.isFinite(ahora.getTime()) || vencimiento < emision) return "paquete_incompleto";
+  if (!paquete.boardingRuleVersion || !paquete.boardingOpensAt || !paquete.boardingClosesAt) return "embarque_sin_configurar";
+  const apertura = Date.parse(paquete.boardingOpensAt);
+  const cierre = Date.parse(paquete.boardingClosesAt);
+  if (!Number.isFinite(apertura) || !Number.isFinite(cierre) || cierre < apertura) return "paquete_incompleto";
+  if (ahora.getTime() < emision) return "incidencia_reloj";
+  if (paqueteVencido(paquete, ahora)) return "paquete_vencido";
+  if (ahora.getTime() < apertura) return "embarque_no_abierto";
+  if (ahora.getTime() > cierre) return "embarque_cerrado";
+  return null;
 }
 
 export async function decidirEscaneo(
@@ -54,8 +77,6 @@ export async function decidirEscaneo(
 ): Promise<Decision> {
   const qr = leerQr(texto);
   if (!qr) return { tipo: "rechazado", qr: null, motivo: "formato" };
-  // Un paquete viejo puede no traer anulaciones ni claves revocadas recientes.
-  if (paqueteVencido(paquete, ahora)) return { tipo: "rechazado", qr, motivo: "paquete_vencido" };
   if (qr.tripId !== paquete.tripId) return { tipo: "rechazado", qr, motivo: "otro_viaje" };
   if (paquete.status === "cancelado") return { tipo: "rechazado", qr, motivo: "viaje_cancelado" };
 
@@ -69,6 +90,8 @@ export async function decidirEscaneo(
   if (paquete.revoked.some(mismoBoleto(boleto))) {
     return { tipo: "rechazado", qr, motivo: "boleto_anulado" };
   }
+  const impedimento = impedimentoTemporal(paquete, ahora);
+  if (impedimento) return { tipo: "rechazado", qr, motivo: impedimento };
   const aqui = embarcadosAqui.find(mismoBoleto(boleto));
   if (aqui) return { tipo: "ya-embarcado", qr, embarcadoAqui: aqui.scannedAt };
   if (paquete.boarded.some(mismoBoleto(boleto))) {

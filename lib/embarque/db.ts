@@ -32,6 +32,8 @@ export interface EscaneoLocal {
   /** Lo genera el dispositivo y no cambia: reenviarlo al servidor no duplica. */
   scanId: string;
   tripId: string;
+  /** Ausente solo en escaneos históricos; nunca completarlo con otro paquete. */
+  packageId?: string | null;
   /** Solo si tenía la forma de un boleto: un QR cualquiera no se guarda ni se envía. */
   qr: string | null;
   purchaseCode: string | null;
@@ -127,7 +129,10 @@ export const escaneosPendientes = () =>
 export const aplicarRespuesta = (respuesta: RespuestaSincronizacion) =>
   conAlmacen(ESCANEOS, "readwrite", async (a) => {
     for (const { scanId, ...servidor } of respuesta.results) {
+      if (!["embarcado", "duplicado", "rechazado"].includes(servidor.result)) continue;
       const escaneo = (await pedido(a.get(scanId))) as EscaneoLocal | undefined;
-      if (escaneo) await pedido(a.put({ ...escaneo, sincronizado: true, servidor }));
+      if (escaneo && escaneo.tripId === respuesta.tripId && !escaneo.sincronizado) {
+        await pedido(a.put({ ...escaneo, sincronizado: true, servidor }));
+      }
     }
   });

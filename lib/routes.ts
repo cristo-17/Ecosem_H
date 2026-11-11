@@ -35,8 +35,13 @@ export const RUTAS = {
   panelConductores: "/panel/conductores",
   panelAlertas: "/panel/alertas",
   panelTarifario: "/panel/tarifario",
+  panelEmbarque: "/panel/embarque",
   embarque: "/embarque",
 } as const;
+
+export function rutaIncidenciasEmbarque(tripId: string): string {
+  return `${RUTAS.panelEmbarque}?${new URLSearchParams({ viajeId: tripId })}`;
+}
 
 /** Detalle de un viaje del día en el panel — ruta dinámica, no una entrada fija de RUTAS. */
 export function rutaPanelViaje(id: string): string {

@@ -264,3 +264,22 @@ contraseña comparte el mínimo de ocho caracteres. Input y Select anuncian
 sus errores y los asocian al campo. Se conserva la excepción de razón social
 con RUC. Las pruebas de reglas y navegador cubren Unicode, separadores,
 correos, contraseñas y corrección tras un intento inválido.
+
+### 2026-11-11 — Ventana de embarque y trazabilidad de la sincronización
+
+El frontend no tenía límites operativos definidos y podía aceptar QR del viaje
+fuera de su día; el backend ahora entrega apertura/cierre, versión y packageId.
+Se integraron sin márgenes propios y se bloquean paquetes históricos incompletos
+o sin regla. Un único instante se usa al decidir y guardar, evitando diferencias
+al cruzar un límite mientras se verifica la firma.
+
+Renovar el paquete no debe cambiar la referencia de un escaneo pendiente: se
+guarda packageId al escanear y se envía esa referencia, incluso en lotes mixtos.
+Los históricos sin paquete se conservan para el rechazo auditado del servidor.
+Los resultados parciales solo confirman sus scanId y las incidencias no quedan
+ocultas por el límite de treinta entradas del historial. La aceptación visible
+se asocia al scanId exacto para que un rechazo sustituya al VÁLIDO correcto.
+
+Se verificó con ECDSA, IndexedDB, HTTP y navegador locales; el backend aún no está
+desplegado y no se verificó contra EcosemH. La guía posterior al despliegue y el
+script GET están en docs/VERIFICACION-VENTANA-EMBARQUE.md y scripts/.

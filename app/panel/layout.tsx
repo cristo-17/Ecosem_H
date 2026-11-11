@@ -119,6 +119,11 @@ export default async function PanelLayout({ children }: { children: ReactNode })
             )}
             {/* Tarifario: mismo filtro solo-supervisor (docs/prompts/13-tarifario-encomiendas.md). */}
             {esSupervisor(rol) && (
+              <Link href={RUTAS.panelEmbarque} className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                Regla de embarque
+              </Link>
+            )}
+            {esSupervisor(rol) && (
               <Link
                 href={RUTAS.panelTarifario}
                 className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

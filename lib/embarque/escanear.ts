@@ -19,25 +19,29 @@ import { contextoEmbarque } from "./usuario";
 
 /** Se dispara tras cada escaneo y cada sincronización, para refrescar contadores. */
 export const EVENTO_EMBARQUE = "ecosem-embarque:cambio";
+export type ResultadoEscaneo = Decision & { scanId: string };
 
-export async function procesarEscaneo(tripId: string, texto: string): Promise<Decision | null> {
+export async function procesarEscaneo(tripId: string, texto: string): Promise<ResultadoEscaneo | null> {
   const contexto = contextoEmbarque();
+  const ahora = new Date();
   const descargado = await obtenerViaje(tripId);
   if (!descargado) return null;
   const embarcadosAqui = (await escaneosDeViaje(tripId))
-    .filter((e) => e.local === "embarcado" && e.purchaseCode && e.seat)
+    .filter((e) => e.local === "embarcado" && e.servidor?.result !== "rechazado" && e.purchaseCode && e.seat)
     .map((e) => ({ purchaseCode: e.purchaseCode!, seat: e.seat!, scannedAt: e.scannedAt }));
 
-  const decision = await decidirEscaneo(texto, descargado.paquete, embarcadosAqui);
+  const decision = await decidirEscaneo(texto, descargado.paquete, embarcadosAqui, ahora);
   const qr = decision.qr;
   contexto.comprobar();
+  const scanId = crypto.randomUUID();
   await guardarEscaneo({
-    scanId: crypto.randomUUID(),
+    scanId,
     tripId,
+    packageId: descargado.paquete.packageId ?? null,
     qr: qr ? texto.trim() : null,
     purchaseCode: qr?.purchaseCode ?? null,
     seat: qr?.seat ?? null,
-    scannedAt: new Date().toISOString(),
+    scannedAt: ahora.toISOString(),
     local:
       decision.tipo === "embarcar"
         ? "embarcado"
@@ -49,7 +53,7 @@ export async function procesarEscaneo(tripId: string, texto: string): Promise<De
     servidor: null,
   });
   window.dispatchEvent(new Event(EVENTO_EMBARQUE));
-  return decision;
+  return { ...decision, scanId };
 }
 
 /** Con señal: baja el paquete del viaje y lo guarda para operar sin conexión. */

@@ -14,7 +14,8 @@ import { BusIcon, CheckIcon, DownloadIcon, ExclamationIcon, SearchOffIcon } from
 import type { CatalogResponse } from "@/lib/types/contratos-frontend";
 import type { ViajesOperacion } from "@/lib/embarque/contrato";
 import { listarViajesDescargados, type ViajeDescargado } from "@/lib/embarque/db";
-import { paqueteVencido } from "@/lib/embarque/decidir";
+import { impedimentoTemporal } from "@/lib/embarque/decidir";
+import { MOTIVO_LOCAL } from "@/lib/embarque/mensajes";
 import { descargarViaje } from "@/lib/embarque/escanear";
 import { ciudadesDeRuta, viajesDelDia } from "@/lib/api/operacion";
 import { fechaDesdeBusqueda, fechaParaBusqueda, hoyEnPeru, obtenerCatalogo } from "@/lib/api/ventas";
@@ -119,7 +120,7 @@ export function SeleccionViajeView() {
                 origen={d.origen}
                 destino={d.destino}
                 viaje={d.paquete.status === "cancelado" ? { ...d.viaje, status: "cancelado" } : d.viaje}
-                aviso={paqueteVencido(d.paquete, new Date()) ? "El paquete venció: actualízalo con señal" : null}
+                aviso={(() => { const motivo = impedimentoTemporal(d.paquete, new Date()); return motivo ? MOTIVO_LOCAL[motivo] : null; })()}
                 accion={
                   <Button variant="secundario" disabled={d.viaje.status === "cancelado" || d.paquete.status === "cancelado"} onClick={() => router.push(rutaEmbarqueViaje(d.tripId))} className="shrink-0">
                     <CheckIcon className="!size-4" />

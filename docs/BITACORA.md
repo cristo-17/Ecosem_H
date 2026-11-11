@@ -2210,3 +2210,66 @@ al servicio al recibir datos inválidos y admiten ocho caracteres. Harness y
 resultados en .qa-tmp/validacion-*. TypeScript, lint de código fuente (sin los
 artefactos temporales de .qa-tmp) y build correctos. No se crearon cuentas ni
 se escribieron datos de negocio en servicios reales. Sin commits ni despliegue.
+
+### 2026-11-11 — Integración de la ventana de embarque del backend
+
+Se leyó la skill ecosem-design-system y, en el otro repositorio, únicamente los
+archivos autorizados generado/contratos-panel.ts y docs/EMBARQUE.md. El contrato
+se copió completo, sin edición manual. SHA-256 de origen y destino:
+EFFD7E451F0DFA87CD98D6720A2730058FB630287E9557D3D64D4B2075C89BB3.
+El primer tsc señaló los nuevos motivos de BoardingRejection: se incorporaron
+al mapa exhaustivo compartido de mensajes; el contrato generado no se tocó.
+
+Nueva ruta /panel/embarque, protegida en servidor para supervisor, con accesos
+en el inicio y navegación del panel. Consulta y guarda BoardingRulesRequest /
+BoardingRulesResponse mediante GET/PUT /v1/configuracion/embarque. Sin regla,
+campos vacíos: minutos enteros no negativos y fuente obligatoria. Cero es válido
+cuando se introduce explícitamente. Se muestra la versión, autor y fecha que
+responde el servidor; no hay minutos operativos predeterminados. El límite de
+integer de PostgreSQL se distingue como técnico, sin inventar un máximo comercial.
+
+La PWA usa boardingOpensAt/boardingClosesAt inclusivos al milisegundo y mantiene
+separada la vigencia issuedAt/validUntil. Bloquea paquetes sin los campos nuevos,
+sin configuración, inválidos, vencidos o fuera de ventana; advierte el retroceso
+a antes de issuedAt. Mantiene firma pública ECDSA, viaje, cancelación, anulaciones
+y duplicados. Las fechas incluyen el día y la zona de Perú. Cada escaneo guarda
+packageId y la misma hora usada al decidir: renovar el paquete no los cambia.
+Los escaneos históricos se conservan y se envían con packageId null, sin atribuirles
+un paquete nuevo. No se altera el esquema ni se borra IndexedDB.
+
+La sincronización solo confirma resultados devueltos para sus scanId y viaje;
+con respuestas parciales/fallos mantiene el resto pendiente. Las incidencias
+se refrescan incluso si falla un lote posterior y conservan el primer resultado
+persistido. Los rechazos no suman como embarcados ni duplicados locales. Una
+aceptación visible se vincula al scanId exacto y cambia a incidencia si el servidor
+la rechaza. La lista de incidencias no se recorta a los treinta escaneos recientes.
+
+El supervisor accede desde el detalle del viaje a la lista de rechazos paginada
+con BoardingRejectedScansResponse. Muestra motivo, compra/asiento, operador,
+horas original/recepción, paquete, versión y límites, incluidos registros con
+scannedAt null. Permite reintentar y cargar más, conservando las páginas leídas
+si falla la siguiente. No hay acciones que conviertan rechazos en aceptaciones.
+
+Caché del service worker v3 para renovar el shell de la PWA, sin borrar pendientes
+ni cambiar proxy.ts/CSP. No se puede actualizar un dispositivo que siga aislado
+con el bundle anterior: la operación debe reabrirse después de actualizarlo.
+
+Verificación local: ocho pruebas unitarias (ventana y validaciones), tsc, lint
+de código fuente excluyendo .qa-tmp, y build correctos. En Chromium desktop y
+perfil iPhone 13 emulado se probaron los componentes, IndexedDB y adaptadores
+HTTP reales con servicios simulados: regla vacía, cero, fuente, error de guardado,
+101 rechazos paginados y reintento, QR ECDSA sin red, paquetes A/B en un lote,
+fallo de red, respuesta parcial, sincronización tardía, escaneos históricos sin
+paquete, sustitución del VÁLIDO por rechazo y persistencia tras 35 escaneos más.
+Sin infracciones CSP ni desbordamiento horizontal. También pasó la regresión de
+lectura QR alternativa con video de canvas y el aislamiento/cierre entre cuentas.
+No acredita Safari físico ni cámara real. Resultados en .qa-tmp/ventana-* y
+.qa-tmp/embarque-*. Se revisaron capturas móviles con los estilos del build.
+
+El backend de feature/ventana-embarque sigue sin desplegar: NO se verificó contra
+EcosemH ni se modificó su configuración. docs/VERIFICACION-VENTANA-EMBARQUE.md
+deja orden de despliegue, pruebas y casos operativos en preview. El script
+scripts/verificar-embarque-despliegue.mjs valida GET de regla, paquete y todas
+las páginas de incidencias sin cambiar reglas ni escaneos; consultar paquete
+sí emite/persiste uno. Se comprobó contra el simulador, no contra EcosemH.
+Sin commits, despliegue ni cambios en el repositorio del backend.

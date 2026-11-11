@@ -23,6 +23,7 @@ const ENLACES_COUNTER: EnlacePanel[] = [
 ];
 
 const ENLACES_SUPERVISOR_EXTRA: EnlacePanel[] = [
+  { href: RUTAS.panelEmbarque, label: "Regla e incidencias de embarque" },
   { href: RUTAS.panelPersonal, label: "Personal" },
   { href: RUTAS.panelPrecios, label: "Precios" },
   { href: RUTAS.panelTarifario, label: "Tarifario" },
