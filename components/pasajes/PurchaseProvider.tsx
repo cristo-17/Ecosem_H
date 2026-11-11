@@ -13,6 +13,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 import { ClockIcon, ExclamationIcon } from "@/components/ui/icons";
 import { RUTAS, rutaCompraConfirmacion } from "@/lib/routes";
 import { ApiError } from "@/lib/api/cliente";
@@ -142,15 +144,27 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const consulta = useSearchParams().toString();
-  const [recuperacion, setRecuperacion] = useState<"cargando" | "lista" | "vencida" | (MensajeError & { sinAcceso?: boolean })>("cargando");
+  const [recuperacion, setRecuperacion] = useState<"cargando" | "lista" | "vencida" | { compraConfirmada: string } | (MensajeError & { sinAcceso?: boolean })>("cargando");
   const [intento, setIntento] = useState(0);
+
+  const reiniciarSeleccion = useCallback(() => {
+    recordarReserva(null);
+    estadoRef.current = ESTADO_INICIAL;
+    setEstado(ESTADO_INICIAL);
+    setRecuperacion("lista");
+    const query = new URLSearchParams(consulta);
+    if (query.has("reserva")) {
+      query.delete("reserva");
+      router.replace(`${pathname}?${query.toString()}`);
+    }
+  }, [consulta, pathname, router]);
 
   useEffect(() => {
     const query = new URLSearchParams(consulta);
     const seleccion = pathname.endsWith("/asientos");
     const id = query.get("reserva") || (seleccion ? reservaRecordada() : null);
     // Confirmación ya consulta el backend, incluso mientras espera el webhook.
-    if (!id || pathname.endsWith("/confirmacion") || estadoRef.current.reserva?.reservationId === id) {
+    if (!id || pathname.endsWith("/confirmacion") || (!seleccion && estadoRef.current.reserva?.reservationId === id)) {
       // La URL y sessionStorage solo están disponibles después de hidratar.
       setRecuperacion("lista");
       return;
@@ -160,6 +174,28 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     recuperarReserva(id, { signal: controller.signal }).then((datos) => {
       if (controller.signal.aborted) return;
+      if (seleccion && datos.status === "purchased") {
+        // La compra terminada nunca se restaura como una reserva en curso.
+        estadoRef.current = ESTADO_INICIAL;
+        setEstado(ESTADO_INICIAL);
+        if (datos.reservation.tripId === query.get("viajeId")) {
+          setRecuperacion({ compraConfirmada: id });
+        } else {
+          reiniciarSeleccion();
+        }
+        return;
+      }
+      if (datos.status === "expired" && !datos.paymentStarted) {
+        if (seleccion) {
+          reiniciarSeleccion();
+        } else {
+          recordarReserva(null);
+          estadoRef.current = ESTADO_INICIAL;
+          setEstado(ESTADO_INICIAL);
+          setRecuperacion("vencida");
+        }
+        return;
+      }
       if (seleccion && datos.reservation.tripId !== query.get("viajeId")) {
         setRecuperacion("lista");
         return;
@@ -167,11 +203,6 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
       if (datos.status === "purchased" || datos.paymentStarted) {
         router.replace(rutaCompraConfirmacion(id));
         setRecuperacion("lista");
-        return;
-      }
-      if (datos.status === "expired") {
-        recordarReserva(null);
-        setRecuperacion("vencida");
         return;
       }
       const restaurado: PurchaseState = {
@@ -196,7 +227,7 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
       });
     });
     return () => controller.abort();
-  }, [router, intento, pathname, consulta]);
+  }, [router, intento, pathname, consulta, reiniciarSeleccion]);
 
   // Al salir del flujo (se desmonta el layout) se libera lo que siga
   // retenido. El ref deja leer el estado más reciente desde la limpieza.
@@ -206,7 +237,10 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   useEffect(
     () => () => {
       const { reserva, pagoIniciado } = estadoRef.current;
-      if (reserva && !pagoIniciado) liberarSinEsperar(reserva.reservationId);
+      if (reserva && !pagoIniciado) {
+        recordarReserva(null);
+        liberarSinEsperar(reserva.reservationId);
+      }
     },
     [],
   );
@@ -252,6 +286,7 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
 
   const olvidarReserva = useCallback(() => {
     recordarReserva(null);
+    estadoRef.current = { ...estadoRef.current, reserva: null, pagoIniciado: false };
     setEstado((prev) => ({ ...prev, reserva: null, pagoIniciado: false }));
   }, []);
 
@@ -301,6 +336,20 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
 
   if (recuperacion === "cargando") return <div role="status" aria-label="Recuperando tu compra" className="mx-auto max-w-3xl p-4"><SkeletonShape variant="card" className="h-48" /></div>;
   if (recuperacion === "vencida") return <EmptyState icon={<ClockIcon />} title="Tu reserva venció" description="Se acabó el tiempo para completar la compra y los asientos se liberaron. Busca un viaje para volver a reservar." actionLabel="Buscar pasajes" onAction={() => router.push(RUTAS.inicio)} />;
+  if (typeof recuperacion === "object" && "compraConfirmada" in recuperacion) {
+    const verBoleto = () => router.push(rutaCompraConfirmacion(recuperacion.compraConfirmada));
+    return (
+      <Modal open title="Ya compraste un pasaje para este viaje" onClose={verBoleto}
+        footer={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button variant="secundario" onClick={verBoleto}>Ver mi boleto</Button>
+            <Button onClick={reiniciarSeleccion}>Comprar otro pasaje</Button>
+          </div>
+        }>
+        <p>Puedes ver tu boleto o elegir nuevos asientos para comprar otro pasaje.</p>
+      </Modal>
+    );
+  }
   if (typeof recuperacion === "object") return <EmptyState icon={<ExclamationIcon />} title={recuperacion.titulo} description={recuperacion.descripcion} actionLabel={recuperacion.sinAcceso ? "Buscar pasajes" : "Reintentar"} onAction={() => { if (recuperacion.sinAcceso) router.push(RUTAS.inicio); else { setRecuperacion("cargando"); setIntento((n) => n + 1); } }} footer={recuperacion.sinAcceso ? <Link className="inline-flex min-h-11 items-center font-medium text-secondary underline" href={`${RUTAS.ingresar}?${new URLSearchParams({ siguiente: `${pathname}?${consulta}` })}`}>Ingresar con mi cuenta</Link> : undefined} />;
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }

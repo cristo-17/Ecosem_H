@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { SkeletonShape } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -206,7 +207,7 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
     reservaVigente && mismosAsientos(reservaVigente.seats, seleccionados) ? reservaVigente.totalAmount : null;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 pb-28 sm:py-8">
+    <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
       <Modal open={cambioPrecio !== null} title="La tarifa cambió" preventDismiss
         returnFocusRef={continuarRef} onClose={() => {}}
         footer={<>
@@ -282,8 +283,8 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
             </>
           )}
 
-          <div className="fixed inset-x-0 bottom-[var(--alto-barra-dev,0px)] z-20 border-t border-navy/10 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+          <Card className="mt-4 border border-border-default">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 {totalCongelado ? (
                   <>
@@ -307,12 +308,12 @@ export function AsientosView({ viajeId, pasajerosCount, origen, destino, fecha }
                 disabled={!listoParaContinuar || (reserva !== null && vigencia === "vencida")}
                 isLoading={reservando}
                 onClick={continuar}
-                className="min-w-40"
+                className="w-full sm:w-auto sm:min-w-40"
               >
                 Continuar
               </Button>
             </div>
-          </div>
+          </Card>
         </>
       )}
     </main>
