@@ -11,6 +11,14 @@ export default async function PanelIndexPage() {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {esSupervisor(rol) && <Link href={RUTAS.panelEmbarque} className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary">
+        <Card className="flex h-full flex-col gap-3 transition hover:shadow-medium">
+          <ClockIcon className="!text-secondary" />
+          <h2 className="text-base font-semibold text-navy">Regla e incidencias de embarque</h2>
+          <p className="text-sm text-text-secondary">Configura la apertura y el cierre con su fuente y revisa los escaneos rechazados por viaje.</p>
+          <span className="mt-auto text-sm font-semibold text-secondary">Ir a regla de embarque →</span>
+        </Card>
+      </Link>}
       <Link
         href={RUTAS.panelViajes}
         className="block rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"

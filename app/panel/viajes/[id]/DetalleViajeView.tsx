@@ -24,7 +24,7 @@ import { etiquetaAsiento } from "@/lib/asientos";
 import { labelTipoServicio } from "@/lib/servicios";
 import { descargarManifiestoPdf } from "@/lib/pdf/manifiesto";
 import { formatFechaCorta, formatFechaLarga, formatHora12, maskDocumento } from "@/lib/format";
-import { RUTAS } from "@/lib/routes";
+import { RUTAS, rutaIncidenciasEmbarque } from "@/lib/routes";
 
 const TIPO_DOCUMENTO: Record<TipoDocumento, string> = {
   dni: "DNI",
@@ -139,10 +139,13 @@ export function DetalleViajeView({ viajeId, supervisor }: DetalleViajeViewProps)
   }
 
   const volver = (
+    <div className="flex flex-wrap gap-3">
     <Button variant="terciario" className="w-fit" onClick={() => router.push(RUTAS.panelViajes)}>
       <ChevronLeftIcon />
       Volver a viajes
     </Button>
+    {supervisor && <Button variant="secundario" onClick={() => router.push(rutaIncidenciasEmbarque(viajeId))}>Ver incidencias de embarque</Button>}
+    </div>
   );
 
   if (carga.tipo === "cargando") {

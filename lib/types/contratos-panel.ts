@@ -738,6 +738,12 @@ export interface TicketPrintLogResponse {
  * para validar sin conexión. Vence a las 24 horas: después hay que bajar otro.
  */
 export interface BoardingPackageResponse {
+  /** Identificador persistido: enviarlo en cada escaneo. */
+  packageId: string;
+  /** null indica bloqueo hasta configurar la regla y descargar otro paquete. */
+  boardingRuleVersion: string | null;
+  boardingOpensAt: string | null;
+  boardingClosesAt: string | null;
   tripId: string;
   departsAt: string;
   status: 'programado' | 'en_ruta' | 'completado' | 'cancelado';
@@ -766,6 +772,8 @@ export interface BoardingSyncRequest {
   scans: Array<{
     /** Lo genera el dispositivo: reenviarlo no duplica. */
     scanId: string;
+    /** Obligatorio para aceptar. Ausente en clientes antiguos: rechazo persistido. */
+    packageId?: string | null;
     qr: string;
     /** Hora del escaneo en el dispositivo, ISO 8601. */
     scannedAt: string;
@@ -781,7 +789,16 @@ export type BoardingRejection =
   | 'otro_viaje'
   | 'viaje_cancelado'
   | 'boleto_desconocido'
-  | 'boleto_anulado';
+  | 'boleto_anulado'
+  | 'embarque_no_abierto'
+  | 'embarque_cerrado'
+  | 'embarque_sin_configurar'
+  | 'incidencia_reloj'
+  | 'paquete_requerido'
+  | 'paquete_desconocido'
+  | 'paquete_otro_viaje'
+  | 'paquete_vencido'
+  | 'paquete_desactualizado';
 
 /** POST /v1/embarque/sincronizacion. */
 export interface BoardingSyncResponse {
@@ -989,6 +1006,45 @@ export interface BusFromFleetRequest {
   unit?: string;
   /** Solo la primera vez, o para cambiarlo. Su capacidad tiene que ser la de flota. */
   seatPlan?: SeatPlan;
+}
+
+/** PUT /v1/configuracion/embarque. Supervisor. Reemplaza la regla completa. */
+export interface BoardingRulesRequest {
+  opensBeforeMinutes: number;
+  closesAfterMinutes: number;
+  /** Documento o decisión operativa verificada. Obligatoria, no vacía. */
+  source: string;
+}
+
+/** GET/PUT /v1/configuracion/embarque. Sin configurar: rule es null. */
+export interface BoardingRulesResponse {
+  rule:
+    | (BoardingRulesRequest & {
+      version: string;
+      updatedBy: string;
+      updatedAt: string;
+    })
+    | null;
+}
+
+/** GET /v1/embarque/viajes/:id/rechazados?offset=0. Solo supervisor. */
+export interface BoardingRejectedScansResponse {
+  tripId: string;
+  nextOffset: number | null;
+  scans: Array<{
+    scanId: string;
+    packageId: string | null;
+    purchaseCode: string | null;
+    seat: string | null;
+    reason: BoardingRejection;
+    /** null en registros históricos que no conservaron la hora del dispositivo. */
+    scannedAt: string | null;
+    receivedAt: string;
+    operatorId: string;
+    boardingRuleVersion: string | null;
+    boardingOpensAt: string | null;
+    boardingClosesAt: string | null;
+  }>;
 }
 
 // ----- De _shared/contratos/encomiendas.ts

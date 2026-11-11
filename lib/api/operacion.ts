@@ -4,7 +4,7 @@
  * qué lo decide el servicio (el counter, su agencia; el supervisor, la que
  * elija) y la base, no esta pantalla.
  */
-import type { GenerateManifestResponse } from "@/lib/types/contratos-panel";
+import type { GenerateManifestResponse, BoardingRulesRequest, BoardingRulesResponse, BoardingRejectedScansResponse } from "@/lib/types/contratos-panel";
 import type { CatalogResponse } from "@/lib/types/contratos-frontend";
 import type {
   Manifiesto,
@@ -19,6 +19,18 @@ import { mensajeCompra, type MensajeError } from "@/lib/api/compra";
 import { conCuenta } from "@/lib/api/cuenta";
 
 const viaje = (tripId: string) => `/v1/operacion/viajes/${encodeURIComponent(tripId)}`;
+
+export function obtenerReglaEmbarque(opciones: OpcionesPeticion = {}) {
+  return conCuenta<BoardingRulesResponse>("/v1/configuracion/embarque", opciones);
+}
+
+export function guardarReglaEmbarque(regla: BoardingRulesRequest, opciones: OpcionesPeticion = {}) {
+  return conCuenta<BoardingRulesResponse>("/v1/configuracion/embarque", { ...opciones, metodo: "PUT", cuerpo: regla });
+}
+
+export function escaneosRechazados(tripId: string, offset = 0, opciones: OpcionesPeticion = {}) {
+  return conCuenta<BoardingRejectedScansResponse>(`/v1/embarque/viajes/${encodeURIComponent(tripId)}/rechazados?${new URLSearchParams({ offset: String(offset) })}`, opciones);
+}
 
 /** `fecha` en AAAA-MM-DD, hora de Perú. El supervisor puede pedir una agencia. */
 export function viajesDelDia(fecha: string, agencia: string | null, opciones: OpcionesPeticion = {}) {

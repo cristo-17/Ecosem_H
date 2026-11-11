@@ -61,12 +61,16 @@ async function enviarPendientes(): Promise<ResultadoSincronizacion> {
       contexto.comprobar();
       const respuesta = await sincronizarEscaneos({
         tripId,
-        scans: lote.map((e) => ({ scanId: e.scanId, qr: e.qr!, scannedAt: e.scannedAt })),
+        scans: lote.map((e) => ({ scanId: e.scanId, packageId: e.packageId ?? null, qr: e.qr!, scannedAt: e.scannedAt })),
       });
       contexto.comprobar();
-      await aplicarRespuesta(respuesta);
-      resultado.enviados += lote.length;
-      for (const r of respuesta.results) {
+      if (respuesta.tripId !== tripId) throw new Error("La sincronización respondió para otro viaje");
+      const confirmados = respuesta.results.filter((r) => lote.some((e) => e.scanId === r.scanId));
+      await aplicarRespuesta({ ...respuesta, results: confirmados });
+      resultado.enviados += confirmados.length;
+      // Refrescar incluso si el siguiente lote falla o la respuesta es parcial.
+      if (confirmados.length > 0) window.dispatchEvent(new Event("ecosem-embarque:cambio"));
+      for (const r of confirmados) {
         if (r.result === "duplicado") resultado.conflictos += 1;
         if (r.result === "rechazado") resultado.rechazadosPorServidor += 1;
       }

@@ -14,15 +14,16 @@ import { etiquetaAsiento } from "@/lib/asientos";
 import { formatHora12 } from "@/lib/format";
 import { RUTAS } from "@/lib/routes";
 import { escaneosDeViaje, obtenerViaje, type EscaneoLocal, type ViajeDescargado } from "@/lib/embarque/db";
-import { paqueteVencido, type Decision, type MotivoRechazoLocal } from "@/lib/embarque/decidir";
+import { impedimentoTemporal, type Decision } from "@/lib/embarque/decidir";
 import {
   EVENTO_EMBARQUE,
   actualizarPaquete,
   contarEmbarcados,
   procesarEscaneo,
+  type ResultadoEscaneo,
 } from "@/lib/embarque/escanear";
 import { estadoFinal } from "@/lib/embarque/sync";
-import type { MotivoRechazoServidor } from "@/lib/embarque/contrato";
+import { MOTIVO_LOCAL, MOTIVO_SERVIDOR, fechaHoraEmbarque } from "@/lib/embarque/mensajes";
 import type { DetectorDeCodigos } from "@/lib/embarque/tiposNavegador";
 import { crearLector } from "@/lib/embarque/lector";
 
@@ -32,27 +33,6 @@ type EstadoCamara = "verificando" | "activa" | "no-disponible";
 const ENFRIAMIENTO_MISMO_CODIGO_MS = 2500;
 /** Con señal, se trae cada tanto lo que embarcaron los otros dispositivos. */
 const INTERVALO_PAQUETE_MS = 30_000;
-
-const MOTIVO_LOCAL: Record<MotivoRechazoLocal, string> = {
-  formato: "No es un boleto de Ecosem H",
-  paquete_vencido: "El paquete del viaje venció: actualízalo con señal antes de seguir",
-  otro_viaje: "El boleto es de otro viaje",
-  viaje_cancelado: "Este viaje está cancelado",
-  clave_desconocida: "El boleto no se puede verificar con este paquete: actualízalo con señal",
-  firma_invalida: "La firma no es válida: el boleto fue alterado o no lo emitió Ecosem H",
-  boleto_anulado: "La compra de este boleto fue anulada",
-};
-
-const MOTIVO_SERVIDOR: Record<MotivoRechazoServidor, string> = {
-  firma_invalida: "firma no válida",
-  clave_desconocida: "clave desconocida",
-  clave_revocada: "clave revocada",
-  clave_retirada: "clave retirada",
-  otro_viaje: "boleto de otro viaje",
-  viaje_cancelado: "viaje cancelado",
-  boleto_desconocido: "boleto inexistente",
-  boleto_anulado: "compra anulada",
-};
 
 export interface EscaneoViewProps {
   viajeId: string;
@@ -68,11 +48,17 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
   const router = useRouter();
   const [carga, setCarga] = useState<Carga>({ tipo: "cargando" });
   const [escaneos, setEscaneos] = useState<EscaneoLocal[]>([]);
-  const [decision, setDecision] = useState<Decision | null>(null);
+  const [decision, setDecision] = useState<ResultadoEscaneo | null>(null);
   const [textoManual, setTextoManual] = useState("");
   const [errorManual, setErrorManual] = useState<string | undefined>();
   const [estadoCamara, setEstadoCamara] = useState<EstadoCamara>("verificando");
   const [mensajeCamara, setMensajeCamara] = useState<string | undefined>();
+  const [ahora, setAhora] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalo = window.setInterval(() => setAhora(new Date()), 1000);
+    return () => window.clearInterval(intervalo);
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -228,12 +214,13 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
   }
 
   const { descargado } = carga;
-  const salida = new Date(descargado.viaje.departsAt);
-  const vencido = paqueteVencido(descargado.paquete, new Date());
-  const conflictos = escaneos.filter((e) => {
+  const impedimento = impedimentoTemporal(descargado.paquete, ahora);
+  const relojAnterior = ahora.getTime() < Date.parse(descargado.paquete.issuedAt);
+  const incidencias = escaneos.filter((e) => {
     const final = estadoFinal(e);
     return final === "conflicto" || final === "rechazado-servidor";
-  }).length;
+  });
+  const incidenciaActual = decision?.tipo === "embarcar" ? incidencias.find(e => e.scanId === decision.scanId) : undefined;
 
   return (
     <div className="flex flex-col gap-4">
@@ -248,11 +235,11 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
             {descargado.origen} → {descargado.destino}
           </p>
           <p className="text-xs text-text-secondary">
-            {formatHora12(salida)}
+            Salida: {fechaHoraEmbarque(descargado.paquete.departsAt)}
             {descargado.viaje.bus ? ` · Bus ${descargado.viaje.bus.plate}` : ""}
           </p>
           <p className="mt-1 text-xs text-text-secondary">
-            Paquete del {formatHora12(new Date(descargado.descargadoEn))}
+            Paquete emitido: {fechaHoraEmbarque(descargado.paquete.issuedAt)}
           </p>
         </div>
         <div className="text-right">
@@ -263,18 +250,36 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
         </div>
       </Card>
 
-      {vencido && (
+      <Card className="flex flex-col gap-2 text-sm text-text-secondary">
+        <p>Apertura: {fechaHoraEmbarque(descargado.paquete.boardingOpensAt)}</p>
+        <p>Cierre: {fechaHoraEmbarque(descargado.paquete.boardingClosesAt)}</p>
+        <p>Vigencia del paquete: hasta {fechaHoraEmbarque(descargado.paquete.validUntil)}</p>
+        <p>Horas de Perú. Verifica que el reloj del dispositivo sea correcto.</p>
+      </Card>
+
+      {impedimento && (
         <p role="alert" className="rounded-md bg-error-fill p-3 text-sm text-error-text">
-          El paquete de este viaje venció. Actualízalo con señal desde la lista de viajes: sin eso no
-          se valida ningún boleto.
+          {MOTIVO_LOCAL[impedimento]}
         </p>
       )}
+      {relojAnterior && impedimento !== "incidencia_reloj" && <p role="alert" className="rounded-md bg-error-fill p-3 text-sm text-error-text">
+        {MOTIVO_LOCAL.incidencia_reloj}
+      </p>}
 
-      {conflictos > 0 && (
-        <p role="alert" className="rounded-md bg-warning-fill p-3 text-sm text-warning-text">
-          {conflictos === 1 ? "Un embarque de este dispositivo" : `${conflictos} embarques de este dispositivo`}{" "}
-          no coincide con el servidor. Revisa la lista de escaneos.
-        </p>
+      {incidencias.length > 0 && (
+        <Card>
+          <div role="alert" className="text-error-text">
+            <h2 className="font-semibold">Incidencias de sincronización ({incidencias.length})</h2>
+            <p className="text-sm">Estos escaneos no son embarques confirmados. Revisa cada caso con el supervisor.</p>
+          </div>
+          <ul className="mt-3 flex flex-col gap-3">
+            {incidencias.map((e) => <li key={e.scanId} className="border-t border-border-default pt-3 text-sm">
+              <p className="font-semibold">{e.purchaseCode} · Asiento {e.seat ? etiquetaAsiento(e.seat) : "sin registro"}</p>
+              <p className="text-error-text">{e.servidor?.reason ? MOTIVO_SERVIDOR[e.servidor.reason] : "Otro dispositivo ya lo había embarcado"}</p>
+              <p className="text-text-secondary">Escaneo: {fechaHoraEmbarque(e.scannedAt)} · Paquete: {e.packageId ?? "sin referencia"}</p>
+            </li>)}
+          </ul>
+        </Card>
       )}
 
       {/* Siempre montado: la cámara se conecta a esta referencia antes de mostrarse. */}
@@ -287,7 +292,11 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
         </div>
       )}
 
-      {decision && <BannerDecision decision={decision} onCerrar={() => setDecision(null)} />}
+      {incidenciaActual ? <div role="alert" className="rounded-md bg-error-fill p-4 text-error-text">
+        <p className="font-semibold">El servidor no confirmó este embarque</p>
+        <p>{incidenciaActual.servidor?.reason ? MOTIVO_SERVIDOR[incidenciaActual.servidor.reason] : "Otro dispositivo ya lo había embarcado"}</p>
+        <Button variant="terciario" onClick={() => setDecision(null)}>Listo, siguiente</Button>
+      </div> : decision && <BannerDecision decision={decision} onCerrar={() => setDecision(null)} />}
 
       <Card>
         <h2 className="text-sm font-semibold text-navy">Lector externo</h2>
