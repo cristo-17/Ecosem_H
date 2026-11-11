@@ -1,5 +1,7 @@
 "use client";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { OperacionViaje } from "./OperacionViaje";
+import type { TripDriversResponse } from "@/lib/types/contratos-panel";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -53,6 +55,7 @@ function PlacaEmbarque({ embarcado }: { embarcado: boolean }) {
 
 export interface DetalleViajeViewProps {
   viajeId: string;
+  supervisor: boolean;
 }
 
 /**
@@ -61,7 +64,7 @@ export interface DetalleViajeViewProps {
  * nombres. Completo solo en el PDF, que es el documento de fiscalización
  * (D-052).
  */
-export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
+export function DetalleViajeView({ viajeId, supervisor }: DetalleViajeViewProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const [carga, setCarga] = useState<Carga>({ tipo: "cargando" });
@@ -69,6 +72,9 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
   const [generando, setGenerando] = useState(false);
   const [descargando, setDescargando] = useState(false);
   const generandoRef = useRef(false);
+  const [conductores, setConductores] = useState<TripDriversResponse | null>(null);
+  const listoParaGenerar = !!conductores && conductores.drivers.length >= conductores.required.required;
+  const operacion = <OperacionViaje viajeId={viajeId} supervisor={supervisor} generando={generando} onConductores={setConductores} />;
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -97,7 +103,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
   }
 
   async function handleGenerar() {
-    if (generandoRef.current) return;
+    if (generandoRef.current || !listoParaGenerar) return;
     generandoRef.current = true;
     setGenerando(true);
     try {
@@ -120,7 +126,12 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
   async function handleDescargar(manifiesto: Manifiesto) {
     setDescargando(true);
     try {
-      await descargarManifiestoPdf(manifiesto);
+      // Revalida el acceso antes de descargar datos completos ya leídos.
+      const vigente = await pedirManifiesto(viajeId, manifiesto.version);
+      await descargarManifiestoPdf(vigente);
+    } catch (error) {
+      const mensaje = mensajeManifiesto(error);
+      showToast({ type: "error", title: mensaje.titulo, description: mensaje.descripcion });
     } finally {
       setDescargando(false);
     }
@@ -137,6 +148,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
     return (
       <div className="flex flex-col gap-4">
         {volver}
+        {operacion}
         <div role="status" aria-label="Cargando el manifiesto" className="flex flex-col gap-4">
           <SkeletonShape variant="text" lines={2} className="max-w-sm" />
           <SkeletonShape variant="card" className="h-64" />
@@ -149,6 +161,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
     return (
       <div className="flex flex-col gap-4">
         {volver}
+        {operacion}
         <EmptyState
           icon={<ExclamationIcon className="!size-12 !text-primary" />}
           title={carga.mensaje.titulo}
@@ -164,13 +177,14 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
     return (
       <div className="flex flex-col gap-4">
         {volver}
+        {operacion}
         <Card className="flex flex-col gap-3">
           <h1 className="text-lg font-semibold text-navy">Este viaje todavía no tiene manifiesto</h1>
           <p className="text-sm text-navy/70">
             Al generarlo se toma la foto de pasajeros, bus y conductores de ahora. Cada versión queda
             registrada con quién la generó y qué cambió.
           </p>
-          <Button onClick={handleGenerar} isLoading={generando} className="self-start">
+          <Button onClick={handleGenerar} isLoading={generando} disabled={!listoParaGenerar} className="self-start">
             Generar manifiesto
           </Button>
         </Card>
@@ -188,6 +202,7 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
   return (
     <div className="flex flex-col gap-4">
       {volver}
+      {operacion}
 
       <div>
         <h1 className="text-xl font-semibold text-navy sm:text-2xl">
@@ -202,14 +217,14 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
         <div className="flex items-center gap-2">
           <SteeringWheelIcon className="!text-text-muted" />
           <div>
-            <p className="text-xs text-text-secondary">Unidad</p>
+            <p className="text-xs text-text-secondary">Unidad en esta versión</p>
             <p className="text-sm font-semibold text-navy">
               {bus.unit} · {bus.plate}
             </p>
           </div>
         </div>
         <div>
-          <p className="text-xs text-text-secondary">{drivers.length > 1 ? "Conductores" : "Conductor"}</p>
+          <p className="text-xs text-text-secondary">Conductores en esta versión</p>
           <p className="text-sm font-semibold text-navy">
             {drivers.length
               ? drivers.map((d) => `${d.firstNames} ${d.lastNames}`).join(" / ")
@@ -238,13 +253,12 @@ export function DetalleViajeView({ viajeId }: DetalleViajeViewProps) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secundario" onClick={handleGenerar} isLoading={generando}>
+            <Button variant="secundario" onClick={handleGenerar} isLoading={generando} disabled={!listoParaGenerar}>
               Generar versión nueva
             </Button>
             <Button
               onClick={() => handleDescargar(manifiesto)}
               isLoading={descargando}
-              disabled={passengers.length === 0}
             >
               <DownloadIcon />
               Descargar PDF
