@@ -73,8 +73,9 @@ export function DetalleViajeView({ viajeId, supervisor }: DetalleViajeViewProps)
   const [descargando, setDescargando] = useState(false);
   const generandoRef = useRef(false);
   const [conductores, setConductores] = useState<TripDriversResponse | null>(null);
-  const listoParaGenerar = !!conductores && conductores.drivers.length >= conductores.required.required;
-  const operacion = <OperacionViaje viajeId={viajeId} supervisor={supervisor} generando={generando} onConductores={setConductores} />;
+  const [modificable, setModificable] = useState(false);
+  const listoParaGenerar = modificable && !!conductores && conductores.drivers.length >= conductores.required.required;
+  const operacion = <OperacionViaje viajeId={viajeId} supervisor={supervisor} generando={generando} onConductores={setConductores} onModificable={setModificable} />;
 
   useEffect(() => {
     const controlador = new AbortController();

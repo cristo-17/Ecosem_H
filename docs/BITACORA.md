@@ -3,6 +3,73 @@
 Entrada por sesión de trabajo. Lo más reciente arriba.
 Formato: fecha · qué se hizo · qué quedó abierto.
 
+## 10/11/2026 · Manifiesto de mañana y bloqueo visual tras la salida
+
+- Releída la skill de diseño. El detalle ahora consulta el paquete de embarque
+  ya existente, usando BoardingPackageResponse sin copiar el contrato, para
+  conocer estado, salida e issuedAt. Oculta cambios de bus, asignación/retiro de
+  conductor e importación de unidad si ya pasó la salida o el estado no es
+  programado. Mientras no pueda comprobar el estado, no ofrece esas acciones.
+  Muestra «Este viaje ya no admite cambios» con el motivo correspondiente.
+- La hora se compara con issuedAt del servidor y se avanza con performance.now,
+  sin confiar en el reloj del dispositivo. Un temporizador cierra las acciones
+  al llegar la salida con la vista abierta; también se revisa la hora al volver
+  a la pestaña. La generación de nuevas versiones queda bloqueada en viajes
+  no modificables; los manifiestos existentes siguen disponibles para consulta
+  y descarga con la revalidación habitual del backend.
+- Recorrido en Chromium con frontend compilado local y EcosemH real, sin
+  simular respuestas: cambiado el calendario de /panel/viajes al 11/11/2026;
+  abierto viaje 8069d26c-75c2-4598-98aa-cc6c4a432f1e, salida a las 07:00 de
+  Perú. Cambio de bus a ZZZ-999: 200. Asignación de Conductor De Prueba: 201.
+  Requisito devuelto: uno; asignados: uno. Generación del manifiesto v1: 201.
+  Relectura autorizada del manifiesto y descarga PDF completadas, sin bloqueo
+  ni errores de JS. El viaje ficticio elegido no tenía ventas ni reservas.
+- PDF descargado en `.qa-tmp/manifiesto-manana-ZZZ-999.pdf`: 2023 bytes,
+  una página, encabezado PDF válido y contenido comprobado con bus, conductor
+  ficticio y licencia completa, sin imprimir esos datos personales. Resultado
+  y pasos HTTP en `.qa-tmp/manifiesto-manana-resultado.json`.
+- En el viaje pasado se comprobó el aviso y la ausencia de los cuatro controles
+  de escritura, con cero POST/PUT. Pasan TypeScript, lint y build. Falta aún
+  comprobar el frontend publicado: no se proporcionó URL ni mecanismo de
+  despliegue sin commits. Los cambios siguen locales, sin commits.
+
+## 10/11/2026 · Altas de flota y conductores desde listas vacías
+
+- Leída la skill de diseño y aclarada en el CLAUDE.md local su ruta absoluta:
+  `D:\Descargas\Ecosem_H\.claude\skills\ecosem-design-system\SKILL.md`.
+  CLAUDE.md está ignorado por Git; la modificación queda en este equipo.
+- Antes de implementar, supervisor de prueba autenticado en EcosemH: confirmados
+  POST /v1/unidades y POST /v1/conductores. Trece pedidos inválidos devolvieron
+  VALIDATION, incluidos la omisión individual de los cinco campos obligatorios
+  de unidad y de los cuatro de conductor, y umbrales iguales a cero. Contraste
+  de límites y opcionales con los validadores reales del backend.
+- Agregados adaptadores de alta junto a los existentes, usando SaveUnitRequest
+  y SaveDriverRequest sin copiar ni modificar los contratos. Acciones visibles
+  en la cabecera y el estado vacío, textos que explican cómo registrar el
+  primer registro, formularios con opcionales explícitos, modal con foco y
+  desplazamiento en móvil, bloqueo de doble envío y reconsulta tras guardar.
+- Navegador con frontend compilado local y EcosemH real, sin respuestas
+  simuladas: registradas unidad ZZZ-999 (40 asientos, Ejecutivo, marca y modelo
+  ficticios) y Conductor De Prueba; ambas altas 201 y listas reconsultadas.
+  Abierto el viaje de hoy 24cdd911-d628-4424-b6f0-61d002b6f51f e importada
+  la unidad en ventas como PRUEBA-ZZZ-999 (POST desde-flota, 201).
+- Recorrido detenido en Cambiar bus: PUT devolvió 409 TRIP_NOT_MODIFIABLE.
+  La salida del viaje elegido era 10/11/2026 a las 16:00 de Perú y ya pasó.
+  No había viajes de hoy con salida futura sin ventas ni reservas activas;
+  el último viaje del día salía a las 22:30 y también había pasado al probar.
+  No se cambiaron horarios ni reglas. Conductor registrado pero no asignado;
+  bus importado pero no cambiado en el viaje; no se generó manifiesto ni PDF.
+  Los registros ficticios quedan disponibles para una siguiente prueba.
+- Pasan TypeScript, lint de los archivos tocados y build. Chromium comprobó
+  campos obligatorios, validación de licencia y horas, opcionales vacíos, modal
+  dentro de pantalla móvil con desplazamiento, Escape y retorno del foco,
+  ausencia de desbordamiento en escritorio, y controles ausentes para counter.
+  Ambos POST de counter devolvieron 403. Sin licencias o documentos en logs o
+  URLs. Scripts y resultado del recorrido en `.qa-tmp/`.
+- Frontend desplegado aún sin comprobar: falta su URL y el mecanismo para
+  publicar una preview sin commits. No se considera equivalente la prueba
+  local con backend real. Sin commits.
+
 ## 10/11/2026 · Preparación del viaje y manifiesto
 
 - Leída `.claude/skills/ecosem-design-system/SKILL.md`. Se reutilizan los

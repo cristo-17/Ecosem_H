@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { BusListResponse, BusFromFleetRequest, DriversResponse, TripDriversResponse, UnitsResponse, SeatPlan } from "@/lib/types/contratos-panel";
+import type { BoardingPackageResponse, BusListResponse, BusFromFleetRequest, DriversResponse, TripDriversResponse, UnitsResponse, SeatPlan } from "@/lib/types/contratos-panel";
+import { paqueteEmbarque } from "@/lib/api/operacion";
 import { asignarConductor, cambiarBus, conductoresDelViaje, listarBuses, mensajeOperacionViaje, retirarConductor, traerBusDesdeFlota } from "@/lib/api/viajes";
 import { listarConductores, listarUnidades } from "@/lib/api/flota";
 import { Card } from "@/components/ui/Card";
@@ -15,7 +16,10 @@ import { useToast } from "@/components/ui/Toast";
 import { ExclamationIcon } from "@/components/ui/icons";
 import type { MensajeError } from "@/lib/api/compra";
 
-export function OperacionViaje({ viajeId, supervisor, generando, onConductores }: { viajeId: string; supervisor: boolean; generando: boolean; onConductores: (datos: TripDriversResponse | null) => void }) {
+export function OperacionViaje({ viajeId, supervisor, generando, onConductores, onModificable }: { viajeId: string; supervisor: boolean; generando: boolean; onConductores: (datos: TripDriversResponse | null) => void; onModificable: (permitido: boolean) => void }) {
+  const [viaje, setViaje] = useState<Pick<BoardingPackageResponse, "status" | "departsAt"> | null>(null);
+  const [admiteCambios, setAdmiteCambios] = useState(false);
+  const puedeEditar = supervisor && admiteCambios;
   const [datos, setDatos] = useState<TripDriversResponse | null>(null);
   const [flota, setFlota] = useState<DriversResponse | null>(null);
   const [unidades, setUnidades] = useState<UnitsResponse | null>(null);
@@ -39,8 +43,30 @@ export function OperacionViaje({ viajeId, supervisor, generando, onConductores }
 
   useEffect(() => {
     let vigente = true;
+    let temporizador: ReturnType<typeof setTimeout> | undefined;
+    let revisarHora = () => {};
     onConductores(null);
-    const tareas = [conductoresDelViaje(viajeId).then(d => { if (vigente) { setDatos(d); onConductores(d); } })];
+    onModificable(false);
+    const tareas = [
+      conductoresDelViaje(viajeId).then(d => { if (vigente) { setDatos(d); onConductores(d); } }),
+      paqueteEmbarque(viajeId).then(paquete => {
+        if (!vigente) return;
+        setViaje(paquete);
+        // El reloj del dispositivo no decide si el viaje ya salió. Se avanza
+        // desde issuedAt con un reloj monotónico mientras esta vista está abierta.
+        const recibidoEn = performance.now();
+        revisarHora = () => {
+          if (!vigente) return;
+          clearTimeout(temporizador);
+          const restante = Date.parse(paquete.departsAt) - (Date.parse(paquete.issuedAt) + performance.now() - recibidoEn);
+          const permitido = paquete.status === "programado" && restante > 0;
+          setAdmiteCambios(permitido);
+          onModificable(permitido);
+          if (permitido) temporizador = setTimeout(revisarHora, Math.min(restante, 2_147_483_647));
+        };
+        revisarHora();
+      }),
+    ];
     if (supervisor) tareas.push(
       listarConductores().then(d => { if (vigente) setFlota(d); }),
       listarUnidades().then(d => { if (vigente) setUnidades(d); }),
@@ -51,8 +77,16 @@ export function OperacionViaje({ viajeId, supervisor, generando, onConductores }
       setErrores(resultados.flatMap(r => r.status === "rejected" ? [mensajeOperacionViaje(r.reason)] : []));
       setCargando(false);
     });
-    return () => { vigente = false; };
-  }, [viajeId, supervisor, intento, onConductores]);
+    const alVolver = () => revisarHora();
+    window.addEventListener("focus", alVolver);
+    document.addEventListener("visibilitychange", alVolver);
+    return () => {
+      vigente = false;
+      clearTimeout(temporizador);
+      window.removeEventListener("focus", alVolver);
+      document.removeEventListener("visibilitychange", alVolver);
+    };
+  }, [viajeId, supervisor, intento, onConductores, onModificable]);
 
   function recargar() {
     setCargando(true);
@@ -60,12 +94,15 @@ export function OperacionViaje({ viajeId, supervisor, generando, onConductores }
     setFlota(null);
     setUnidades(null);
     setBuses(null);
+    setViaje(null);
+    setAdmiteCambios(false);
+    onModificable(false);
     onConductores(null);
     setIntento(i => i + 1);
   }
 
   async function ejecutar(accion: () => Promise<unknown>, mensaje: string, descripcion = "Genera una versión nueva del manifiesto para incluir este cambio.") {
-    if (bloqueo.current || generando) return;
+    if (bloqueo.current || generando || !puedeEditar) return;
     bloqueo.current = true;
     setOcupado(true);
     onConductores(null);
@@ -96,22 +133,26 @@ export function OperacionViaje({ viajeId, supervisor, generando, onConductores }
     <h2 ref={tituloRef} tabIndex={-1} className="text-lg font-semibold text-navy">Preparar el viaje</h2>
     {cargando ? <div role="status" aria-label="Cargando conductores y buses"><SkeletonShape variant="card" className="h-32" /></div> : <>
       {errores.map((e, i) => <div key={i} role="alert" className="rounded-field bg-error-fill p-4 text-error-text"><p className="font-semibold">{e.titulo}</p><p>{e.descripcion}</p></div>)}
+      {viaje && !admiteCambios && <div role="status" className="rounded-field bg-info-fill p-4 text-info-text">
+        <p className="font-semibold">Este viaje ya no admite cambios</p>
+        <p>{viaje.status === "cancelado" ? "El viaje está cancelado." : viaje.status === "en_ruta" ? "El viaje ya salió y está en ruta." : viaje.status === "completado" ? "El viaje está completado." : "La hora de salida ya pasó."} Puedes consultar sus conductores y los manifiestos existentes.</p>
+      </div>}
       {datos && <>
         <p role="status" className="text-sm text-text-primary">Conductores asignados: {datos.drivers.length} de {datos.required.required} exigidos · turno {datos.required.shift}.</p>
         {!datos.required.ruleConfirmed && <p className="text-sm text-warning-text">La regla de conductores aún no está confirmada por operación. Se muestra el requisito vigente del viaje.</p>}
-        {datos.drivers.length === 0 ? <EmptyState icon={<ExclamationIcon className="!size-12 !text-text-muted" />} title="Sin conductores asignados" description={supervisor ? "Elige un conductor de flota para preparar el manifiesto." : "Pide al supervisor que asigne los conductores."} actionLabel="Actualizar asignaciones" onAction={() => { if (!ocupado) recargar(); }} /> : <ul className="flex flex-col gap-2">{datos.drivers.map(d => <li key={d.assignmentId} className="flex flex-wrap items-center justify-between gap-2 border-t border-border-default py-2"><div><p className="font-medium">{d.firstNames} {d.lastNames}</p><p className="text-sm text-text-secondary">Licencia vigente hasta {d.licenseExpiresOn}</p></div>{supervisor && <Button variant="destructivo" disabled={ocupado} onClick={() => { setMotivo(""); setRetiro(d); }}>Retirar conductor</Button>}</li>)}</ul>}
+        {datos.drivers.length === 0 ? <EmptyState icon={<ExclamationIcon className="!size-12 !text-text-muted" />} title="Sin conductores asignados" description={!admiteCambios ? "Consulta las asignaciones registradas. Este viaje ya no permite asignar conductores." : supervisor ? "Elige un conductor de flota para preparar el manifiesto." : "Pide al supervisor que asigne los conductores."} actionLabel="Actualizar asignaciones" onAction={() => { if (!ocupado) recargar(); }} /> : <ul className="flex flex-col gap-2">{datos.drivers.map(d => <li key={d.assignmentId} className="flex flex-wrap items-center justify-between gap-2 border-t border-border-default py-2"><div><p className="font-medium">{d.firstNames} {d.lastNames}</p><p className="text-sm text-text-secondary">Licencia vigente hasta {d.licenseExpiresOn}</p></div>{puedeEditar && <Button variant="destructivo" disabled={ocupado} onClick={() => { setMotivo(""); setRetiro(d); }}>Retirar conductor</Button>}</li>)}</ul>}
       </>}
-      {supervisor && <>
+      {puedeEditar && <>
         {flota && (flota.drivers.length ? <div className="flex flex-col gap-3"><Select label="Conductor de flota" options={flota.drivers.filter(d => !datos?.drivers.some(a => a.driverId === d.driverId)).map(d => ({ value: d.driverId, label: `${d.firstNames} ${d.lastNames}${d.active ? "" : " · Inactivo"}` }))} value={conductor} onChange={setConductor} disabled={ocupado} /><Button variant="secundario" disabled={!conductor || !datos || ocupado} isLoading={ocupado} onClick={() => ejecutar(() => asignarConductor(viajeId, { driverId: conductor! }), "Conductor asignado")}>Asignar conductor</Button></div> : <p className="text-sm text-text-secondary">Flota todavía no tiene conductores registrados. Regístralos en la sección Conductores y actualiza esta consulta.</p>)}
         {buses && <div className="flex flex-col gap-3 border-t border-border-default pt-4"><Select label="Bus para el viaje" value={bus} onChange={setBus} disabled={ocupado} options={buses.buses.map(b => ({ value: b.busId, label: `${b.unit} · ${b.plate} · ${b.capacity} asientos · ${b.serviceType}` }))} helperText="Se comprueban horarios, asientos ocupados y tipo de servicio antes de cambiarlo." /><Button variant="secundario" disabled={!bus || ocupado} isLoading={ocupado} onClick={() => ejecutar(() => cambiarBus(viajeId, { busId: bus! }), "Bus del viaje actualizado")}>Cambiar bus</Button></div>}
         {unidades && <><Button variant="terciario" onClick={() => setImportar(true)} disabled={ocupado || !unidades.units.length}>Traer bus desde flota</Button>{!unidades.units.length && <p className="text-sm text-text-secondary">No hay unidades en flota para traer a ventas.</p>}</>}
       </>}
     </>}
     <Button variant="terciario" onClick={recargar} disabled={ocupado || cargando}>Actualizar conductores y buses</Button>
-    <Modal open={!!retiro} onClose={() => setRetiro(null)} title="Retirar conductor" preventDismiss={ocupado} returnFocusRef={tituloRef} footer={<><Button variant="terciario" disabled={ocupado} onClick={() => setRetiro(null)}>Cancelar</Button><Button variant="destructivo" disabled={!motivo.trim() || ocupado} isLoading={ocupado} onClick={() => retiro && ejecutar(() => retirarConductor(viajeId, retiro.assignmentId, motivo.trim()), "Conductor retirado")}>Confirmar retiro</Button></>}>
+    <Modal open={!!retiro && puedeEditar} onClose={() => setRetiro(null)} title="Retirar conductor" preventDismiss={ocupado} returnFocusRef={tituloRef} footer={<><Button variant="terciario" disabled={ocupado} onClick={() => setRetiro(null)}>Cancelar</Button><Button variant="destructivo" disabled={!motivo.trim() || ocupado} isLoading={ocupado} onClick={() => retiro && ejecutar(() => retirarConductor(viajeId, retiro.assignmentId, motivo.trim()), "Conductor retirado")}>Confirmar retiro</Button></>}>
       <p className="mb-4">Se retirará a {retiro?.firstNames} {retiro?.lastNames} de este viaje.</p><Input label="Motivo del retiro" value={motivo} maxLength={500} onChange={e => setMotivo(e.target.value)} />
     </Modal>
-    <Modal open={importar} onClose={() => setImportar(false)} title="Traer bus desde flota" preventDismiss={ocupado} returnFocusRef={tituloRef} footer={<><Button variant="terciario" disabled={ocupado} onClick={() => setImportar(false)}>Cancelar</Button><Button variant="secundario" isLoading={ocupado} disabled={ocupado || !unidad || !identificador.trim() || capacidad !== unidad.capacity || !planoValido} onClick={() => ejecutar(async () => {
+    <Modal open={importar && puedeEditar} onClose={() => setImportar(false)} title="Traer bus desde flota" preventDismiss={ocupado} returnFocusRef={tituloRef} footer={<><Button variant="terciario" disabled={ocupado} onClick={() => setImportar(false)}>Cancelar</Button><Button variant="secundario" isLoading={ocupado} disabled={ocupado || !unidad || !identificador.trim() || capacidad !== unidad.capacity || !planoValido} onClick={() => ejecutar(async () => {
       const pedido: BusFromFleetRequest = { fleetUnitId: unidadFlota!, unit: identificador.trim(), seatPlan: { pisos } };
       const nuevo = await traerBusDesdeFlota(pedido);
       setBus(nuevo.busId);

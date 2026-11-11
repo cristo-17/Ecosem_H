@@ -5,6 +5,38 @@ diagnóstico. Lo más reciente arriba.
 
 Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez.
 
+## 10/11/2026 · Se ofrecían cambios en viajes cuya salida ya había pasado
+
+Los controles de bus y conductores dependían del rol, sin consultar el estado
+actual del viaje. El supervisor llegaba a un 409 TRIP_NOT_MODIFIABLE que se
+podía anticipar. Ahora el detalle obtiene estado, salida y hora de emisión del
+paquete de embarque existente. Solo muestra escrituras cuando el estado es
+programado y la salida sigue futura; en los demás casos explica que el viaje
+ya no admite cambios. La hora parte del servidor y sigue avanzando mientras
+la vista permanece abierta. Los errores de consulta no habilitan escrituras.
+
+Chromium confirmó el aviso y cero controles de cambio en el viaje pasado.
+La prueba completa de mañana, seleccionando la fecha desde /panel/viajes,
+sí terminó: bus ZZZ-999 (200), conductor ficticio (201), manifiesto v1 (201)
+y PDF descargado y comprobado. Backend real, frontend compilado local; no
+equivale a una comprobación del frontend publicado, aún pendiente de acceso.
+
+## 10/11/2026 · No se podía registrar la primera unidad ni el primer conductor
+
+Las listas de flota y conductores solo permitían editar registros existentes.
+Sin registros, el estado vacío proponía actualizar la consulta, aunque el
+backend sí ofrece POST /v1/unidades y POST /v1/conductores. Se agregaron sus
+adaptadores tipados con los contratos existentes y formularios de registro
+disponibles en la cabecera y en los estados vacíos, solo para supervisor.
+El alta reconsulta la lista y conserva los mensajes de error del flujo real.
+
+Ambas altas se completaron en navegador con datos ficticios contra EcosemH,
+sin simular el backend. También funcionó la importación del bus a ventas.
+El recorrido se detuvo después, en Cambiar bus: 409 TRIP_NOT_MODIFIABLE,
+porque la salida del viaje de hoy ya había pasado. No se asignó el conductor
+ni se generaron manifiesto y PDF; falta un viaje modificable para verificarlos.
+La comprobación del frontend desplegado sigue pendiente de URL y publicación.
+
 ## 10/11/2026 · El detalle no permitía preparar los conductores del manifiesto
 
 El detalle mostraba la foto del manifiesto, pero no consultaba las asignaciones

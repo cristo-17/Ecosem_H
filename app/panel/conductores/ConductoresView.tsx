@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -9,6 +9,9 @@ import { listarConductores, guardarConductor } from "@/lib/api/flota";
 import { nivelDocumento } from "@/lib/flota";
 import type { DriverView, SaveDriverRequest } from "@/lib/types/contratos-panel";
 import { mensajeFlota } from "@/lib/api/flota";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SteeringWheelIcon } from "@/components/ui/icons";
+import { RegistroConductor } from "@/components/panel/RegistroFlota";
 function Conductor({ conductor: c, recargar }: {
   conductor: DriverView;
   recargar: () => Promise<void>;
@@ -44,6 +47,19 @@ function Conductor({ conductor: c, recargar }: {
 }
 export function ConductoresView() {
   const estado = useDatosFlota(listarConductores);
+  const [registrando, setRegistrando] = useState(false);
+  const tituloRef = useRef<HTMLHeadingElement>(null);
   return <div className="space-y-6">
-    <h1 className="text-xl font-semibold text-navy">Conductores</h1>{estado.cargando || estado.error || !estado.datos?.drivers.length ? <EstadoFlota {...estado} /> : estado.datos.drivers.map(c => <Conductor key={c.driverId} conductor={c} recargar={estado.recargar} />)}</div>;
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <h1 ref={tituloRef} tabIndex={-1} className="text-xl font-semibold text-navy">Conductores</h1>
+      <Button onClick={() => setRegistrando(true)}>Registrar conductor</Button>
+    </div>
+    {estado.cargando || estado.error ? <EstadoFlota {...estado} /> : !estado.datos?.drivers.length ? <EmptyState
+      icon={<SteeringWheelIcon className="!size-12 !text-text-muted" />}
+      title="Aún no hay conductores registrados"
+      description="Registra el primer conductor con su licencia y vencimiento para poder asignarlo a un viaje."
+      actionLabel="Registrar conductor" onAction={() => setRegistrando(true)}
+    /> : estado.datos.drivers.map(c => <Conductor key={c.driverId} conductor={c} recargar={estado.recargar} />)}
+    {registrando && <RegistroConductor onClose={() => setRegistrando(false)} onRegistered={estado.recargar} returnFocusRef={tituloRef} />}
+  </div>;
 }
