@@ -10,6 +10,7 @@
  */
 import type { PaqueteEmbarque, RespuestaSincronizacion, ViajesOperacion } from "./contrato";
 import type { MotivoRechazoLocal } from "./decidir";
+import { contextoEmbarque } from "./usuario";
 
 const NOMBRE_DB = "ecosem-embarque";
 const VERSION_DB = 2;
@@ -44,8 +45,11 @@ export interface EscaneoLocal {
 }
 
 function abrirDb(): Promise<IDBDatabase> {
+  const contexto = contextoEmbarque();
   return new Promise((resolve, reject) => {
-    const solicitud = indexedDB.open(NOMBRE_DB, VERSION_DB);
+    // La base histórica sin propietario se conserva, pero nunca se consulta
+    // ni se migra a la cuenta siguiente: podría contener pendientes ajenos.
+    const solicitud = indexedDB.open(`${NOMBRE_DB}:usuario:${contexto.id}`, VERSION_DB);
     solicitud.onupgradeneeded = () => {
       const db = solicitud.result;
       for (const viejo of ["manifiestos", "escaneos"]) {
@@ -55,7 +59,10 @@ function abrirDb(): Promise<IDBDatabase> {
       const escaneos = db.createObjectStore(ESCANEOS, { keyPath: "scanId" });
       escaneos.createIndex("tripId", "tripId");
     };
-    solicitud.onsuccess = () => resolve(solicitud.result);
+    solicitud.onsuccess = () => {
+      try { contexto.comprobar(); resolve(solicitud.result); }
+      catch (error) { solicitud.result.close(); reject(error); }
+    };
     solicitud.onerror = () => reject(solicitud.error);
   });
 }
@@ -72,6 +79,7 @@ async function conAlmacen<T>(
   modo: IDBTransactionMode,
   fn: (almacen: IDBObjectStore) => Promise<T>,
 ): Promise<T> {
+  const contexto = contextoEmbarque();
   const db = await abrirDb();
   try {
     const tx = db.transaction(nombre, modo);
@@ -84,6 +92,7 @@ async function conAlmacen<T>(
     });
     const resultado = await fn(tx.objectStore(nombre));
     await terminada;
+    contexto.comprobar();
     return resultado;
   } finally {
     db.close();

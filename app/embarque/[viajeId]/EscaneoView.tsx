@@ -24,6 +24,7 @@ import {
 import { estadoFinal } from "@/lib/embarque/sync";
 import type { MotivoRechazoServidor } from "@/lib/embarque/contrato";
 import type { DetectorDeCodigos } from "@/lib/embarque/tiposNavegador";
+import { crearLector } from "@/lib/embarque/lector";
 
 type Carga = { tipo: "cargando" } | { tipo: "sin-descargar" } | { tipo: "listo"; descargado: ViajeDescargado };
 type EstadoCamara = "verificando" | "activa" | "no-disponible";
@@ -123,20 +124,18 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
 
   const listo = carga.tipo === "listo";
 
-  // Cámara con `BarcodeDetector` nativo (Chrome en Android, el runtime de la
-  // PWA instalada). Sin él, o sin permiso, queda el lector externo.
+  // Detector nativo cuando existe; jsQR local en Safari y otros navegadores.
   useEffect(() => {
     if (!listo) return;
     let activo = true;
     let cuadro = 0;
+    let ultimoCuadro = 0;
+    let enfriamiento: ReturnType<typeof setTimeout> | undefined;
 
     async function iniciar() {
-      if (!window.BarcodeDetector) {
-        setEstadoCamara("no-disponible");
-        setMensajeCamara("Este navegador no lee QR con la cámara. Usa un lector externo.");
-        return;
-      }
       try {
+        const detector = await crearLector();
+        if (!activo) return;
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         if (!activo) {
           stream.getTracks().forEach((track) => track.stop());
@@ -149,24 +148,30 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
           video.srcObject = stream;
           await video.play();
         }
-        bucle(new window.BarcodeDetector({ formats: ["qr_code"] }));
+        if (activo) bucle(detector);
       } catch {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        if (!activo) return;
         setEstadoCamara("no-disponible");
         setMensajeCamara("No se pudo usar la cámara. Usa un lector externo.");
       }
     }
 
     function bucle(detector: DetectorDeCodigos) {
-      cuadro = requestAnimationFrame(async () => {
+      cuadro = requestAnimationFrame(async (tiempo) => {
         if (!activo) return;
+        if (tiempo - ultimoCuadro < 150) { bucle(detector); return; }
+        ultimoCuadro = tiempo;
         const video = videoRef.current;
         if (video && video.readyState >= 2) {
           try {
             const valor = (await detector.detect(video))[0]?.rawValue;
+            if (!activo) return;
             if (valor && valor !== ultimoCodigoRef.current) {
               ultimoCodigoRef.current = valor;
               await procesar(valor);
-              setTimeout(() => {
+              if (!activo) return;
+              enfriamiento = setTimeout(() => {
                 ultimoCodigoRef.current = null;
               }, ENFRIAMIENTO_MISMO_CODIGO_MS);
             }
@@ -174,7 +179,7 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
             // Un cuadro sin imagen lista: se reintenta en el siguiente.
           }
         }
-        bucle(detector);
+        if (activo) bucle(detector);
       });
     }
 
@@ -182,6 +187,8 @@ export function EscaneoView({ viajeId }: EscaneoViewProps) {
     return () => {
       activo = false;
       cancelAnimationFrame(cuadro);
+      clearTimeout(enfriamiento);
+      ultimoCodigoRef.current = null;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     };

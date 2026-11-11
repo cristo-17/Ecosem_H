@@ -2137,3 +2137,41 @@ pestaña, ambas acciones del modal, Escape y trampa de foco, recarga tras
 descartar la compra anterior, compra de otro viaje y reservas vencidas/liberadas.
 Revisión de la acción en 360, 390 y 1440 px. No acredita pagos reales ni un
 despliegue. TypeScript, lint y build verificados.
+
+### 2026-11-11 — Embarque: Safari y aislamiento local por usuario
+
+Se añade jsQR 1.4.0 (sin dependencias de ejecución) mediante import dinámico,
+solo cuando no existe BarcodeDetector. Decodifica canvas a un máximo de 960 px,
+con lecturas espaciadas 150 ms. No requiere CDN, workers, WASM ni eval. proxy.ts
+no cambia. El chunk de QA sin minificar pesa 57 463 bytes comprimido con gzip.
+
+IndexedDB queda separado por el userId de la sesión. Al cerrar sesión se
+conservan paquetes y escaneos pendientes para esa misma cuenta; otra cuenta no
+los consulta ni sincroniza. La base histórica ecosem-embarque, sin propietario,
+se conserva intacta y aislada: no se puede atribuir con seguridad a la cuenta
+actual. No se borran ni migran automáticamente sus posibles pendientes.
+DatosPorUsuario espera la sesión local antes de montar los consumidores para
+rechazar shells offline de otra cuenta. El cierre bloquea pestañas abiertas y
+las respuestas pendientes se invalidan al cambiar el contexto de usuario.
+
+Ventana horaria detenida por falta de contrato: BoardingPackageResponse incluye
+tripId, departsAt, status, issuedAt y validUntil, pero no apertura/cierre de
+embarque ni márgenes definidos. validUntil es caducidad del paquete, no una
+ventana operativa. No se inventó ninguna tolerancia. El backend debe entregar
+los instantes de apertura y cierre o documentar una regla inequívoca. La
+validación existente ya compara el tripId del QR con el del paquete abierto.
+
+El riesgo HMAC de prueba está desactualizado para /embarque: qr.ts importa
+una clave pública JWK EC P-256 y verifica ECDSA/SHA-256 con WebCrypto. No existe
+lib/firma.ts. No se cambió el esquema de firmas.
+
+Verificación: Chromium de escritorio y perfil iPhone 13 emulado, componentes
+reales y API controlada, QR ECDSA generado para QA presentado mediante video
+de canvas, BarcodeDetector ausente, CSP de producción estricta sin excepciones:
+lectura válida, firma alterada rechazada y otro viaje rechazado. Se verificó
+que la rama nativa no descarga jsQR, aislamiento A/B, retorno de pendientes a
+A, rechazo de shell de A con sesión B o sin sesión y cierre en dos pestañas.
+Pruebas y resultados reproducibles en .qa-tmp/embarque-*. No acredita Safari
+real, cámara física ni backend de producción. TypeScript, lint de la app
+(excluyendo los artefactos y scripts temporales de .qa-tmp) y build verificados.
+Sin commits ni despliegue.

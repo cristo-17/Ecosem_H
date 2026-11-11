@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
 import { cerrarSesion } from "@/lib/auth/acciones";
+import { cerrarDatosEmbarque } from "@/lib/embarque/usuario";
 import { olvidarSesionCompra } from "@/lib/api/compra";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 import { esPersonal, usaPanel, type RolUsuario } from "@/lib/auth/roles";
@@ -103,6 +104,7 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
   async function handleCerrarSesion() {
     closeMenu();
     await cerrarSesion();
+    cerrarDatosEmbarque();
     // En un dispositivo compartido, quien siga en esta pestaña no debe poder
     // consultar la compra de la persona anterior.
     olvidarSesionCompra();

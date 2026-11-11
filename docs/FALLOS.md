@@ -238,3 +238,17 @@ liberada sin pago iniciado se limpia automáticamente al volver a seleccionar.
 La acción «Continuar» de asientos estaba fija sobre el pie de página. Ahora
 comparte una Card con el resumen de precio después del mapa. Las ramas y la
 disposición se comprobaron en Chromium con respuestas de API controladas.
+
+### 2026-11-11 — Lector y datos de embarque compartidos
+
+El lector dependía exclusivamente de BarcodeDetector y descartaba Safari.
+Se añade jsQR local solo cuando falta la API, sin cambiar la CSP. IndexedDB
+compartía paquetes y escaneos entre sesiones: ahora cada cuenta abre una base
+propia y conserva sus pendientes al salir. La base anterior queda aislada,
+intacta y sin migración automática por no conocer a su propietario.
+
+La ventana de embarque no se puede implementar con seguridad: el contrato
+solo entrega salida y vigencia del paquete, sin apertura/cierre de embarque.
+Se detiene esa parte hasta que el backend defina la regla. La PWA actual ya
+verifica ECDSA P-256; la mención histórica al HMAC en CLAUDE.md no describe
+la implementación activa de /embarque.

@@ -12,6 +12,7 @@
 import { MAX_ESCANEOS_POR_SINCRONIZACION } from "@/lib/embarque/contrato";
 import { aplicarRespuesta, escaneosPendientes, type EscaneoLocal } from "@/lib/embarque/db";
 import { sincronizarEscaneos } from "@/lib/api/operacion";
+import { contextoEmbarque } from "./usuario";
 
 export interface ResultadoSincronizacion {
   enviados: number;
@@ -34,15 +35,21 @@ export async function escaneosPorEnviar(): Promise<EscaneoLocal[]> {
 // Una sola sincronización a la vez en toda la app: la cabecera y la pantalla
 // de escaneo la piden por su cuenta.
 let enCurso: Promise<ResultadoSincronizacion> | null = null;
+let usuarioEnCurso: string | null = null;
 
 export function sincronizarPendientes(): Promise<ResultadoSincronizacion> {
-  enCurso ??= enviarPendientes().finally(() => {
-    enCurso = null;
-  });
+  const { clave } = contextoEmbarque();
+  if (!enCurso || usuarioEnCurso !== clave) {
+    usuarioEnCurso = clave;
+    enCurso = enviarPendientes().finally(() => {
+      if (usuarioEnCurso === clave) enCurso = null;
+    });
+  }
   return enCurso;
 }
 
 async function enviarPendientes(): Promise<ResultadoSincronizacion> {
+  const contexto = contextoEmbarque();
   const pendientes = await escaneosPorEnviar();
   const porViaje = new Map<string, EscaneoLocal[]>();
   for (const e of pendientes) porViaje.set(e.tripId, [...(porViaje.get(e.tripId) ?? []), e]);
@@ -51,10 +58,12 @@ async function enviarPendientes(): Promise<ResultadoSincronizacion> {
   for (const [tripId, escaneos] of porViaje) {
     for (let i = 0; i < escaneos.length; i += MAX_ESCANEOS_POR_SINCRONIZACION) {
       const lote = escaneos.slice(i, i + MAX_ESCANEOS_POR_SINCRONIZACION);
+      contexto.comprobar();
       const respuesta = await sincronizarEscaneos({
         tripId,
         scans: lote.map((e) => ({ scanId: e.scanId, qr: e.qr!, scannedAt: e.scannedAt })),
       });
+      contexto.comprobar();
       await aplicarRespuesta(respuesta);
       resultado.enviados += lote.length;
       for (const r of respuesta.results) {
