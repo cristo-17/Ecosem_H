@@ -3,6 +3,40 @@
 Entrada por sesión de trabajo. Lo más reciente arriba.
 Formato: fecha · qué se hizo · qué quedó abierto.
 
+## 10/11/2026 · Preparación del viaje y manifiesto
+
+- Leída `.claude/skills/ecosem-design-system/SKILL.md`. Se reutilizan los
+  componentes de formulario, modal con foco, estados vacíos y avisos existentes.
+- Consultas autenticadas contra EcosemH con supervisor de prueba: GET de
+  conductores del viaje, buses de ventas, conductores y unidades de flota, y
+  versiones de manifiesto responden 200. Los métodos y campos de las escrituras
+  se contrastaron con las rutas del backend y pedidos sin efectos: cuerpos
+  vacíos devuelven VALIDATION; identificadores inexistentes devuelven NOT_FOUND
+  en asignación, retiro e importación. El cambio de bus del viaje consultado
+  devuelve TRIP_NOT_MODIFIABLE con un cuerpo válido, sin cambiarlo.
+- Agregado `lib/api/viajes.ts`, consumiendo los contratos generados sin
+  modificarlos ni copiar tipos. El detalle consulta las asignaciones actuales
+  y sus requisitos; supervisor puede asignar, retirar con motivo, cambiar bus
+  e importar una unidad de flota con su plano real antes de asignarla al viaje.
+- Mensajes propios para DRIVER_OVERLAP (incluye el viaje en conflicto),
+  DRIVER_LICENSE_EXPIRED, DRIVER_INACTIVE, DRIVERS_MISSING y BUS_OVERLAP.
+  Se reconsulta tras las escrituras y se bloquea generar durante los cambios
+  o cuando faltan conductores. Se distinguen los datos actuales de la foto del
+  manifiesto. Cada descarga revalida el acceso al documento en el backend;
+  documentos completos solo en PDF, enmascarados en la tabla, sin logs ni URLs
+  con datos personales.
+- TypeScript, lint de los archivos modificados y compilación de producción
+  pasan. Prueba de Chromium contra el build local con EcosemH real: cinco
+  consultas 200, generación bloqueada sin conductores, sin errores de JS ni
+  desbordamiento a 390 y 1440 px. Counter no ve controles de supervisor y su
+  POST de asignación recibe 403; sin sesión se redirige al ingreso. También se
+  verificaron los cinco mensajes de error por separado. Scripts en `.qa-tmp/`.
+- Pendiente la aceptación en el sitio desplegado: falta URL y mecanismo de
+  despliegue sin commits. EcosemH devuelve cero conductores y cero unidades
+  en flota; no se crearon datos ficticios ni se probó una escritura exitosa,
+  generación exitosa o descarga final de PDF. Las pruebas locales no sustituyen
+  la verificación solicitada en despliegue. Sin commits.
+
 ## 07/11/2026 · Redirección al pago real (D-065)
 
 - Copiado literalmente el contrato frontend regenerado del backend; SHA-256
@@ -2021,3 +2055,18 @@ cookie de sesión de `lib/auth/`. Detalle completo en D-016 de
 Retorno de pago: consulta de reserva con paymentStarted; espera al webhook incluso con plazo vencido. Recuperación de pasos redirige a confirmación si el pago se inició. Resultados: acción primaria Elegir asientos dentro de la tarjeta elegida. Nosotros: imports estáticos y flota-02.png con extensión correcta. Auditoría frontend sin otros usos de fs/process.cwd por petición. Verificación desplegada pendiente; sin commits.
 
 Validación local auxiliar: compilación de producción y TypeScript correctos; prueba de sondeo cubre active/expired con pago iniciado, purchased posterior y expired sin pago. No sustituye la verificación desplegada pendiente de URL y mecanismo de preview sin commits.
+
+Compra consecutiva: al entrar a selección con una compra confirmada del mismo
+viaje, se ofrece el modal del sistema con «Ver mi boleto» y «Comprar otro
+pasaje». Escape abre el boleto. La segunda opción descarta el estado anterior
+y su referencia, incluso en la URL. Otro viaje continúa sin modal. Las reservas
+vencidas o liberadas sin pago iniciado se descartan al entrar a selección.
+«Continuar» y el precio están en una Card después del mapa, con botón de ancho
+completo en celular. CLAUDE.md incluye la ruta de la skill de diseño.
+
+Prueba en Chromium contra build local de producción con API y pasarela
+interceptadas: dos compras completas consecutivas del mismo viaje en una
+pestaña, ambas acciones del modal, Escape y trampa de foco, recarga tras
+descartar la compra anterior, compra de otro viaje y reservas vencidas/liberadas.
+Revisión de la acción en 360, 390 y 1440 px. No acredita pagos reales ni un
+despliegue. TypeScript, lint y build verificados.

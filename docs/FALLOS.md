@@ -5,6 +5,25 @@ diagnóstico. Lo más reciente arriba.
 
 Formato: síntoma · causa real · solución · cómo detectarlo la próxima vez.
 
+## 10/11/2026 · El detalle no permitía preparar los conductores del manifiesto
+
+El detalle mostraba la foto del manifiesto, pero no consultaba las asignaciones
+actuales ni ofrecía asignar o retirar conductores, aunque el backend exponía
+esas rutas. Ahora consulta GET /v1/viajes/:id/conductores, muestra el requisito
+devuelto por el servidor y ofrece las escrituras al supervisor. También permite
+cambiar el bus e importar una unidad desde flota con un plano explícito.
+
+La interfaz vuelve a consultar después de escribir y separa las asignaciones
+actuales de las versiones históricas. Se explican los errores de solapamiento,
+licencia vencida, conductor inactivo y conductores faltantes. El PDF vuelve a
+pedir el manifiesto autorizado antes de descargar sus documentos completos.
+
+Verificación parcial: consultas reales y acceso por rol comprobados en Chromium
+contra un build local, sin simular el backend. El origen localhost:3023 no está
+permitido por CORS; localhost:3000 sí y las consultas responden 200. La flota
+desplegada está vacía, de modo que falta comprobar el recorrido exitoso con
+conductor y unidad reales, además de la aceptación del frontend desplegado.
+
 ---
 
 ## 07/11/2026 · Contratos regenerados y códigos de clase
@@ -178,3 +197,12 @@ Windows local no lo parezca.
 ## 2026-11-10
 
 Nosotros leía archivos durante cada petición: Workers no dispone de esos archivos y mostraba marcadores. Se reemplazó por imports estáticos y se retiró el lector sin consumidores. El retorno de pago trataba expired como definitivo sin consultar paymentStarted: ahora espera al webhook cuando existe un pago iniciado.
+
+La selección recuperaba el identificador de la compra anterior desde
+sessionStorage y redirigía a su confirmación si era el mismo viaje. Ahora
+consulta su estado antes de reutilizarla, ofrece ver el boleto o comprar otro
+y descarta el estado terminado al elegir otra compra. Una reserva vencida o
+liberada sin pago iniciado se limpia automáticamente al volver a seleccionar.
+La acción «Continuar» de asientos estaba fija sobre el pie de página. Ahora
+comparte una Card con el resumen de precio después del mapa. Las ramas y la
+disposición se comprobaron en Chromium con respuestas de API controladas.
