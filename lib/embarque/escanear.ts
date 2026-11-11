@@ -15,11 +15,13 @@ import {
   type ViajeDescargado,
 } from "@/lib/embarque/db";
 import { paqueteEmbarque } from "@/lib/api/operacion";
+import { contextoEmbarque } from "./usuario";
 
 /** Se dispara tras cada escaneo y cada sincronización, para refrescar contadores. */
 export const EVENTO_EMBARQUE = "ecosem-embarque:cambio";
 
 export async function procesarEscaneo(tripId: string, texto: string): Promise<Decision | null> {
+  const contexto = contextoEmbarque();
   const descargado = await obtenerViaje(tripId);
   if (!descargado) return null;
   const embarcadosAqui = (await escaneosDeViaje(tripId))
@@ -28,6 +30,7 @@ export async function procesarEscaneo(tripId: string, texto: string): Promise<De
 
   const decision = await decidirEscaneo(texto, descargado.paquete, embarcadosAqui);
   const qr = decision.qr;
+  contexto.comprobar();
   await guardarEscaneo({
     scanId: crypto.randomUUID(),
     tripId,
@@ -54,7 +57,9 @@ export async function descargarViaje(
   viaje: ViajesOperacion["trips"][number],
   ciudades: { origen: string; destino: string },
 ): Promise<ViajeDescargado> {
+  const contexto = contextoEmbarque();
   const paquete = await paqueteEmbarque(viaje.tripId);
+  contexto.comprobar();
   const descargado: ViajeDescargado = {
     tripId: viaje.tripId,
     paquete,
@@ -71,9 +76,11 @@ export async function descargarViaje(
  * claves nuevas). Sin señal, falla y queda el paquete que había.
  */
 export async function actualizarPaquete(tripId: string): Promise<ViajeDescargado | null> {
+  const contexto = contextoEmbarque();
   const descargado = await obtenerViaje(tripId);
   if (!descargado) return null;
   const paquete = await paqueteEmbarque(tripId);
+  contexto.comprobar();
   const nuevo = { ...descargado, paquete, descargadoEn: new Date().toISOString() };
   await guardarViaje(nuevo);
   return nuevo;

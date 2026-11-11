@@ -5,6 +5,7 @@ import { exigirAcceso } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
 import { RegistrarServiceWorker } from "./RegistrarServiceWorker";
 import { EmbarqueHeader } from "./EmbarqueHeader";
+import { DatosPorUsuario } from "./DatosPorUsuario";
 
 export const metadata: Metadata = {
   title: "Embarque · Ecosem H",
@@ -33,10 +34,12 @@ export default async function EmbarqueLayout({ children }: { children: ReactNode
   if (acceso.tipo === "denegado") return <AccesoDenegado />;
 
   return (
+    <DatosPorUsuario key={acceso.sesion.userId} userId={acceso.sesion.userId}>
     <div className="flex min-h-screen flex-col bg-surface-base">
       <RegistrarServiceWorker />
       <EmbarqueHeader />
       <div className="flex-1 px-4 py-4 sm:px-6">{children}</div>
     </div>
+    </DatosPorUsuario>
   );
 }
