@@ -19,7 +19,6 @@ const ENLACES_COUNTER: EnlacePanel[] = [
   { href: RUTAS.panelCaja, label: "Caja" },
   { href: RUTAS.panelEncomiendas, label: "Encomiendas" },
   { href: RUTAS.panelViajes, label: "Viajes del día" },
-  { href: RUTAS.embarque, label: "Embarque" },
 ];
 
 const ENLACES_SUPERVISOR_EXTRA: EnlacePanel[] = [

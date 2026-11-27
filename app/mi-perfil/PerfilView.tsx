@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { PillTabs, pillTabPanelProps, type PillTabItem } from "@/components/ui/PillTabs";
 import { UserIcon, EncomiendasTabIcon, PasajesTabIcon } from "@/components/ui/icons";
+import { BotonCerrarSesion } from "@/components/layout/BotonCerrarSesion";
 import { MisViajesTab } from "@/components/perfil/MisViajesTab";
 import { MisEncomiendasTab } from "@/components/perfil/MisEncomiendasTab";
 
@@ -30,14 +31,17 @@ export function PerfilView({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
-      <div className="flex items-center gap-3">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-secondary/10">
-          <UserIcon className="!text-secondary" />
-        </span>
-        <div>
-          <h1 className="text-xl font-semibold text-navy sm:text-2xl">{nombre ?? "Mi perfil"}</h1>
-          {correo && <p className="text-sm text-text-secondary">{correo}</p>}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-secondary/10">
+            <UserIcon className="!text-secondary" />
+          </span>
+          <div>
+            <h1 className="text-xl font-semibold text-navy sm:text-2xl">{nombre ?? "Mi perfil"}</h1>
+            {correo && <p className="text-sm text-text-secondary">{correo}</p>}
+          </div>
         </div>
+        <BotonCerrarSesion variante="claro" soloEscritorio />
       </div>
 
       <div className="mt-6">
