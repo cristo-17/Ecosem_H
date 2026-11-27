@@ -1,7 +1,9 @@
-import { useId } from "react";
+"use client";
+
+import { useId, useState } from "react";
 import type { InputHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
-import { LockIcon } from "@/components/ui/icons";
+import { EyeIcon, EyeOffIcon, LockIcon } from "@/components/ui/icons";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** Texto de la etiqueta, siempre visible arriba del campo. */
@@ -27,12 +29,20 @@ export function Input({
   id,
   className,
   disabled,
+  type,
   ...props
 }: InputProps) {
   const reactId = useId();
   const inputId = id ?? reactId;
   const helperId = `${inputId}-helper`;
   const hasError = Boolean(errorText);
+
+  // Botón propio de mostrar/ocultar: el ojo nativo solo existe en Edge
+  // (::-ms-reveal, ocultado en globals.css) y desaparece al perder el foco
+  // o tras autocompletar. Este queda siempre visible en todos los navegadores.
+  const esContrasena = type === "password" && !locked;
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const tipoEfectivo = esContrasena && mostrarContrasena ? "text" : type;
 
   return (
     <div className="flex w-full flex-col gap-1">
@@ -45,6 +55,7 @@ export function Input({
       <div className="relative">
         <input
           id={inputId}
+          type={tipoEfectivo}
           readOnly={locked}
           disabled={disabled}
           aria-invalid={hasError}
@@ -54,6 +65,7 @@ export function Input({
             "placeholder:text-text-secondary",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary",
             "disabled:cursor-not-allowed disabled:opacity-40",
+            esContrasena && "pr-12",
             locked &&
               "cursor-default border-transparent bg-navy/5 pr-11 text-text-secondary",
             !locked && hasError && "border-primary focus:border-primary",
@@ -66,6 +78,28 @@ export function Input({
         />
         {locked && (
           <LockIcon className="absolute top-1/2 right-4 -translate-y-1/2" />
+        )}
+        {esContrasena && (
+          <button
+            type="button"
+            onClick={() => setMostrarContrasena((visible) => !visible)}
+            disabled={disabled}
+            aria-controls={inputId}
+            aria-pressed={mostrarContrasena}
+            aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+            className={cn(
+              "absolute top-1/2 right-0.5 flex size-11 -translate-y-1/2 items-center justify-center rounded-pill",
+              "text-text-secondary transition hover:text-navy",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary",
+              "disabled:cursor-not-allowed disabled:opacity-40",
+            )}
+          >
+            {mostrarContrasena ? (
+              <EyeOffIcon className="!size-5 !text-current" />
+            ) : (
+              <EyeIcon className="!size-5 !text-current" />
+            )}
+          </button>
         )}
       </div>
       {hasError ? (
