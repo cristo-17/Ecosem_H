@@ -79,6 +79,15 @@ body {
   padding-bottom: var(--alto-barra-dev, 0px);
 }
 
+/* Edge inyecta su propio ojo (::-ms-reveal) en los campos de contraseña.
+   Se oculta para que no se duplique con el botón de components/ui/Input.tsx,
+   que funciona igual en todos los navegadores. */
+@layer base {
+  input::-ms-reveal {
+    display: none;
+  }
+}
+
 /* Oculta la scrollbar manteniendo el scroll funcional.
    Equivalente al plugin tailwind-scrollbar-hide, sin dependencia extra. */
 .scrollbar-hide {

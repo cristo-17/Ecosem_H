@@ -493,6 +493,33 @@ export function EyeIcon({ className }: { className?: string }) {
   );
 }
 
+// Par de EyeIcon para "Ocultar contraseña": mismo trazo y viewBox.
+export function EyeOffIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("pointer-events-none size-6 text-secondary", className)}
+    >
+      <path
+        d="M10.6 5.6c.5-.1.9-.1 1.4-.1 6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.9 9.9a3 3 0 0 0 4.2 4.2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path d="M3.5 3.5l17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Placeholder de imagen en /nosotros (galería de flota): mismo molde que la
 // familia grande de pantallas vacías (viewBox 48, text-navy/30) para que un
 // slot sin archivo se lea como "intencional", no como un ícono roto.
