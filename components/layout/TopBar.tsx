@@ -9,9 +9,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 import { useIsMounted } from "@/lib/useIsMounted";
 import { RUTAS } from "@/lib/routes";
-import { cerrarSesion } from "@/lib/auth/acciones";
-import { cerrarDatosEmbarque } from "@/lib/embarque/usuario";
-import { olvidarSesionCompra } from "@/lib/api/compra";
+import { ejecutarCierreSesion } from "@/components/layout/BotonCerrarSesion";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 import { esPersonal, usaPanel, type RolUsuario } from "@/lib/auth/roles";
 import { PanelMenu, enlacesPanel } from "@/components/layout/PanelMenu";
@@ -103,11 +101,7 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
 
   async function handleCerrarSesion() {
     closeMenu();
-    await cerrarSesion();
-    cerrarDatosEmbarque();
-    // En un dispositivo compartido, quien siga en esta pestaña no debe poder
-    // consultar la compra de la persona anterior.
-    olvidarSesionCompra();
+    await ejecutarCierreSesion();
     router.push(RUTAS.inicio);
     router.refresh();
   }
@@ -186,7 +180,7 @@ export function TopBar({ haySesion, rol }: TopBarProps) {
         (docs/prompts/16-navbar-por-rol.md, D-041).
       */}
       {esInterno && (
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:ml-6 md:flex items-center gap-4">
           <div aria-hidden="true" className="h-6 w-px bg-border-default" />
           {/* Embarque no tiene panel: un enlace directo, no un desplegable "Panel" con una sola entrada. */}
           {usaPanel(rol) ? (

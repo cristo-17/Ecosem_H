@@ -1,16 +1,9 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { AccesoDenegado } from "@/components/layout/AccesoDenegado";
-import { esSupervisor, puedeEmbarcar, type RolUsuario } from "@/lib/auth/roles";
+import { PanelHeader } from "@/components/layout/PanelHeader";
+import { puedeEmbarcar } from "@/lib/auth/roles";
 import { exigirAcceso } from "@/lib/auth/sesion";
 import { RUTAS } from "@/lib/routes";
-
-const ETIQUETA_ROL: Record<RolUsuario, string> = {
-  pasajero: "Pasajero",
-  counter: "Counter",
-  supervisor: "Supervisor",
-  embarque: "Embarque",
-};
 
 /**
  * Panel interno: venta en counter, arqueo de caja y manifiesto SUTRAN
@@ -38,103 +31,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
 
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col">
-      <header className="bg-navy px-4 py-4 sm:px-8">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium text-white/60">Panel interno · Personal</p>
-            <h1 className="text-lg font-semibold text-white">Ecosem H · {ETIQUETA_ROL[rol]}</h1>
-          </div>
-          <nav aria-label="Secciones del panel" className="flex flex-wrap gap-1">
-            <Link
-              href={RUTAS.panel}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Inicio
-            </Link>
-             <Link
-              href={RUTAS.panelViajes}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Viajes
-            </Link>
-            <Link
-              href={RUTAS.panelVenta}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Venta
-            </Link>
-            <Link
-              href={RUTAS.panelCaja}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Caja
-            </Link>
-            <Link
-              href={RUTAS.panelEncomiendas}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Encomiendas
-            </Link>
-            <Link
-              href={RUTAS.panelImpresiones}
-              className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Impresiones
-            </Link>
-            {/* Solo supervisor: el layout de /panel/precios repite este
-                mismo chequeo por si alguien llega por URL directa, pero acá
-                además evita mostrarle el enlace a quien no puede entrar. */}
-            {esSupervisor(rol) && (
-              <Link
-                href={RUTAS.panelPrecios}
-                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Precios
-              </Link>
-            )}
-            {/* Flota, Conductores y Alertas: mismo filtro solo-supervisor que Precios (docs/prompts/12-alertas-flota.md). */}
-            {esSupervisor(rol) && (
-              <Link
-                href={RUTAS.panelFlota}
-                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Flota
-              </Link>
-            )}
-            {esSupervisor(rol) && (
-              <Link
-                href={RUTAS.panelConductores}
-                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Conductores
-              </Link>
-            )}
-            {esSupervisor(rol) && (
-              <Link
-                href={RUTAS.panelAlertas}
-                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Alertas
-              </Link>
-            )}
-            {/* Tarifario: mismo filtro solo-supervisor (docs/prompts/13-tarifario-encomiendas.md). */}
-            {esSupervisor(rol) && (
-              <Link href={RUTAS.panelEmbarque} className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-                Regla de embarque
-              </Link>
-            )}
-            {esSupervisor(rol) && (
-              <Link
-                href={RUTAS.panelTarifario}
-                className="flex min-h-11 items-center rounded-field px-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Tarifario
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
-
+      <PanelHeader rol={rol} />
       <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-8">{children}</div>
     </div>
   );
